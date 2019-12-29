@@ -6,7 +6,7 @@ namespace GameEngine.Game
     {
         static void Main(string[] args)
         {
-            var game = new GameGame();
+            var game = new DemoGame();
             var window = new SdlWindow(game);
 
             game.Engine.Init(window);

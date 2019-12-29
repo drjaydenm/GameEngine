@@ -22,11 +22,21 @@ namespace GameEngine.Core.Entities
         }
 
         internal IPhysicsBody Body { get; set; }
-        internal Entity Entity { get; set; }
+        internal Entity Entity { get; private set; }
 
         public PhysicsComponent(PhysicsInteractivity interactivity)
         {
             Interactivity = interactivity;
+        }
+
+        public void AttachedToEntity(Entity entity)
+        {
+            Entity = entity;
+        }
+
+        public void DetachedFromEntity()
+        {
+            Entity = null;
         }
 
         public void Update()

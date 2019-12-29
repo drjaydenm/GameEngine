@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Veldrid;
 using GameEngine.Core.Graphics;
+using GameEngine.Core.Entities;
 
 namespace GameEngine.Core.World
 {
@@ -14,14 +14,10 @@ namespace GameEngine.Core.World
         public DeviceBuffer IndexBuffer { get; private set; }
         public Matrix4x4 WorldTransform { get; private set; }
 
-        private readonly Chunk chunk;
-        private readonly BlockWorld world;
         private readonly Engine engine;
 
-        public ChunkRenderable(Chunk chunk, BlockWorld world, Engine engine, Material material)
+        public ChunkRenderable(Chunk chunk, Engine engine, Material material)
         {
-            this.chunk = chunk;
-            this.world = world;
             this.engine = engine;
 
             Material = material;
@@ -47,6 +43,14 @@ namespace GameEngine.Core.World
                 new BufferDescription((uint)(sizeof(uint) * mesh.Indices.Length), BufferUsage.IndexBuffer));
             engine.GraphicsDevice.UpdateBuffer(VertexBuffer, 0, mesh.Vertices);
             engine.GraphicsDevice.UpdateBuffer(IndexBuffer, 0, mesh.Indices);
+        }
+
+        public void AttachedToEntity(Entity entity)
+        {
+        }
+
+        public void DetachedFromEntity()
+        {
         }
 
         public void Update()

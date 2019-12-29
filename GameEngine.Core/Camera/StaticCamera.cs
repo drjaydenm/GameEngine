@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using GameEngine.Core.Entities;
 
 namespace GameEngine.Core.Camera
 {
@@ -45,6 +46,14 @@ namespace GameEngine.Core.Camera
             AspectRatio = aspectRatio;
 
             Recalculate();
+        }
+
+        public void AttachedToEntity(Entity entity)
+        {
+        }
+
+        public void DetachedFromEntity()
+        {
         }
 
         public void Update()

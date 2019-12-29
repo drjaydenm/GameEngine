@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using GameEngine.Core.Entities;
 using Veldrid;
 
 namespace GameEngine.Core.Graphics
@@ -43,6 +44,14 @@ namespace GameEngine.Core.Graphics
         public void SetWorldTransform(Matrix4x4 world)
         {
             WorldTransform = world;
+        }
+
+        public void AttachedToEntity(Entity entity)
+        {
+        }
+
+        public void DetachedFromEntity()
+        {
         }
 
         public void Update()

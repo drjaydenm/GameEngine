@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using GameEngine.Core.Entities;
 using GameEngine.Core.Input;
 
 namespace GameEngine.Core.Camera
@@ -52,8 +53,16 @@ namespace GameEngine.Core.Camera
             FieldOfView = fieldOfView;
             NearClip = nearClip;
             FarClip = farClip;
-            this.Rotation = Quaternion.Identity;
+            Rotation = Quaternion.Identity;
             Recalculate();
+        }
+
+        public void AttachedToEntity(Entity entity)
+        {
+        }
+
+        public void DetachedFromEntity()
+        {
         }
 
         public void Update()

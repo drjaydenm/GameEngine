@@ -43,20 +43,20 @@ namespace GameEngine.Core.Entities
             if (component is PhysicsComponent physicsComponent)
             {
                 scene.PhysicsSystem.RegisterComponent(this, physicsComponent);
-                physicsComponent.Entity = this;
             }
 
             components.Add(component);
+            component.AttachedToEntity(this);
         }
 
         public void RemoveComponent(IComponent component)
         {
+            component.DetachedFromEntity();
             components.TryTake(out _);
 
             if (component is PhysicsComponent physicsComponent)
             {
                 scene.PhysicsSystem.DeregisterComponent(physicsComponent);
-                physicsComponent.Entity = null;
             }
         }
 

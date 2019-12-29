@@ -171,7 +171,7 @@ namespace GameEngine.Core.World
                 }
                 else
                 {
-                    var renderable = new ChunkRenderable(chunk, this, engine, material);
+                    var renderable = new ChunkRenderable(chunk, engine, material);
                     renderable.UpdateChunk(chunkMeshes[chunk]);
 
                     if (chunkMeshes[chunk] != null)
