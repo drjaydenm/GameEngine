@@ -60,6 +60,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 if (component.Interactivity == PhysicsInteractivity.Dynamic)
                     boxShape.ComputeInertia(component.Mass, out inertia);
             }
+            else if (component is PhysicsCapsuleComponent capsuleComponent)
+            {
+                var capsuleShape = new Capsule(capsuleComponent.Radius, capsuleComponent.Length);
+                shapeIndex = simulation.Shapes.Add(capsuleShape);
+
+                if (component.Interactivity == PhysicsInteractivity.Dynamic)
+                    capsuleShape.ComputeInertia(component.Mass, out inertia);
+            }
             else if (component is PhysicsCompoundComponent compoundComponent)
             {
                 using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, 8))
@@ -152,6 +160,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 {
                     var transform = Matrix4x4.CreateScale(boxComponent.Size) * Matrix4x4.CreateFromQuaternion(orientation) * Matrix4x4.CreateTranslation(position);
                     engine.DebugGraphics.DrawCube(RgbaFloat.Red, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
+                }
+                else if (kvp.Key is PhysicsCapsuleComponent capsuleComponent)
+                {
+                    var transform = Matrix4x4.CreateScale(capsuleComponent.Radius, capsuleComponent.Length, capsuleComponent.Radius) * Matrix4x4.CreateFromQuaternion(orientation) * Matrix4x4.CreateTranslation(position);
+                    engine.DebugGraphics.DrawCube(RgbaFloat.Orange, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
                 }
                 else if (kvp.Key is PhysicsMeshComponent meshComponent)
                 {
