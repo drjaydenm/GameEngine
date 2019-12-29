@@ -7,17 +7,18 @@ namespace GameEngine.Game
 {
     public class BlockWorldGenerator
     {
-        private const int MOUNTAIN_END_HEIGHT = 60;
-        private const int GROUND_START_HEIGHT = 0;
+        private const float LARGE_NOISE_SCALE = 60;
+        private const float SMALL_NOISE_SCALE = 10;
 
-        private readonly Random random = new Random();
-        private readonly Noise noise1;
-        private readonly Noise noise2;
+        private readonly Noise largeNoise;
+        private readonly Noise smallNoise;
 
         public BlockWorldGenerator()
         {
-            noise1 = new Noise(123);
-            noise2 = new Noise(456);
+            largeNoise = new Noise(123);
+            largeNoise.SetFrequency(0.009f);
+            smallNoise = new Noise(456);
+            smallNoise.SetFrequency(0.05f);
         }
 
         public IEnumerable<Chunk> GenerateWorld(int xSize, int ySize, int zSize)
@@ -51,11 +52,11 @@ namespace GameEngine.Game
                     var chunkXBlockStart = chunk.Coordinate.X * Chunk.CHUNK_X_SIZE;
                     var chunkYBlockStart = chunk.Coordinate.Y * Chunk.CHUNK_Y_SIZE;
                     var chunkZBlockStart = chunk.Coordinate.Z * Chunk.CHUNK_Z_SIZE;
-                    var noiseValue1 = GetNoise(noise1, x + chunkXBlockStart, z + chunkZBlockStart);
-                    var noiseValue2 = GetNoise(noise2, x + chunkXBlockStart, z + chunkZBlockStart);
+                    var noiseValue1 = GetNoise(largeNoise, x + chunkXBlockStart, z + chunkZBlockStart);
+                    var noiseValue2 = GetNoise(smallNoise, x + chunkXBlockStart, z + chunkZBlockStart);
 
-                    var height = GROUND_START_HEIGHT + (noiseValue1 * (MOUNTAIN_END_HEIGHT - GROUND_START_HEIGHT));
-                    height += (noiseValue2 - 0.5f) * 20f;
+                    var height = noiseValue1 * LARGE_NOISE_SCALE;
+                    height += noiseValue2 * SMALL_NOISE_SCALE;
 
                     for (var y = 0; y < chunk.Blocks.GetLength(1); y++)
                     {
