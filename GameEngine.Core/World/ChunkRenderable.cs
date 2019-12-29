@@ -1,0 +1,62 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
+using Veldrid;
+using GameEngine.Core.Graphics;
+
+namespace GameEngine.Core.World
+{
+    public class ChunkRenderable : IRenderable, IDisposable
+    {
+        public Material Material { get; private set; }
+        public VertexLayoutDescription LayoutDescription => VertexPositionNormalMaterial.VertexLayoutDescription;
+        public DeviceBuffer VertexBuffer { get; private set; }
+        public DeviceBuffer IndexBuffer { get; private set; }
+        public Matrix4x4 WorldTransform { get; private set; }
+
+        private readonly Chunk chunk;
+        private readonly BlockWorld world;
+        private readonly Engine engine;
+
+        public ChunkRenderable(Chunk chunk, BlockWorld world, Engine engine, Material material)
+        {
+            this.chunk = chunk;
+            this.world = world;
+            this.engine = engine;
+
+            Material = material;
+
+            // Offset block vertices by half a block, as the block vertices are all centered around 0,0,0 instead
+            // of 0,0,0 being the bottom corner of the block vertices
+            WorldTransform = Matrix4x4.CreateTranslation(chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f));
+        }
+
+        public void UpdateChunk(Mesh<VertexPositionNormalMaterial> mesh)
+        {
+            if (VertexBuffer != null)
+                VertexBuffer.Dispose();
+            if (IndexBuffer != null)
+                IndexBuffer.Dispose();
+
+            if (mesh == null || mesh.Vertices.Length <= 0)
+                return;
+
+            VertexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
+                new BufferDescription((uint)(VertexPositionNormalMaterial.SizeInBytes * mesh.Vertices.Length), BufferUsage.VertexBuffer));
+            IndexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
+                new BufferDescription((uint)(sizeof(uint) * mesh.Indices.Length), BufferUsage.IndexBuffer));
+            engine.GraphicsDevice.UpdateBuffer(VertexBuffer, 0, mesh.Vertices);
+            engine.GraphicsDevice.UpdateBuffer(IndexBuffer, 0, mesh.Indices);
+        }
+
+        public void Update()
+        {
+        }
+
+        public void Dispose()
+        {
+            VertexBuffer?.Dispose();
+            IndexBuffer?.Dispose();
+        }
+    }
+}
