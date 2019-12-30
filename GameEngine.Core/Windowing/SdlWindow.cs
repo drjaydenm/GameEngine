@@ -34,15 +34,7 @@ namespace GameEngine.Core.Windowing
         {
             this.game = game;
 
-            var windowCreateInfo = new WindowCreateInfo
-            {
-                X = 100,
-                Y = 100,
-                WindowWidth = 960,
-                WindowHeight = 540,
-                WindowInitialState = WindowState.Normal
-            };
-            window = VeldridStartup.CreateWindow(ref windowCreateInfo);
+            window = CreateWindow();
             window.Closing += () =>
             {
                 Closing?.Invoke(null, EventArgs.Empty);
@@ -57,8 +49,6 @@ namespace GameEngine.Core.Windowing
         {
             while (window.Exists)
             {
-                //see if this actually does anything
-                Sdl2Events.ProcessEvents();
                 InputSnapshot = window.PumpEvents();
                 if (game.Engine.InputManager.Mouse.IsMouseLocked && window.Focused)
                 {
@@ -98,6 +88,20 @@ namespace GameEngine.Core.Windowing
         public IInputManager CreateInputManager()
         {
             return new VeldridInputManager(this);
+        }
+
+        private Sdl2Window CreateWindow()
+        {
+            var flags = SDL_WindowFlags.OpenGL | SDL_WindowFlags.Resizable | SDL_WindowFlags.Shown;
+
+            return new Sdl2Window(
+                title: "Window",
+                x: 100,
+                y: 100,
+                width: 960,
+                height: 540,
+                flags: flags,
+                threadedProcessing: true);
         }
     }
 }
