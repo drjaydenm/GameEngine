@@ -1,21 +1,14 @@
 ﻿namespace GameEngine.Core.World
 {
-    public class Block
+    public struct Block
     {
-        public bool IsActive { get; private set; }
-        public uint BlockType { get; private set; }
-        public object Data { get; set; }
+        public bool IsActive;
+        public byte BlockType;
 
-        public Block(bool isActive, uint blockType, object data = null)
+        public Block(bool isActive, byte blockType)
         {
             IsActive = isActive;
             BlockType = blockType;
-            Data = data;
-        }
-
-        public void SetActive(bool isActive)
-        {
-            IsActive = isActive;
         }
     }
 }

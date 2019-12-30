@@ -23,7 +23,7 @@ namespace GameEngine.Game
 
         public IEnumerable<Chunk> GenerateWorld(int xSize, int ySize, int zSize)
         {
-            var chunks = new List<Chunk>();
+            var chunks = new List<Chunk>(xSize * ySize * zSize);
             var startXOffset = xSize / 2;
             var startYOffset = ySize / 2;
             var startZOffset = zSize / 2;
@@ -74,7 +74,9 @@ namespace GameEngine.Game
 
                         var isEnabled = y + chunkYBlockStart <= height;
 
-                        chunk.Blocks[x, y, z] = new Block(isEnabled, (uint)blockType, null);
+                        ref var block = ref chunk.Blocks[x, y, z];
+                        block.IsActive = isEnabled;
+                        block.BlockType = (byte)blockType;
                     }
                 }
             }

@@ -29,7 +29,7 @@ namespace GameEngine.Game
         private ConcurrentQueue<Coord3> coordsToGenerate;
         private List<Entity> boxes;
         private Chunk lookingAtChunk;
-        private Block lookingAtBlock;
+        private Block? lookingAtBlock;
         private Coord3 lookingAtBlockCoord;
         private Vector3 rayHitPosition;
         private Task chunkGenerationTask;
@@ -144,7 +144,7 @@ namespace GameEngine.Game
 
                 lookingAtChunk = world.FindChunkByWorldPosition(adjustedPosition);
                 lookingAtBlock = world.FindBlockByWorldPosition(adjustedPosition);
-                if (lookingAtBlock != null && lookingAtBlock.IsActive)
+                if (lookingAtBlock != null && lookingAtBlock.Value.IsActive)
                 {
                     
                     lookingAtBlockCoord = world.ConvertWorldPositionToBlockCoordinate(adjustedPosition);

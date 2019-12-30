@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,7 +92,7 @@ namespace GameEngine.Core.World
             return FindChunkByCoordinate(chunkPosition);
         }
 
-        public Block FindBlockByWorldPosition(Vector3 position)
+        public Block? FindBlockByWorldPosition(Vector3 position)
         {
             var chunk = FindChunkByWorldPosition(position);
             if (chunk == null)

@@ -25,7 +25,7 @@ namespace GameEngine.Core.World
                 {
                     for (int blockZ = 0; blockZ < chunk.Blocks.GetLength(2); blockZ++)
                     {
-                        if (chunk.Blocks[blockX, blockY, blockZ] == null || !chunk.Blocks[blockX, blockY, blockZ].IsActive)
+                        if (!chunk.Blocks[blockX, blockY, blockZ].IsActive)
                             continue;
 
                         var blockOffset = new Vector3(blockX, blockY, blockZ);
