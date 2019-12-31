@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,8 @@ namespace GameEngine.Game
     public class GameScene : Scene
     {
         public int ChunkCount => world.Chunks.Count();
-        public int ChunkQueuedCount => coordsToGenerate.Count;
+        public int ChunkGenerationQueuedCount => coordsToGenerate.Count;
+        public int ChunkUpdateQueuedCount => world.ChunksToUpdateCount;
 
         private readonly Engine engine;
         private BlockWorld world;
@@ -65,15 +66,12 @@ namespace GameEngine.Game
 
             engine.InputManager.Mouse.IsMouseLocked = true;
 
-            Task.Run(() =>
-            {
-                var chunks = worldGenerator.GenerateWorld(22, 22, 22);
+            var chunks = worldGenerator.GenerateWorld(CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2);
 
-                Parallel.ForEach(chunks, c => world.AddChunk(c));
+            chunks.ToList().ForEach(c => world.AddChunk(c));
 
-                var cameraYOffset = (world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
-                ActiveCamera.Position = new Vector3(0, cameraYOffset, 0);
-            });
+            var cameraYOffset = (world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
+            ActiveCamera.Position = new Vector3(0, cameraYOffset, 0);
         }
 
         public override void Update()
@@ -174,6 +172,10 @@ namespace GameEngine.Game
             if (currentChunk != previousChunk && currentChunk != null && shouldGenerateChunks)
             {
                 Task.Run(() => QueueNewChunksIfRequired(currentChunk));
+                if (world.ChunksToUpdateCount <= 0)
+                {
+                    UnloadChunksIfRequired(currentChunk);
+                }
             }
 
             if (!coordsToGenerate.IsEmpty && (chunkGenerationTask == null || chunkGenerationTask.IsCompleted))
@@ -234,6 +236,19 @@ namespace GameEngine.Game
                             coordsToGenerate.Enqueue(coord);
                         }
                     }
+                }
+            }
+        }
+
+        private void UnloadChunksIfRequired(Chunk newChunk)
+        {
+            foreach (var chunk in world.Chunks)
+            {
+                if (chunk.Coordinate.X < newChunk.Coordinate.X - CHUNK_GENERATION_RADIUS || chunk.Coordinate.X > newChunk.Coordinate.X + CHUNK_GENERATION_RADIUS
+                    || chunk.Coordinate.Y < newChunk.Coordinate.Y - CHUNK_GENERATION_RADIUS || chunk.Coordinate.Y > newChunk.Coordinate.Y + CHUNK_GENERATION_RADIUS
+                    || chunk.Coordinate.Z < newChunk.Coordinate.Z - CHUNK_GENERATION_RADIUS || chunk.Coordinate.Z > newChunk.Coordinate.Z + CHUNK_GENERATION_RADIUS)
+                {
+                    world.RemoveChunk(chunk);
                 }
             }
         }

@@ -38,9 +38,17 @@ namespace GameEngine.Core.Physics.BepuPhysics
             if (registeredComponents.ContainsKey(component))
             {
                 var body = registeredComponents[component];
+                registeredComponents.TryRemove(component, out _);
 
-                simulation.Bodies.Remove(body.BodyReference.Handle);
                 simulation.Shapes.Remove(body.ShapeIndex);
+                if (component.Interactivity == PhysicsInteractivity.Static)
+                {
+                    simulation.Statics.Remove(body.StaticReference.Handle);
+                }
+                else
+                {
+                    simulation.Bodies.Remove(body.BodyReference.Handle);
+                }
             }
         }
 

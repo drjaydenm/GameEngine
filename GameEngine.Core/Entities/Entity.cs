@@ -11,7 +11,7 @@ namespace GameEngine.Core.Entities
         public IReadOnlyCollection<IComponent> Components => components;
 
         private readonly Scene scene;
-        private readonly ConcurrentBag<IComponent> components;
+        private readonly List<IComponent> components;
 
         public Entity(Scene scene, string name)
         {
@@ -21,7 +21,7 @@ namespace GameEngine.Core.Entities
             this.scene = scene;
 
             Name = name;
-            components = new ConcurrentBag<IComponent>();
+            components = new List<IComponent>();
             Transform = new Transform(this);
         }
 
@@ -29,7 +29,7 @@ namespace GameEngine.Core.Entities
         {
             var matchingComponents = new List<T>();
 
-            foreach (var component in Components)
+            foreach (var component in components.ToArray())
             {
                 if (component is T)
                     matchingComponents.Add((T)component);
@@ -45,14 +45,14 @@ namespace GameEngine.Core.Entities
                 scene.PhysicsSystem.RegisterComponent(this, physicsComponent);
             }
 
-            components.Add(component);
             component.AttachedToEntity(this);
+            components.Add(component);
         }
 
         public void RemoveComponent(IComponent component)
         {
+            components.Remove(component);
             component.DetachedFromEntity();
-            components.TryTake(out _);
 
             if (component is PhysicsComponent physicsComponent)
             {
@@ -62,7 +62,7 @@ namespace GameEngine.Core.Entities
 
         public virtual void Update()
         {
-            foreach (var component in components)
+            foreach (var component in components.ToArray())
             {
                 component.Update();
             }
