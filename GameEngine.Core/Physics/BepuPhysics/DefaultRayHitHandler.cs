@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using BepuPhysics;
 using BepuPhysics.Collidables;
-using BepuPhysics.CollisionDetection;
 using BepuPhysics.Trees;
 using GameEngine.Core.Entities;
 
@@ -31,13 +31,19 @@ namespace GameEngine.Core.Physics.BepuPhysics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool AllowTest(CollidableReference collidable)
         {
+            return AllowTest(collidable, -1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool AllowTest(CollidableReference collidable, int childIndex)
+        {
             return (collidable.Mobility == CollidableMobility.Dynamic && (InteractivityFilter & PhysicsInteractivity.Dynamic) != 0)
                 || (collidable.Mobility == CollidableMobility.Kinematic && (InteractivityFilter & PhysicsInteractivity.Kinematic) != 0)
                 || (collidable.Mobility == CollidableMobility.Static && (InteractivityFilter & PhysicsInteractivity.Static) != 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void OnRayHit(in RayData ray, ref float maximumT, float t, in Vector3 normal, CollidableReference collidable)
+        public void OnRayHit(in RayData ray, ref float maximumT, float t, in Vector3 normal, CollidableReference collidable, int childIndex)
         {
             if (t < maximumT)
                 maximumT = t;

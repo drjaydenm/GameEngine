@@ -10,6 +10,6 @@
     <PackageReference Include="Veldrid" Version="4.7.0" />
     <PackageReference Include="Veldrid.SPIRV" Version="1.0.11" />
     <PackageReference Include="Veldrid.StartupUtilities" Version="4.7.0" />
-    <PackageReference Include="BEPUphysics" Version="2.0.0" />
+    <PackageReference Include="BEPUphysics" Version="2.1.0" />
   </ItemGroup>
 </Project>
