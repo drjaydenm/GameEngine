@@ -101,7 +101,7 @@ namespace GameEngine.Core.Windowing
                 width: 960,
                 height: 540,
                 flags: flags,
-                threadedProcessing: true);
+                threadedProcessing: false);
         }
     }
 }
