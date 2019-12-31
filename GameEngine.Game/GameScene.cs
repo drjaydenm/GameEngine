@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +34,7 @@ namespace GameEngine.Game
         private Coord3 lookingAtBlockCoord;
         private Vector3 rayHitPosition;
         private Task chunkGenerationTask;
+        private CharacterController character;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
         private const int CHUNK_GENERATE_PER_FRAME = 50;
@@ -72,6 +73,9 @@ namespace GameEngine.Game
 
             var cameraYOffset = (world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
             ActiveCamera.Position = new Vector3(0, cameraYOffset, 0);
+            
+            character = new CharacterController(new Vector3(0, cameraYOffset, 0));
+            playerEntity.AddComponent(character);
         }
 
         public override void Update()
