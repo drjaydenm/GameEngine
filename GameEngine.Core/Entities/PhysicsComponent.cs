@@ -21,6 +21,8 @@ namespace GameEngine.Core.Entities
             set { Body.AngularVelocity = value; }
         }
 
+        public bool FreezeRotation { get; set; }
+
         internal IPhysicsBody Body { get; set; }
         internal Entity Entity { get; private set; }
 

@@ -8,6 +8,7 @@ using BepuUtilities.Memory;
 using Veldrid;
 using GameEngine.Core.Entities;
 using BepuMesh = BepuPhysics.Collidables.Mesh;
+using BepuUtilities;
 
 namespace GameEngine.Core.Physics.BepuPhysics
 {
@@ -114,6 +115,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
                 var mesh = new BepuMesh(triangles, Vector3.One, bufferPool);
                 shapeIndex = simulation.Shapes.Add(mesh);
+            }
+
+            if (component.FreezeRotation)
+            {
+                inertia.InverseInertiaTensor = new Symmetric3x3();
             }
 
             var collidable = new CollidableDescription(shapeIndex, 0.1f);

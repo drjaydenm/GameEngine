@@ -34,6 +34,7 @@ namespace GameEngine.Game
         private Coord3 lookingAtBlockCoord;
         private Vector3 rayHitPosition;
         private Task chunkGenerationTask;
+        private Entity playerEntity;
         private CharacterController character;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
@@ -60,7 +61,7 @@ namespace GameEngine.Game
             var camera = new DebugCamera(Vector3.Zero, Vector3.UnitZ, 1, 0.5f, 500, engine);
             camera.DisableRotation = true;
 
-            var playerEntity = new Entity(this, "Player");
+            playerEntity = new Entity(this, "Player");
             playerEntity.AddComponent(camera);
             AddEntity(playerEntity);
             SetActiveCamera(camera);
@@ -70,12 +71,6 @@ namespace GameEngine.Game
             var chunks = worldGenerator.GenerateWorld(CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2);
 
             chunks.ToList().ForEach(c => world.AddChunk(c));
-
-            var cameraYOffset = (world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
-            ActiveCamera.Position = new Vector3(0, cameraYOffset, 0);
-            
-            character = new CharacterController(new Vector3(0, cameraYOffset, 0));
-            playerEntity.AddComponent(character);
         }
 
         public override void Update()
@@ -188,6 +183,14 @@ namespace GameEngine.Game
             }
 
             previousChunk = currentChunk;
+
+            if (character == null && world.ChunksToUpdateCount <= 0)
+            {
+                // Spawn the player
+                var playerOffsetY = (world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
+                character = new CharacterController(new Vector3(0, playerOffsetY, 0));
+                playerEntity.AddComponent(character);
+            }
         }
 
         public override void Draw()
