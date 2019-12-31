@@ -27,6 +27,8 @@ namespace GameEngine.Core.Entities
         public PhysicsComponent(PhysicsInteractivity interactivity)
         {
             Interactivity = interactivity;
+            PositionOffset = Vector3.Zero;
+            Mass = 1;
         }
 
         public void AttachedToEntity(Entity entity)

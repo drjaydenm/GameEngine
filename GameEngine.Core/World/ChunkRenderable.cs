@@ -15,6 +15,8 @@ namespace GameEngine.Core.World
         public Matrix4x4 WorldTransform { get; private set; }
 
         private readonly Engine engine;
+        private Mesh<VertexPositionNormalMaterial> mesh;
+        private bool isDirty;
 
         public ChunkRenderable(Chunk chunk, Engine engine, Material material)
         {
@@ -29,20 +31,8 @@ namespace GameEngine.Core.World
 
         public void UpdateChunk(Mesh<VertexPositionNormalMaterial> mesh)
         {
-            if (VertexBuffer != null)
-                VertexBuffer.Dispose();
-            if (IndexBuffer != null)
-                IndexBuffer.Dispose();
-
-            if (mesh == null || mesh.Vertices.Length <= 0)
-                return;
-
-            VertexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
-                new BufferDescription((uint)(VertexPositionNormalMaterial.SizeInBytes * mesh.Vertices.Length), BufferUsage.VertexBuffer));
-            IndexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
-                new BufferDescription((uint)(sizeof(uint) * mesh.Indices.Length), BufferUsage.IndexBuffer));
-            engine.GraphicsDevice.UpdateBuffer(VertexBuffer, 0, mesh.Vertices);
-            engine.GraphicsDevice.UpdateBuffer(IndexBuffer, 0, mesh.Indices);
+            this.mesh = mesh;
+            isDirty = true;
         }
 
         public void AttachedToEntity(Entity entity)
@@ -61,6 +51,29 @@ namespace GameEngine.Core.World
         {
             VertexBuffer?.Dispose();
             IndexBuffer?.Dispose();
+        }
+
+        public void UpdateBuffers(CommandList commandList)
+        {
+            if (!isDirty)
+                return;
+
+            if (VertexBuffer != null)
+                VertexBuffer.Dispose();
+            if (IndexBuffer != null)
+                IndexBuffer.Dispose();
+
+            if (mesh == null || mesh.Vertices.Length <= 0)
+                return;
+
+            VertexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
+                new BufferDescription((uint)(VertexPositionNormalMaterial.SizeInBytes * mesh.Vertices.Length), BufferUsage.VertexBuffer));
+            IndexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
+                new BufferDescription((uint)(sizeof(uint) * mesh.Indices.Length), BufferUsage.IndexBuffer));
+            commandList.UpdateBuffer(VertexBuffer, 0, mesh.Vertices);
+            commandList.UpdateBuffer(IndexBuffer, 0, mesh.Indices);
+
+            isDirty = false;
         }
     }
 }

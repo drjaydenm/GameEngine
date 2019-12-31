@@ -46,6 +46,8 @@ namespace GameEngine.Core.Graphics
             {
                 foreach (var renderable in entity.GetComponentsOfType<IRenderable>())
                 {
+                    renderable.UpdateBuffers(commandList);
+
                     renderable.Material.Bind(commandList, this, renderable.LayoutDescription);
 
                     commandList.UpdateBuffer(WorldBuffer, 0, renderable.WorldTransform);

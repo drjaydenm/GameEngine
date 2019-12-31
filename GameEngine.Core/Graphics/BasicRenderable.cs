@@ -57,5 +57,10 @@ namespace GameEngine.Core.Graphics
         public void Update()
         {
         }
+
+        public void UpdateBuffers(CommandList commandList)
+        {
+            // TODO implement buffer updating here
+        }
     }
 }

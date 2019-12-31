@@ -11,5 +11,7 @@ namespace GameEngine.Core.Graphics
         DeviceBuffer VertexBuffer { get; }
         DeviceBuffer IndexBuffer { get; }
         Matrix4x4 WorldTransform { get; }
+
+        void UpdateBuffers(CommandList commandList);
     }
 }
