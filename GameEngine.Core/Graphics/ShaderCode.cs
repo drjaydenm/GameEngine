@@ -79,6 +79,23 @@ layout(location = 2) flat in uint fsin_MaterialId;
 
 layout(location = 0) out vec4 fsout_Color;
 
+float random(vec3 st)
+{
+    return fract(sin(dot(st.xyz, vec3(12.9898, 78.233, 65.2431))) * 43758.5453123);
+}
+
+vec3 roundVec3(vec3 val, int prec)
+{
+    int multiplier = 10 ^ prec;
+    vec3 roundedVal = val * multiplier;
+
+    roundedVal.x = round(roundedVal.x);
+    roundedVal.y = round(roundedVal.y);
+    roundedVal.z = round(roundedVal.z);
+
+    return roundedVal / multiplier;
+}
+
 void main()
 {
     vec3 surfaceToLight = -LightDirection;
@@ -89,6 +106,7 @@ void main()
 
     float diffuseCoefficient = max(dot(fsin_Normal, surfaceToLight), 0.0);
     vec4 diffuse = diffuseCoefficient * diffuseColor * LightColor * LightIntensity;
+    diffuse += (random(roundVec3(fsin_WorldPosition, 2)) - 0.5) * 0.25f;
 
     float specularCoefficient = 0.0;
     if (diffuseCoefficient > 0.0)

@@ -50,6 +50,7 @@ namespace GameEngine.Core.Graphics
 
                     renderable.Material.Bind(commandList, this, renderable.LayoutDescription);
 
+                    // TODO this should be optimised, ~25% of frame time is spent here
                     commandList.UpdateBuffer(WorldBuffer, 0, renderable.WorldTransform);
 
                     commandList.SetVertexBuffer(0, renderable.VertexBuffer);
