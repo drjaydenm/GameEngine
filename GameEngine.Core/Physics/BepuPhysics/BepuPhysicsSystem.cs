@@ -208,7 +208,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
         public RayHit Raycast(Vector3 origin, Vector3 direction, float maxDistance, PhysicsInteractivity interactivity, PhysicsComponent[] ignoreComponents)
         {
-            var hitHandler = new DefaultRayHitHandler(interactivity, ignoreComponents?.Select(c => BodyToCollidableReference((BepuPhysicsBody)c.Body)).ToArray());
+            var actualIgnoreComponents = ignoreComponents
+                ?.Where(c => registeredComponents.ContainsKey(c))
+                .Select(c => BodyToCollidableReference((BepuPhysicsBody)c.Body)).ToArray();
+
+            var hitHandler = new DefaultRayHitHandler(interactivity, actualIgnoreComponents);
             simulation.RayCast(origin, direction, maxDistance, ref hitHandler);
 
             PhysicsComponent component = null;

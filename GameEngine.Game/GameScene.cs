@@ -33,6 +33,8 @@ namespace GameEngine.Game
         private Vector3 rayHitPosition;
         private Entity playerEntity;
         private CharacterController character;
+        private bool playerSpawned;
+        private bool debugCamera = true;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
         private const int CHUNK_GENERATE_PER_FRAME = 10;
@@ -115,6 +117,19 @@ namespace GameEngine.Game
                 PhysicsSystem.DebugEnabled = !PhysicsSystem.DebugEnabled;
             }
 
+            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.F1))
+            {
+                debugCamera = !debugCamera;
+                if (debugCamera)
+                {
+                    playerEntity.RemoveComponent(character);
+                }
+                else
+                {
+                    playerEntity.AddComponent(character);
+                }
+            }
+
             if (engine.InputManager.Mouse.IsButtonDown(MouseButtons.Left))
             {
                 var box = ShootBox();
@@ -179,7 +194,7 @@ namespace GameEngine.Game
 
             previousChunk = currentChunk;
 
-            if (character == null && world.ChunksToUpdateCount <= 0)
+            if (!playerSpawned && world.ChunksToUpdateCount <= 0)
             {
                 // Spawn the player
                 var maxChunkHeight = (float)(world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
@@ -191,6 +206,9 @@ namespace GameEngine.Game
                 }
                 character = new CharacterController(engine, new Vector3(0, playerYOffset, 0), 1.8f, 0.5f, 80);
                 playerEntity.AddComponent(character);
+
+                playerSpawned = true;
+                debugCamera = false;
             }
         }
 
