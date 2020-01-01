@@ -169,16 +169,16 @@ namespace GameEngine.Game
             currentChunk = world.FindChunkByWorldPosition(ActiveCamera.Position);
             if (currentChunk != previousChunk && currentChunk != null && shouldGenerateChunks)
             {
-                /*QueueNewChunksIfRequired(currentChunk);
+                QueueNewChunksIfRequired(currentChunk);
                 if (world.ChunksToUpdateCount <= 0)
                 {
                     UnloadChunksIfRequired(currentChunk);
-                }*/
+                }
             }
 
             if (!coordsToGenerate.IsEmpty)
             {
-                //GenerateChunks();
+                GenerateChunks();
             }
 
             previousChunk = currentChunk;

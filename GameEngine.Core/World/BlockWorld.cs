@@ -16,7 +16,6 @@ namespace GameEngine.Core.World
         private readonly Engine engine;
         private readonly ConcurrentDictionary<Coord3, Chunk> chunks;
         private readonly ConcurrentQueue<Chunk> chunksToUpdate;
-        private readonly ConcurrentDictionary<Chunk, Mesh<VertexPositionNormalMaterial>> chunkMeshes;
         private readonly ConcurrentDictionary<Chunk, ChunkRenderable> chunkRenderables;
         private readonly ConcurrentDictionary<Chunk, PhysicsComponent> chunkPhysics;
         private readonly Material material;
@@ -29,7 +28,6 @@ namespace GameEngine.Core.World
 
             chunks = new ConcurrentDictionary<Coord3, Chunk>();
             chunksToUpdate = new ConcurrentQueue<Chunk>();
-            chunkMeshes = new ConcurrentDictionary<Chunk, Mesh<VertexPositionNormalMaterial>>();
             chunkRenderables = new ConcurrentDictionary<Chunk, ChunkRenderable>();
             chunkPhysics = new ConcurrentDictionary<Chunk, PhysicsComponent>();
             material = new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode);
@@ -50,7 +48,6 @@ namespace GameEngine.Core.World
             var chunksUpdatedThisFrame = 0;
             while (chunksUpdatedThisFrame < CHUNKS_UPDATE_PER_FRAME && chunksToUpdate.TryDequeue(out var chunk))
             {
-                AddOrUpdateMesh(chunk);
                 AddOrUpdateRenderable(chunk);
                 AddOrUpdatePhysics(chunk);
 
@@ -75,7 +72,6 @@ namespace GameEngine.Core.World
                 return;
 
             chunks.TryRemove(chunk.Coordinate, out var actualChunk);
-            chunkMeshes.TryRemove(actualChunk, out _);
 
             if (chunkRenderables.ContainsKey(actualChunk))
             {
@@ -152,23 +148,6 @@ namespace GameEngine.Core.World
                 (int)Math.Floor(blockIndex.Z));
         }
 
-        private void AddOrUpdateMesh(Chunk chunk)
-        {
-            var chunkShouldRender = chunk.IsAnyBlockActive();
-
-            if (!chunkMeshes.ContainsKey(chunk))
-                chunkMeshes.TryAdd(chunk, null);
-
-            if (chunkShouldRender && chunkMeshes[chunk] == null)
-            {
-                chunkMeshes[chunk] = ChunkMeshGenerator.GenerateMesh(chunk, this);
-            }
-            else if (!chunkShouldRender && chunkMeshes[chunk] != null)
-            {
-                chunkMeshes[chunk] = null;
-            }
-        }
-
         private void AddOrUpdateRenderable(Chunk chunk)
         {
             var chunkShouldRender = chunk.IsAnyBlockActive();
@@ -186,10 +165,11 @@ namespace GameEngine.Core.World
             }
             else
             {
+                var mesh = ChunkMeshGenerator.GenerateMesh(chunk, this);
                 if (chunkRenderables[chunk] != null)
                 {
-                    chunkRenderables[chunk].UpdateChunk(chunkMeshes[chunk]);
-                    if (chunkMeshes[chunk] == null)
+                    chunkRenderables[chunk].UpdateChunk(mesh);
+                    if (mesh == null)
                     {
                         RemoveComponent(chunkRenderables[chunk]);
                         chunkRenderables[chunk].Dispose();
@@ -200,9 +180,9 @@ namespace GameEngine.Core.World
                 else
                 {
                     var renderable = new ChunkRenderable(chunk, engine, material);
-                    renderable.UpdateChunk(chunkMeshes[chunk]);
+                    renderable.UpdateChunk(mesh);
 
-                    if (chunkMeshes[chunk] != null)
+                    if (mesh != null)
                     {
                         chunkRenderables[chunk] = renderable;
 

@@ -73,6 +73,7 @@ namespace GameEngine.Core.World
             commandList.UpdateBuffer(VertexBuffer, 0, mesh.Vertices);
             commandList.UpdateBuffer(IndexBuffer, 0, mesh.Indices);
 
+            mesh = null;
             isDirty = false;
         }
     }
