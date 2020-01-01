@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using GameEngine.Core.Entities;
 using GameEngine.Core.Graphics;
 
@@ -21,9 +20,8 @@ namespace GameEngine.Core.World
         private readonly ConcurrentDictionary<Chunk, ChunkRenderable> chunkRenderables;
         private readonly ConcurrentDictionary<Chunk, PhysicsComponent> chunkPhysics;
         private readonly Material material;
-        private Task updateChunkTask;
 
-        private const int CHUNKS_UPDATE_PER_FRAME = 200;
+        private const int CHUNKS_UPDATE_PER_FRAME = 20;
 
         public BlockWorld(Engine engine, Scene scene, string name) : base(scene, name)
         {
@@ -41,9 +39,9 @@ namespace GameEngine.Core.World
         {
             base.Update();
 
-            if (!chunksToUpdate.IsEmpty && (updateChunkTask == null || updateChunkTask.IsCompleted))
+            if (!chunksToUpdate.IsEmpty)
             {
-                updateChunkTask = Task.Run(UpdateChunks);
+                UpdateChunks();
             }
         }
 
@@ -224,7 +222,7 @@ namespace GameEngine.Core.World
             if (!chunkPhysics.ContainsKey(chunk))
                 chunkPhysics.TryAdd(chunk, null);
 
-            if (chunkPhysics[chunk] == null && chunk.IsAnyBlockActive() && chunkMeshes[chunk] != null)
+            if (chunkPhysics[chunk] == null && chunk.IsAnyBlockActive())
             {
                 PhysicsComponent physics;
                 var isChunkSolid = !chunk.IsAnyBlockInactive();

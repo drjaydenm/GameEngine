@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using Veldrid;
 using GameEngine.Core;
 using GameEngine.Core.Camera;
@@ -33,7 +32,6 @@ namespace GameEngine.Game
         private Block? lookingAtBlock;
         private Coord3 lookingAtBlockCoord;
         private Vector3 rayHitPosition;
-        private Task chunkGenerationTask;
         private Entity playerEntity;
         private CharacterController character;
 
@@ -171,16 +169,16 @@ namespace GameEngine.Game
             currentChunk = world.FindChunkByWorldPosition(ActiveCamera.Position);
             if (currentChunk != previousChunk && currentChunk != null && shouldGenerateChunks)
             {
-                Task.Run(() => QueueNewChunksIfRequired(currentChunk));
+                /*QueueNewChunksIfRequired(currentChunk);
                 if (world.ChunksToUpdateCount <= 0)
                 {
                     UnloadChunksIfRequired(currentChunk);
-                }
+                }*/
             }
 
-            if (!coordsToGenerate.IsEmpty && (chunkGenerationTask == null || chunkGenerationTask.IsCompleted))
+            if (!coordsToGenerate.IsEmpty)
             {
-                chunkGenerationTask = Task.Run(GenerateChunks);
+                //GenerateChunks();
             }
 
             previousChunk = currentChunk;
