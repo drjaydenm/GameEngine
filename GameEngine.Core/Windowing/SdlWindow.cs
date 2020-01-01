@@ -23,6 +23,7 @@ namespace GameEngine.Core.Windowing
         }
         public Vector2 Size => new Vector2(window.Width, window.Height);
         public float AspectRatio => (float)window.Width / window.Height;
+        public bool Running => window.Exists;
 
         internal InputSnapshot InputSnapshot { get; private set; }
         internal Vector2 MousePosition { get; private set; }
@@ -45,30 +46,26 @@ namespace GameEngine.Core.Windowing
             };
         }
 
-        public void RunMessagePump()
-        {
-            while (window.Exists)
-            {
-                InputSnapshot = window.PumpEvents();
-                if (game.Engine.InputManager.Mouse.IsMouseLocked && window.Focused)
-                {
-                    var centerScreen = new Vector2(window.Width / 2, window.Height / 2);
-                    window.CursorVisible = false;
-                    window.SetMousePosition(centerScreen);
-                    MousePosition += InputSnapshot.MousePosition - centerScreen;
-                } else
-                {
-                    window.CursorVisible = true;
-                    MousePosition = InputSnapshot.MousePosition;
-                }
-
-                game.Tick();
-            }
-        }
-
         public void Exit()
         {
             window.Close();
+        }
+
+        public void PumpMessages()
+        {
+            InputSnapshot = window.PumpEvents();
+            if (game.Engine.InputManager.Mouse.IsMouseLocked && window.Focused)
+            {
+                var centerScreen = new Vector2(window.Width / 2, window.Height / 2);
+                window.CursorVisible = false;
+                window.SetMousePosition(centerScreen);
+                MousePosition += InputSnapshot.MousePosition - centerScreen;
+            }
+            else
+            {
+                window.CursorVisible = true;
+                MousePosition = InputSnapshot.MousePosition;
+            }
         }
 
         public GraphicsDevice CreateGraphicsDevice()

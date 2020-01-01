@@ -14,10 +14,11 @@ namespace GameEngine.Core.Windowing
         Vector2 Size { get; }
         float AspectRatio { get; }
         WindowState WindowState { get; set; }
+        bool Running { get; }
 
         GraphicsDevice CreateGraphicsDevice();
         IInputManager CreateInputManager();
-        void RunMessagePump();
+        void PumpMessages();
         void Exit();
     }
 }

@@ -24,7 +24,10 @@ namespace GameEngine.Core
 
         public void Run()
         {
-            Engine.Window.RunMessagePump();
+            while (Engine.Window.Running)
+            {
+                Tick();
+            }
         }
 
         protected virtual void Update()
@@ -42,7 +45,7 @@ namespace GameEngine.Core
             Engine.Window.Exit();
         }
 
-        internal void Tick()
+        private void Tick()
         {
             var currentTime = frameTimeStopwatch.Elapsed;
             var elapsedTime = currentTime - lastTime;
@@ -58,7 +61,10 @@ namespace GameEngine.Core
             while (accumulatedTime >= Engine.GameTimeTargetElapsed)
             {
                 Engine.GameTimeElapsed = Engine.GameTimeTargetElapsed;
+
+                Engine.Window.PumpMessages();
                 Update();
+
                 accumulatedTime -= Engine.GameTimeTargetElapsed;
             }
 
