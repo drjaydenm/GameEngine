@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using BepuPhysics;
 using BepuPhysics.Collidables;
@@ -16,8 +17,9 @@ namespace GameEngine.Core.Physics.BepuPhysics
         public bool Hit;
 
         public PhysicsInteractivity InteractivityFilter;
+        public CollidableReference[] IgnoreCollidables;
 
-        public DefaultRayHitHandler(PhysicsInteractivity interactivityFilter)
+        public DefaultRayHitHandler(PhysicsInteractivity interactivityFilter, CollidableReference[] ignoreCollidables)
         {
             Collidable = default;
             T = float.MaxValue;
@@ -26,6 +28,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             Hit = false;
 
             InteractivityFilter = interactivityFilter;
+            IgnoreCollidables = ignoreCollidables;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -37,9 +40,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool AllowTest(CollidableReference collidable, int childIndex)
         {
-            return (collidable.Mobility == CollidableMobility.Dynamic && (InteractivityFilter & PhysicsInteractivity.Dynamic) != 0)
-                || (collidable.Mobility == CollidableMobility.Kinematic && (InteractivityFilter & PhysicsInteractivity.Kinematic) != 0)
-                || (collidable.Mobility == CollidableMobility.Static && (InteractivityFilter & PhysicsInteractivity.Static) != 0);
+            return ((collidable.Mobility == CollidableMobility.Dynamic && (InteractivityFilter & PhysicsInteractivity.Dynamic) != 0)
+                    || (collidable.Mobility == CollidableMobility.Kinematic && (InteractivityFilter & PhysicsInteractivity.Kinematic) != 0)
+                    || (collidable.Mobility == CollidableMobility.Static && (InteractivityFilter & PhysicsInteractivity.Static) != 0))
+                && (IgnoreCollidables == null ||
+                    (IgnoreCollidables != null && !IgnoreCollidables.Contains(collidable)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

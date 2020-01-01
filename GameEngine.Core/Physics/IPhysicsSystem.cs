@@ -11,6 +11,7 @@ namespace GameEngine.Core.Physics
         void Draw();
 
         RayHit Raycast(Vector3 origin, Vector3 direction, float maxDistance, PhysicsInteractivity interactivity);
+        RayHit Raycast(Vector3 origin, Vector3 direction, float maxDistance, PhysicsInteractivity interactivity, PhysicsComponent[] ignoreComponents);
 
         void RegisterComponent(Entity entity, PhysicsComponent component);
         void DeregisterComponent(PhysicsComponent component);

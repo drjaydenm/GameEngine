@@ -10,14 +10,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
         {
             get
             {
-                if (isBody)
+                if (IsBody)
                     return BodyReference.Pose.Position;
 
                 return StaticReference.Pose.Position;
             }
             set
             {
-                if (isBody)
+                if (IsBody)
                     BodyReference.Pose.Position = value;
                 else
                     StaticReference.Pose.Position = value;
@@ -30,7 +30,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             {
                 BepuUtilities.Quaternion o;
 
-                if (isBody)
+                if (IsBody)
                     o = BodyReference.Pose.Orientation;
                 else
                     o = StaticReference.Pose.Orientation;
@@ -41,7 +41,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             {
                 var o = new BepuUtilities.Quaternion(value.X, value.Y, value.Z, value.W);
 
-                if (isBody)
+                if (IsBody)
                     BodyReference.Pose.Orientation = o;
                 else
                     StaticReference.Pose.Orientation = o;
@@ -52,15 +52,18 @@ namespace GameEngine.Core.Physics.BepuPhysics
         {
             get
             {
-                if (isBody)
+                if (IsBody)
                     return BodyReference.Velocity.Linear;
 
                 return Vector3.Zero;
             }
             set
             {
-                if (isBody)
+                if (IsBody)
+                {
                     BodyReference.Velocity.Linear = value;
+                    AwakenIfNeeded();
+                }
             }
         }
 
@@ -68,15 +71,18 @@ namespace GameEngine.Core.Physics.BepuPhysics
         {
             get
             {
-                if (isBody)
+                if (IsBody)
                     return BodyReference.Velocity.Angular;
 
                 return Vector3.Zero;
             }
             set
             {
-                if (isBody)
+                if (IsBody)
+                {
                     BodyReference.Velocity.Angular = value;
+                    AwakenIfNeeded();
+                }
             }
         }
 
@@ -84,14 +90,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
         {
             get
             {
-                if (isBody)
+                if (IsBody)
                     return BodyReference.LocalInertia.InverseMass;
 
                 return 0;
             }
             set
             {
-                if (isBody)
+                if (IsBody)
                     BodyReference.LocalInertia.InverseMass = value;
             }
         }
@@ -99,14 +105,28 @@ namespace GameEngine.Core.Physics.BepuPhysics
         internal BodyReference BodyReference { get; set; }
         internal StaticReference StaticReference { get; set; }
         internal TypedIndex ShapeIndex { get; set; }
+        internal bool IsBody { get; private set; }
 
         private readonly Simulation simulation;
-        private readonly bool isBody;
 
         public BepuPhysicsBody(Simulation simulation, bool isBody)
         {
             this.simulation = simulation;
-            this.isBody = isBody;
+            IsBody = isBody;
+        }
+
+        public void ApplyImpulse(Vector3 impulse)
+        {
+            AwakenIfNeeded();
+            BodyReference.ApplyImpulse(impulse, Vector3.Zero);
+        }
+
+        private void AwakenIfNeeded()
+        {
+            if (!BodyReference.Awake)
+            {
+                simulation.Awakener.AwakenBody(BodyReference.Handle);
+            }
         }
     }
 }

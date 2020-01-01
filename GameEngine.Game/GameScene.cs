@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +34,8 @@ namespace GameEngine.Game
         private Coord3 lookingAtBlockCoord;
         private Vector3 rayHitPosition;
         private Task chunkGenerationTask;
+        private Entity playerEntity;
+        private CharacterController character;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
         private const int CHUNK_GENERATE_PER_FRAME = 50;
@@ -59,7 +61,7 @@ namespace GameEngine.Game
             var camera = new DebugCamera(Vector3.Zero, Vector3.UnitZ, 1, 0.5f, 500, engine);
             camera.DisableRotation = true;
 
-            var playerEntity = new Entity(this, "Player");
+            playerEntity = new Entity(this, "Player");
             playerEntity.AddComponent(camera);
             AddEntity(playerEntity);
             SetActiveCamera(camera);
@@ -69,9 +71,6 @@ namespace GameEngine.Game
             var chunks = worldGenerator.GenerateWorld(CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2);
 
             chunks.ToList().ForEach(c => world.AddChunk(c));
-
-            var cameraYOffset = (world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
-            ActiveCamera.Position = new Vector3(0, cameraYOffset, 0);
         }
 
         public override void Update()
@@ -132,8 +131,9 @@ namespace GameEngine.Game
             }
 
             // Check which block we are looking at
-            var rayHit = PhysicsSystem.Raycast(ActiveCamera.Position, ActiveCamera.ViewDirection, 1000,
-                PhysicsInteractivity.Static | PhysicsInteractivity.Dynamic | PhysicsInteractivity.Kinematic);
+            var rayHit = PhysicsSystem.Raycast(ActiveCamera.Position + (ActiveCamera.ViewDirection * 0.6f), ActiveCamera.ViewDirection, 1000,
+                PhysicsInteractivity.Static | PhysicsInteractivity.Dynamic | PhysicsInteractivity.Kinematic,
+                character != null ? new[] { character.PhysicsComponent } : null);
             if (rayHit.DidHit)
             {
                 rayHitPosition = rayHit.Position;
@@ -184,6 +184,20 @@ namespace GameEngine.Game
             }
 
             previousChunk = currentChunk;
+
+            if (character == null && world.ChunksToUpdateCount <= 0)
+            {
+                // Spawn the player
+                var maxChunkHeight = (float)(world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
+                var playerYOffset = maxChunkHeight;
+                var hit = PhysicsSystem.Raycast(new Vector3(0, maxChunkHeight, 0), -Vector3.UnitY, 250, PhysicsInteractivity.Static);
+                if (hit.DidHit)
+                {
+                    playerYOffset = hit.Position.Y + 1.8f;
+                }
+                character = new CharacterController(engine, new Vector3(0, playerYOffset, 0), 1.8f, 0.5f, 80);
+                playerEntity.AddComponent(character);
+            }
         }
 
         public override void Draw()

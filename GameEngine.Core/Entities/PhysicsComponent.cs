@@ -21,6 +21,8 @@ namespace GameEngine.Core.Entities
             set { Body.AngularVelocity = value; }
         }
 
+        public bool FreezeRotation { get; set; }
+
         internal IPhysicsBody Body { get; set; }
         internal Entity Entity { get; private set; }
 
@@ -45,6 +47,11 @@ namespace GameEngine.Core.Entities
         {
             Entity.Transform.InternalPosition = Body.Position - PositionOffset;
             Entity.Transform.InternalRotation = Body.Rotation;
+        }
+
+        public void ApplyImpulse(Vector3 impulse)
+        {
+            Body.ApplyImpulse(impulse);
         }
     }
 }
