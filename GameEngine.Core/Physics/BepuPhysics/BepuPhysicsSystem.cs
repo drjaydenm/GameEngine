@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Numerics;
 using BepuPhysics;
@@ -9,6 +8,7 @@ using Veldrid;
 using GameEngine.Core.Entities;
 using BepuMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities;
+using System.Collections.Generic;
 
 namespace GameEngine.Core.Physics.BepuPhysics
 {
@@ -21,7 +21,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
         private BufferPool bufferPool;
         private Simulation simulation;
         private DefaultThreadDispatcher threadDispatcher;
-        private ConcurrentDictionary<PhysicsComponent, BepuPhysicsBody> registeredComponents;
+        private Dictionary<PhysicsComponent, BepuPhysicsBody> registeredComponents;
 
         public BepuPhysicsSystem(Engine engine, Scene scene, Vector3 gravity)
         {
@@ -31,7 +31,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             bufferPool = new BufferPool();
             threadDispatcher = new DefaultThreadDispatcher(Environment.ProcessorCount);
             simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(), new DefaultPoseIntegratorCallbacks(gravity));
-            registeredComponents = new ConcurrentDictionary<PhysicsComponent, BepuPhysicsBody>();
+            registeredComponents = new Dictionary<PhysicsComponent, BepuPhysicsBody>();
         }
 
         public void DeregisterComponent(PhysicsComponent component)
@@ -39,7 +39,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             if (registeredComponents.ContainsKey(component))
             {
                 var body = registeredComponents[component];
-                registeredComponents.TryRemove(component, out _);
+                registeredComponents.Remove(component);
 
                 simulation.Shapes.Remove(body.ShapeIndex);
                 if (component.Interactivity == PhysicsInteractivity.Static)
@@ -152,7 +152,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 body.StaticReference = new StaticReference(staticHandle, simulation.Statics);
 
             component.Body = body;
-            registeredComponents.TryAdd(component, body);
+            registeredComponents.Add(component, body);
         }
 
         public void Update()

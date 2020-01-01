@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -26,7 +25,7 @@ namespace GameEngine.Game
         private BlockWorldGenerator worldGenerator;
         private bool shouldGenerateChunks = true;
         private bool shouldShowChunkDebug;
-        private ConcurrentQueue<Coord3> coordsToGenerate;
+        private Queue<Coord3> coordsToGenerate;
         private List<Entity> boxes;
         private Chunk lookingAtChunk;
         private Block? lookingAtBlock;
@@ -36,14 +35,14 @@ namespace GameEngine.Game
         private CharacterController character;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
-        private const int CHUNK_GENERATE_PER_FRAME = 50;
+        private const int CHUNK_GENERATE_PER_FRAME = 10;
 
         public GameScene(Engine engine)
         {
             this.engine = engine;
 
             worldGenerator = new BlockWorldGenerator();
-            coordsToGenerate = new ConcurrentQueue<Coord3>();
+            coordsToGenerate = new Queue<Coord3>();
             boxes = new List<Entity>();
         }
 
@@ -170,13 +169,10 @@ namespace GameEngine.Game
             if (currentChunk != previousChunk && currentChunk != null && shouldGenerateChunks)
             {
                 QueueNewChunksIfRequired(currentChunk);
-                if (world.ChunksToUpdateCount <= 0)
-                {
-                    UnloadChunksIfRequired(currentChunk);
-                }
+                UnloadChunksIfRequired(currentChunk);
             }
 
-            if (!coordsToGenerate.IsEmpty)
+            if (coordsToGenerate.Count > 0)
             {
                 GenerateChunks();
             }
