@@ -62,8 +62,7 @@ namespace GameEngine.Core.Windowing
                     MousePosition = InputSnapshot.MousePosition;
                 }
 
-                game.Update();
-                game.Draw();
+                game.Tick();
             }
         }
 
@@ -77,7 +76,7 @@ namespace GameEngine.Core.Windowing
             var options = new GraphicsDeviceOptions(
                 debug: false,
                 swapchainDepthFormat: PixelFormat.R16_UNorm,
-                syncToVerticalBlank: true,
+                syncToVerticalBlank: false,
                 resourceBindingModel: ResourceBindingModel.Improved,
                 preferDepthRangeZeroToOne: true,
                 preferStandardClipSpaceYDirection: true

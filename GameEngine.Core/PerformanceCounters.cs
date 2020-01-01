@@ -1,4 +1,7 @@
-﻿namespace GameEngine.Core
+﻿using System;
+using System.Diagnostics;
+
+namespace GameEngine.Core
 {
     public class PerformanceCounters
     {
@@ -6,6 +9,9 @@
         public float UpdatesPerSecond { get; private set; }
 
         private readonly Engine engine;
+        private Stopwatch stopwatch;
+        private TimeSpan lastUpdate;
+        private TimeSpan lastFrame;
         private double frameTime;
         private double updateTime;
         private int frameCounter;
@@ -14,6 +20,7 @@
         public PerformanceCounters(Engine engine)
         {
             this.engine = engine;
+            stopwatch = Stopwatch.StartNew();
 
             FramesPerSecond = 0;
             UpdatesPerSecond = 0;
@@ -29,7 +36,10 @@
             }
 
             updateCounter++;
-            updateTime += engine.GameTimeElapsed.TotalMilliseconds;
+
+            var currentTime = engine.GameTimeTotal;
+            updateTime += (currentTime - lastUpdate).TotalMilliseconds;
+            lastUpdate = currentTime;
         }
 
         public void Draw()
@@ -42,7 +52,10 @@
             }
 
             frameCounter++;
-            frameTime += engine.GameTimeElapsed.TotalMilliseconds;
+
+            var currentTime = stopwatch.Elapsed;
+            frameTime += (currentTime - lastFrame).TotalMilliseconds;
+            lastFrame = currentTime;
         }
     }
 }

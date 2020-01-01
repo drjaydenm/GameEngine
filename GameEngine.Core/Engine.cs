@@ -9,8 +9,10 @@ namespace GameEngine.Core
 {
     public class Engine
     {
-        public TimeSpan GameTimeTotal { get; private set; }
-        public TimeSpan GameTimeElapsed { get; private set; }
+        public TimeSpan GameTimeTotal { get; internal set; }
+        public TimeSpan GameTimeElapsed { get; internal set; }
+        public TimeSpan GameTimeTargetElapsed => TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 60);
+        public TimeSpan GameTimeMaxElapsed => TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 10);
         public PerformanceCounters PerformanceCounters { get; }
         public IWindow Window { get; private set; }
         public GraphicsDevice GraphicsDevice { get; private set; }
@@ -19,7 +21,6 @@ namespace GameEngine.Core
 
         internal CommandList CommandList { get; private set; }
 
-        private DateTime lastUpdated;
         private bool isShuttingDown;
         private List<Scene> scenes;
 
@@ -43,8 +44,7 @@ namespace GameEngine.Core
             };
 
             GameTimeTotal = TimeSpan.Zero;
-            GameTimeTotal = TimeSpan.Zero;
-            lastUpdated = DateTime.Now;
+            GameTimeElapsed = TimeSpan.Zero;
 
             GraphicsDevice = Window.CreateGraphicsDevice();
             InputManager = Window.CreateInputManager();
@@ -58,10 +58,6 @@ namespace GameEngine.Core
         {
             if (isShuttingDown)
                 return;
-
-            GameTimeElapsed = DateTime.Now - lastUpdated;
-            GameTimeTotal += GameTimeElapsed;
-            lastUpdated = DateTime.Now;
 
             PerformanceCounters.Update();
 

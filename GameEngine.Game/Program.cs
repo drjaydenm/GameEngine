@@ -11,8 +11,7 @@ namespace GameEngine.Game
 
             game.Engine.Init(window);
             game.Initialize();
-
-            window.RunMessagePump();
+            game.Run();
         }
     }
 }
