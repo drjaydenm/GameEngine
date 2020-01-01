@@ -85,6 +85,9 @@ namespace GameEngine.Core.Graphics
             lightingInfo.LightColor = new RgbaFloat(0.95f, 0.94f, 0.7f, 1);
             lightingInfo.LightIntensity = 2;
             lightingInfo.AmbientLight = new RgbaFloat(0.2f, 0.2f, 0.2f, 1);
+            lightingInfo.FogColor = RgbaFloat.CornflowerBlue;
+            lightingInfo.FogStartDistance = 50;
+            lightingInfo.FogEndDistance = 140;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -107,6 +110,15 @@ namespace GameEngine.Core.Graphics
             private float _padding3;
             private float _padding4;
             public RgbaFloat AmbientLight;
+            public RgbaFloat FogColor;
+            public float FogStartDistance;
+            private float _padding5;
+            private float _padding6;
+            private float _padding7;
+            public float FogEndDistance;
+            private float _padding8;
+            private float _padding9;
+            private float _padding10;
         }
     }
 }

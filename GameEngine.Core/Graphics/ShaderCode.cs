@@ -50,14 +50,23 @@ layout(set = 1, binding = 1) uniform LightingBuffer
     float _padding5;
     float _padding6;
     vec4 AmbientLight;
+    vec4 FogColor;
+    float FogStartDistance;
+    float _padding7;
+    float _padding8;
+    float _padding9;
+    float FogEndDistance;
+    float _padding10;
+    float _padding11;
+    float _padding12;
 };
 layout(set = 2, binding = 0) uniform MaterialBuffer
 {
     vec4 SpecularColor;
     float Shininess;
-    float _padding7;
-    float _padding8;
-    float _padding9;
+    float _padding13;
+    float _padding14;
+    float _padding15;
 };
 layout(set = 2, binding = 1) uniform MaterialColorBuffer
 {
@@ -90,8 +99,12 @@ void main()
     }
 
     vec4 specular = specularCoefficient * SpecularColor * LightColor * LightIntensity;
+
+    float fogDistance = (gl_FragCoord.z / gl_FragCoord.w);
+    float fogStrength = 1.0 - clamp((FogEndDistance - fogDistance) / (FogEndDistance - FogStartDistance), 0.0, 1.0);
+    vec4 fog = FogColor * fogStrength;
     
-    fsout_Color = ambient + diffuse + specular;
+    fsout_Color = ((ambient + diffuse + specular) * (1.0 - fogStrength)) + fog;
 }";
 
         public const string DebugDrawVertexCode = @"
