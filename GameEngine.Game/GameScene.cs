@@ -131,8 +131,9 @@ namespace GameEngine.Game
             }
 
             // Check which block we are looking at
-            var rayHit = PhysicsSystem.Raycast(ActiveCamera.Position, ActiveCamera.ViewDirection, 1000,
-                PhysicsInteractivity.Static | PhysicsInteractivity.Dynamic | PhysicsInteractivity.Kinematic);
+            var rayHit = PhysicsSystem.Raycast(ActiveCamera.Position + (ActiveCamera.ViewDirection * 0.6f), ActiveCamera.ViewDirection, 1000,
+                PhysicsInteractivity.Static | PhysicsInteractivity.Dynamic | PhysicsInteractivity.Kinematic,
+                character != null ? new[] { character.PhysicsComponent } : null);
             if (rayHit.DidHit)
             {
                 rayHitPosition = rayHit.Position;
@@ -187,8 +188,14 @@ namespace GameEngine.Game
             if (character == null && world.ChunksToUpdateCount <= 0)
             {
                 // Spawn the player
-                var playerOffsetY = (world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
-                character = new CharacterController(new Vector3(0, playerOffsetY, 0));
+                var maxChunkHeight = (float)(world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
+                var playerYOffset = maxChunkHeight;
+                var hit = PhysicsSystem.Raycast(new Vector3(0, maxChunkHeight, 0), -Vector3.UnitY, 250, PhysicsInteractivity.Static);
+                if (hit.DidHit)
+                {
+                    playerYOffset = hit.Position.Y + 1.8f;
+                }
+                character = new CharacterController(engine, new Vector3(0, playerYOffset, 0), 1.8f, 0.5f, 80);
                 playerEntity.AddComponent(character);
             }
         }

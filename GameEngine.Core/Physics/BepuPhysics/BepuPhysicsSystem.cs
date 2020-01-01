@@ -203,7 +203,12 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
         public RayHit Raycast(Vector3 origin, Vector3 direction, float maxDistance, PhysicsInteractivity interactivity)
         {
-            var hitHandler = new DefaultRayHitHandler(interactivity);
+            return Raycast(origin, direction, maxDistance, interactivity, null);
+        }
+
+        public RayHit Raycast(Vector3 origin, Vector3 direction, float maxDistance, PhysicsInteractivity interactivity, PhysicsComponent[] ignoreComponents)
+        {
+            var hitHandler = new DefaultRayHitHandler(interactivity, ignoreComponents?.Select(c => BodyToCollidableReference((BepuPhysicsBody)c.Body)).ToArray());
             simulation.RayCast(origin, direction, maxDistance, ref hitHandler);
 
             PhysicsComponent component = null;
@@ -228,6 +233,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
             simulation.Dispose();
             bufferPool.Clear();
             threadDispatcher.Dispose();
+        }
+
+        private CollidableReference BodyToCollidableReference(BepuPhysicsBody body)
+        {
+            if (body.IsBody)
+                return new CollidableReference(body.BodyReference.Kinematic ? CollidableMobility.Kinematic : CollidableMobility.Dynamic, body.BodyReference.Handle);
+            else
+                return new CollidableReference(CollidableMobility.Static, body.StaticReference.Handle);
         }
     }
 }
