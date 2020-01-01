@@ -1,10 +1,11 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using GameEngine.Core.Entities;
 using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {
-    public class BasicRenderable : IRenderable
+    public class BasicRenderable<T>: IRenderable, IDisposable where T : struct
     {
         public Material Material { get; private set; }
         public VertexLayoutDescription LayoutDescription { get; private set; }
@@ -13,6 +14,8 @@ namespace GameEngine.Core.Graphics
         public Matrix4x4 WorldTransform { get; private set; }
 
         private readonly Engine engine;
+        private Mesh<T> mesh;
+        private bool isDirty;
 
         public BasicRenderable(Engine engine, Material material)
         {
@@ -21,24 +24,12 @@ namespace GameEngine.Core.Graphics
             Material = material;
         }
 
-        public void SetMesh<T>(VertexLayoutDescription layoutDescription, Mesh<T> mesh) where T : struct
+        public void SetMesh(VertexLayoutDescription layoutDescription, Mesh<T> mesh)
         {
             LayoutDescription = layoutDescription;
 
-            if (VertexBuffer != null)
-                VertexBuffer.Dispose();
-            if (IndexBuffer != null)
-                IndexBuffer.Dispose();
-
-            if (mesh == null || mesh.Vertices.Length <= 0)
-                return;
-
-            VertexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
-                new BufferDescription((uint)(layoutDescription.Stride * mesh.Vertices.Length), BufferUsage.VertexBuffer));
-            IndexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
-                new BufferDescription((uint)(sizeof(uint) * mesh.Indices.Length), BufferUsage.IndexBuffer));
-            engine.GraphicsDevice.UpdateBuffer(VertexBuffer, 0, mesh.Vertices);
-            engine.GraphicsDevice.UpdateBuffer(IndexBuffer, 0, mesh.Indices);
+            this.mesh = mesh;
+            isDirty = true;
         }
 
         public void SetWorldTransform(Matrix4x4 world)
@@ -58,9 +49,33 @@ namespace GameEngine.Core.Graphics
         {
         }
 
+        public void Dispose()
+        {
+            VertexBuffer?.Dispose();
+            IndexBuffer?.Dispose();
+        }
+
         public void UpdateBuffers(CommandList commandList)
         {
-            // TODO implement buffer updating here
+            if (!isDirty)
+                return;
+
+            if (VertexBuffer != null)
+                VertexBuffer.Dispose();
+            if (IndexBuffer != null)
+                IndexBuffer.Dispose();
+
+            if (mesh.Vertices == null || mesh.Vertices.Length <= 0)
+                return;
+
+            VertexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
+                new BufferDescription((uint)(LayoutDescription.Stride * mesh.Vertices.Length), BufferUsage.VertexBuffer));
+            IndexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
+                new BufferDescription((uint)(sizeof(uint) * mesh.Indices.Length), BufferUsage.IndexBuffer));
+            engine.GraphicsDevice.UpdateBuffer(VertexBuffer, 0, mesh.Vertices);
+            engine.GraphicsDevice.UpdateBuffer(IndexBuffer, 0, mesh.Indices);
+
+            isDirty = false;
         }
     }
 }

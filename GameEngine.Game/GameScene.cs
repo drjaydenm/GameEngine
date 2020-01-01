@@ -123,7 +123,7 @@ namespace GameEngine.Game
 
             foreach (var box in boxes)
             {
-                var renderComponent = box.GetComponentsOfType<BasicRenderable>().First();
+                var renderComponent = box.GetComponentsOfType<BasicRenderable<VertexPositionNormalMaterial>>().First();
                 renderComponent.SetWorldTransform(Matrix4x4.CreateFromQuaternion(box.Transform.Rotation) * Matrix4x4.CreateScale(0.5f) * Matrix4x4.CreateTranslation(box.Transform.Position));
             }
 
@@ -252,9 +252,9 @@ namespace GameEngine.Game
         {
             foreach (var chunk in world.Chunks)
             {
-                if (chunk.Coordinate.X < newChunk.Coordinate.X - CHUNK_GENERATION_RADIUS || chunk.Coordinate.X > newChunk.Coordinate.X + CHUNK_GENERATION_RADIUS
-                    || chunk.Coordinate.Y < newChunk.Coordinate.Y - CHUNK_GENERATION_RADIUS || chunk.Coordinate.Y > newChunk.Coordinate.Y + CHUNK_GENERATION_RADIUS
-                    || chunk.Coordinate.Z < newChunk.Coordinate.Z - CHUNK_GENERATION_RADIUS || chunk.Coordinate.Z > newChunk.Coordinate.Z + CHUNK_GENERATION_RADIUS)
+                if (chunk.Coordinate.X < newChunk.Coordinate.X - CHUNK_GENERATION_RADIUS - 1 || chunk.Coordinate.X > newChunk.Coordinate.X + CHUNK_GENERATION_RADIUS + 1
+                    || chunk.Coordinate.Y < newChunk.Coordinate.Y - CHUNK_GENERATION_RADIUS - 1 || chunk.Coordinate.Y > newChunk.Coordinate.Y + CHUNK_GENERATION_RADIUS + 1
+                    || chunk.Coordinate.Z < newChunk.Coordinate.Z - CHUNK_GENERATION_RADIUS - 1 || chunk.Coordinate.Z > newChunk.Coordinate.Z + CHUNK_GENERATION_RADIUS + 1)
                 {
                     world.RemoveChunk(chunk);
                 }
@@ -283,7 +283,7 @@ namespace GameEngine.Game
             box.AddComponent(physicsBox);
             physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;
 
-            var boxRenderable = new BasicRenderable(engine, new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode));
+            var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(engine, new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode));
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
             var mesh = new Mesh<VertexPositionNormalMaterial>(vertices, indices);
