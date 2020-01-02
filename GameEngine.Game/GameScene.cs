@@ -127,6 +127,7 @@ namespace GameEngine.Game
                 else
                 {
                     playerEntity.AddComponent(character);
+                    playerEntity.Transform.Position = ActiveCamera.Position - (Vector3.UnitY * character.CameraHeightOffset);
                 }
             }
 

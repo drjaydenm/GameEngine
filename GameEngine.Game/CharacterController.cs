@@ -11,6 +11,7 @@ namespace GameEngine.Game
     public class CharacterController : IComponent
     {
         public PhysicsCapsuleComponent PhysicsComponent => capsuleComponent;
+        public float CameraHeightOffset => height / 2f;
 
         private readonly Engine engine;
         private Vector3 initalPosition;
@@ -45,7 +46,6 @@ namespace GameEngine.Game
             entity.Transform.Position = initalPosition;
 
             camera = entity.GetComponentsOfType<ICamera>()?.First();
-            camera.Position = initalPosition;
         }
 
         public void DetachedFromEntity()
@@ -88,7 +88,7 @@ namespace GameEngine.Game
 
             if (keyboard.WasKeyPressed(Keys.Space))
             {
-                targetVelocity.Y += 5;
+                targetVelocity.Y += jumpForce;
             }
 
             if (targetVelocity.LengthSquared() > 0)
@@ -96,7 +96,7 @@ namespace GameEngine.Game
                 capsuleComponent.ApplyImpulse(targetVelocity * mass);
             }
 
-            camera.Position = entity.Transform.Position + (Vector3.UnitY * height / 2f);
+            camera.Position = entity.Transform.Position + (Vector3.UnitY * CameraHeightOffset);
         }
     }
 }
