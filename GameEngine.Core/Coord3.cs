@@ -52,6 +52,21 @@ namespace GameEngine.Core
             return new Coord3(val1.X + val2.X, val1.Y + val2.Y, val1.Z + val2.Z);
         }
 
+        public static Vector3 Subtract(Coord3 val1, Vector3 val2)
+        {
+            return new Vector3(val1.X - val2.X, val1.Y - val2.Y, val1.Z - val2.Z);
+        }
+
+        public static Vector3 Subtract(Vector3 val1, Coord3 val2)
+        {
+            return new Vector3(val1.X - val2.X, val1.Y - val2.Y, val1.Z - val2.Z);
+        }
+
+        public static Coord3 Subtract(Coord3 val1, Coord3 val2)
+        {
+            return new Coord3(val1.X - val2.X, val1.Y - val2.Y, val1.Z - val2.Z);
+        }
+
         public static Vector3 Multiply(Coord3 val1, Vector3 val2)
         {
             return new Vector3(val1.X * val2.X, val1.Y * val2.Y, val1.Z * val2.Z);
@@ -90,6 +105,11 @@ namespace GameEngine.Core
             return Add(val1, val2);
         }
 
+        public static Coord3 operator -(Coord3 val1, Coord3 val2)
+        {
+            return Subtract(val1, val2);
+        }
+
         public static Vector3 operator *(Coord3 val1, Vector3 val2)
         {
             return Multiply(val1, val2);
@@ -108,6 +128,16 @@ namespace GameEngine.Core
         public static Vector3 operator +(Vector3 val1, Coord3 val2)
         {
             return Add(val2, val1);
+        }
+
+        public static Vector3 operator -(Coord3 val1, Vector3 val2)
+        {
+            return Subtract(val1, val2);
+        }
+
+        public static Vector3 operator -(Vector3 val1, Coord3 val2)
+        {
+            return Subtract(val1, val2);
         }
     }
 }

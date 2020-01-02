@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -181,6 +181,23 @@ namespace GameEngine.Game
 
                 world.UpdateChunk(lookingAtChunk);
             }
+            if (engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Right) && lookingAtBlock != null)
+            {
+                var normalAsCoord = NormalToCoord(rayHit.Normal);
+                var coordOfBlockToAdd = lookingAtBlockCoord + normalAsCoord;
+                var chunkOfBlockToAdd = lookingAtChunk;
+                if (coordOfBlockToAdd.X == -1 || coordOfBlockToAdd.X == Chunk.CHUNK_X_SIZE
+                    || coordOfBlockToAdd.Y == -1 || coordOfBlockToAdd.Y == Chunk.CHUNK_Y_SIZE
+                    || coordOfBlockToAdd.Z == -1 || coordOfBlockToAdd.Z == Chunk.CHUNK_Z_SIZE)
+                {
+                    chunkOfBlockToAdd = world.FindChunkByOffset(lookingAtChunk, normalAsCoord);
+                    coordOfBlockToAdd -= normalAsCoord * new Coord3(Chunk.CHUNK_X_SIZE, Chunk.CHUNK_Y_SIZE, Chunk.CHUNK_Z_SIZE);
+                }
+
+                chunkOfBlockToAdd.SetBlockIsActive(coordOfBlockToAdd.X, coordOfBlockToAdd.Y, coordOfBlockToAdd.Z, true);
+
+                world.UpdateChunk(chunkOfBlockToAdd);
+            }
 
             const float lightRotateSpeed = 0.5f;
             Renderer.LightDirection = new Vector3(
@@ -319,6 +336,24 @@ namespace GameEngine.Game
             AddEntity(box);
 
             return box;
+        }
+
+        private Coord3 NormalToCoord(Vector3 normal)
+        {
+            if (normal.X > 0 && normal.X > normal.Y && normal.X > normal.Z)
+                return Coord3.UnitX;
+            else if (normal.X <= 0 && normal.X < normal.Y && normal.X < normal.Z)
+                return -Coord3.UnitX;
+            else if (normal.Y > 0 && normal.Y > normal.X && normal.Y > normal.Z)
+                return Coord3.UnitY;
+            else if (normal.Y <= 0 && normal.Y < normal.X && normal.Y < normal.Z)
+                return -Coord3.UnitY;
+            else if (normal.Z > 0 && normal.Z > normal.X && normal.Z > normal.Y)
+                return Coord3.UnitZ;
+            else if (normal.Z <= 0 && normal.Z < normal.X && normal.Z < normal.Y)
+                return -Coord3.UnitZ;
+            else
+                return Coord3.UnitX;
         }
     }
 }
