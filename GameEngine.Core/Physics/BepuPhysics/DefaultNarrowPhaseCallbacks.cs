@@ -20,21 +20,13 @@ namespace GameEngine.Core.Physics.BepuPhysics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool AllowContactGeneration(int workerIndex, CollidableReference a, CollidableReference b)
         {
-            return true;
+            return a.Mobility == CollidableMobility.Dynamic || b.Mobility == CollidableMobility.Dynamic;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool AllowContactGeneration(int workerIndex, CollidablePair pair, int childIndexA, int childIndexB)
         {
             return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ConfigureMaterial(out PairMaterialProperties pairMaterial)
-        {
-            pairMaterial.FrictionCoefficient = 1f;
-            pairMaterial.MaximumRecoveryVelocity = 2f;
-            pairMaterial.SpringSettings = ContactSpringiness;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -52,6 +44,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
         public void Dispose()
         {
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ConfigureMaterial(out PairMaterialProperties pairMaterial)
+        {
+            pairMaterial.FrictionCoefficient = 1f;
+            pairMaterial.MaximumRecoveryVelocity = 2f;
+            pairMaterial.SpringSettings = ContactSpringiness;
         }
     }
 }
