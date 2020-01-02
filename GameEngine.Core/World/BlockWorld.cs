@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using GameEngine.Core.Entities;
 using GameEngine.Core.Graphics;
@@ -10,13 +11,15 @@ namespace GameEngine.Core.World
     {
         public IEnumerable<Chunk> Chunks => chunks.Values;
         public int ChunksToUpdateCount => chunksToUpdate.Count;
+        public int ActualRenderableCount => chunkRenderables.Where(r => r.Value != null).Count();
+        public int ActualPhysicsCount => chunkPhysics.Where(r => r.Value != null).Count();
 
         private readonly Engine engine;
         private readonly Dictionary<Coord3, Chunk> chunks;
-        private readonly Queue<Chunk> chunksToUpdate;
-        private readonly Queue<Chunk> chunksToRemove;
-        private readonly Dictionary<Chunk, ChunkRenderable> chunkRenderables;
-        private readonly Dictionary<Chunk, PhysicsComponent> chunkPhysics;
+        private readonly Queue<Coord3> chunksToUpdate;
+        private readonly Queue<Coord3> chunksToRemove;
+        private readonly Dictionary<Coord3, ChunkRenderable> chunkRenderables;
+        private readonly Dictionary<Coord3, PhysicsComponent> chunkPhysics;
         private readonly Material material;
 
         private const int CHUNKS_UPDATE_PER_FRAME = 10;
@@ -27,10 +30,10 @@ namespace GameEngine.Core.World
             this.engine = engine;
 
             chunks = new Dictionary<Coord3, Chunk>();
-            chunksToUpdate = new Queue<Chunk>();
-            chunksToRemove = new Queue<Chunk>();
-            chunkRenderables = new Dictionary<Chunk, ChunkRenderable>();
-            chunkPhysics = new Dictionary<Chunk, PhysicsComponent>();
+            chunksToUpdate = new Queue<Coord3>();
+            chunksToRemove = new Queue<Coord3>();
+            chunkRenderables = new Dictionary<Coord3, ChunkRenderable>();
+            chunkPhysics = new Dictionary<Coord3, PhysicsComponent>();
             material = new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode);
         }
 
@@ -53,9 +56,14 @@ namespace GameEngine.Core.World
             var chunksUpdatedThisFrame = 0;
             while (chunksUpdatedThisFrame < CHUNKS_UPDATE_PER_FRAME && chunksToUpdate.Count > 0)
             {
-                var chunk = chunksToUpdate.Dequeue();
-                AddOrUpdateRenderable(chunk);
-                AddOrUpdatePhysics(chunk);
+                var chunkCoord = chunksToUpdate.Dequeue();
+
+                // Check if this chunk has since been removed
+                if (!chunks.ContainsKey(chunkCoord))
+                    continue;
+
+                AddOrUpdateRenderable(chunkCoord);
+                AddOrUpdatePhysics(chunkCoord);
 
                 chunksUpdatedThisFrame++;
             }
@@ -95,9 +103,9 @@ namespace GameEngine.Core.World
                 return;
 
             chunks.Add(chunk.Coordinate, chunk);
-            chunksToUpdate.Enqueue(chunk);
+            chunksToUpdate.Enqueue(chunk.Coordinate);
 
-            //QueueSurroundingChunksForUpdate(chunk);
+            QueueSurroundingChunksForUpdate(chunk);
         }
 
         public void RemoveChunk(Chunk chunk)
@@ -106,19 +114,19 @@ namespace GameEngine.Core.World
                 return;
 
             chunks.Remove(chunk.Coordinate);
-            chunksToRemove.Enqueue(chunk);
+            chunksToRemove.Enqueue(chunk.Coordinate);
 
             // TODO update surrounding chunks
         }
 
-        public Chunk FindChunkByOffset(Chunk chunk, Coord3 offset)
+        public Chunk? FindChunkByOffset(Chunk chunk, Coord3 offset)
         {
             var targetOffset = chunk.Coordinate + offset;
 
             return FindChunkByCoordinate(targetOffset);
         }
 
-        public Chunk FindChunkByCoordinate(Coord3 coordinate)
+        public Chunk? FindChunkByCoordinate(Coord3 coordinate)
         {
             if (!chunks.ContainsKey(coordinate))
                 return null;
@@ -126,7 +134,7 @@ namespace GameEngine.Core.World
             return chunks[coordinate];
         }
 
-        public Chunk FindChunkByWorldPosition(Vector3 position)
+        public Chunk? FindChunkByWorldPosition(Vector3 position)
         {
             var chunkPosition = ConvertWorldPositionToChunkCoordinate(position);
 
@@ -139,8 +147,8 @@ namespace GameEngine.Core.World
             if (chunk == null)
                 return null;
 
-            var blockIndex = position - (Chunk.CHUNK_SIZE * chunk.Coordinate);
-            return chunk.Blocks[(int)Math.Floor(blockIndex.X), (int)Math.Floor(blockIndex.Y), (int)Math.Floor(blockIndex.Z)];
+            var blockIndex = position - (Chunk.CHUNK_SIZE * chunk.Value.Coordinate);
+            return chunk.Value.Blocks[(int)Math.Floor(blockIndex.X), (int)Math.Floor(blockIndex.Y), (int)Math.Floor(blockIndex.Z)];
         }
 
         public Coord3 ConvertWorldPositionToChunkCoordinate(Vector3 position)
@@ -165,33 +173,34 @@ namespace GameEngine.Core.World
                 (int)Math.Floor(blockIndex.Z));
         }
 
-        private void AddOrUpdateRenderable(Chunk chunk)
+        private void AddOrUpdateRenderable(Coord3 chunkCoord)
         {
+            var chunk = chunks[chunkCoord];
             var chunkShouldRender = chunk.IsAnyBlockActive();
 
             // Make sure a key exists
-            if (!chunkRenderables.ContainsKey(chunk))
-                chunkRenderables.Add(chunk, null);
+            if (!chunkRenderables.ContainsKey(chunkCoord))
+                chunkRenderables.Add(chunkCoord, null);
 
-            if (!chunkShouldRender && chunkRenderables[chunk] != null)
+            if (!chunkShouldRender && chunkRenderables[chunkCoord] != null)
             {
-                RemoveComponent(chunkRenderables[chunk]);
-                chunkRenderables[chunk].Dispose();
+                RemoveComponent(chunkRenderables[chunkCoord]);
+                chunkRenderables[chunkCoord].Dispose();
                     
-                chunkRenderables[chunk] = null;
+                chunkRenderables[chunkCoord] = null;
             }
             else
             {
                 var mesh = ChunkMeshGenerator.GenerateMesh(chunk, this);
-                if (chunkRenderables[chunk] != null)
+                if (chunkRenderables[chunkCoord] != null)
                 {
-                    chunkRenderables[chunk].UpdateChunk(mesh);
+                    chunkRenderables[chunkCoord].UpdateChunk(mesh);
                     if (mesh == null)
                     {
-                        RemoveComponent(chunkRenderables[chunk]);
-                        chunkRenderables[chunk].Dispose();
+                        RemoveComponent(chunkRenderables[chunkCoord]);
+                        chunkRenderables[chunkCoord].Dispose();
 
-                        chunkRenderables[chunk] = null;
+                        chunkRenderables[chunkCoord] = null;
                     }
                 }
                 else
@@ -201,7 +210,7 @@ namespace GameEngine.Core.World
 
                     if (mesh != null)
                     {
-                        chunkRenderables[chunk] = renderable;
+                        chunkRenderables[chunkCoord] = renderable;
 
                         AddComponent(renderable);
                     }
@@ -213,13 +222,14 @@ namespace GameEngine.Core.World
             }
         }
 
-        private void AddOrUpdatePhysics(Chunk chunk)
+        private void AddOrUpdatePhysics(Coord3 chunkCoord)
         {
             // Make sure a key exists
-            if (!chunkPhysics.ContainsKey(chunk))
-                chunkPhysics.Add(chunk, null);
+            if (!chunkPhysics.ContainsKey(chunkCoord))
+                chunkPhysics.Add(chunkCoord, null);
 
-            if (chunkPhysics[chunk] == null && chunk.IsAnyBlockActive())
+            var chunk = chunks[chunkCoord];
+            if (chunkPhysics[chunkCoord] == null && chunk.IsAnyBlockActive())
             {
                 PhysicsComponent physics;
                 var isChunkSolid = !chunk.IsAnyBlockInactive();
@@ -252,7 +262,7 @@ namespace GameEngine.Core.World
                     physics = compound;
                 }
 
-                chunkPhysics[chunk] = physics;
+                chunkPhysics[chunkCoord] = physics;
 
                 AddComponent(physics);
             }
@@ -263,8 +273,11 @@ namespace GameEngine.Core.World
             void QueueChunkForUpdateIfExists(Coord3 coordOffset)
             {
                 var chunkAbove = FindChunkByOffset(chunk, coordOffset);
-                if (chunkAbove != null && !chunksToUpdate.Contains(chunkAbove))
-                    chunksToUpdate.Enqueue(chunkAbove);
+                if (chunkAbove == null)
+                    return;
+
+                if (chunkAbove != null && !chunksToUpdate.Contains(chunkAbove.Value.Coordinate))
+                    chunksToUpdate.Enqueue(chunkAbove.Value.Coordinate);
             }
 
             // Update surrounding chunks if not queued for update already

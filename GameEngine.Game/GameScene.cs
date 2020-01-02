@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -20,14 +20,14 @@ namespace GameEngine.Game
 
         private readonly Engine engine;
         private BlockWorld world;
-        private Chunk previousChunk;
-        private Chunk currentChunk;
+        private Chunk? previousChunk;
+        private Chunk? currentChunk;
         private BlockWorldGenerator worldGenerator;
         private bool shouldGenerateChunks = true;
         private bool shouldShowChunkDebug;
         private Queue<Coord3> coordsToGenerate;
         private List<Entity> boxes;
-        private Chunk lookingAtChunk;
+        private Chunk? lookingAtChunk;
         private Block? lookingAtBlock;
         private Coord3 lookingAtBlockCoord;
         private Vector3 rayHitPosition;
@@ -181,10 +181,10 @@ namespace GameEngine.Game
                 (float)Math.Cos(engine.GameTimeTotal.TotalSeconds * lightRotateSpeed));
             
             currentChunk = world.FindChunkByWorldPosition(ActiveCamera.Position);
-            if (currentChunk != previousChunk && currentChunk != null && shouldGenerateChunks)
+            if (currentChunk?.Coordinate != previousChunk?.Coordinate && currentChunk != null && shouldGenerateChunks)
             {
-                QueueNewChunksIfRequired(currentChunk);
-                UnloadChunksIfRequired(currentChunk);
+                QueueNewChunksIfRequired(currentChunk.Value);
+                UnloadChunksIfRequired(currentChunk.Value);
             }
 
             if (coordsToGenerate.Count > 0)
@@ -228,8 +228,8 @@ namespace GameEngine.Game
                 foreach (var chunk in world.Chunks)
                 {
                     // Make the cube slightly smaller so we can see all sides of it
-                    var scale = cameraInChunk == chunk ? Chunk.CHUNK_X_SIZE * 0.99f : Chunk.CHUNK_X_SIZE;
-                    var color = cameraInChunk == chunk ? RgbaFloat.White : RgbaFloat.Pink;
+                    var scale = cameraInChunk?.Coordinate == chunk.Coordinate ? Chunk.CHUNK_X_SIZE * 0.99f : Chunk.CHUNK_X_SIZE;
+                    var color = cameraInChunk?.Coordinate == chunk.Coordinate ? RgbaFloat.White : RgbaFloat.Pink;
 
                     var transform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateTranslation(chunk.WorldPositionCentroid);
                     engine.DebugGraphics.DrawCube(color, transform * camera.View * camera.Projection);
@@ -237,9 +237,9 @@ namespace GameEngine.Game
             }
 
             // Draw a debug cube around the block we are currently looking at
-            if (lookingAtBlock != null)
+            if (lookingAtChunk != null && lookingAtBlock != null)
             {
-                var blockPosition = new Vector3(lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z) + lookingAtChunk.WorldPosition + new Vector3(0.5f);
+                var blockPosition = new Vector3(lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z) + lookingAtChunk.Value.WorldPosition + new Vector3(0.5f);
                 var transform = Matrix4x4.CreateTranslation(blockPosition);
                 engine.DebugGraphics.DrawCube(RgbaFloat.Orange, transform * camera.View * camera.Projection);
             }

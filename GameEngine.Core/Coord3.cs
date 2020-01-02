@@ -29,7 +29,7 @@ namespace GameEngine.Core
 
         public override bool Equals(object obj)
         {
-            return Equals(obj);
+            return Equals((Coord3)obj);
         }
 
         public bool Equals(Coord3 other)

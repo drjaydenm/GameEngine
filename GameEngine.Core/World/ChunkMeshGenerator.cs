@@ -32,7 +32,7 @@ namespace GameEngine.Core.World
                         var blockType = chunk.Blocks[blockX, blockY, blockZ].BlockType;
 
                         // Top
-                        if ((blockY == Chunk.CHUNK_Y_SIZE - 1 && !(chunkToTop?.Blocks[blockX, 0, blockZ].IsActive ?? false))
+                        if ((blockY == Chunk.CHUNK_Y_SIZE - 1 && !(chunkToTop?.Blocks[blockX, 0, blockZ].IsActive ?? true))
                             || (blockY < Chunk.CHUNK_Y_SIZE - 1 && !chunk.Blocks[blockX, blockY + 1, blockZ].IsActive))
                         {
                             var startIndex = (uint)vertices.Count;
@@ -44,7 +44,7 @@ namespace GameEngine.Core.World
                             indicies.AddRange(CreateFaceIndicies(startIndex));
                         }
                         // Bottom
-                        if ((blockY == 0 && !(chunkToBottom?.Blocks[blockX, Chunk.CHUNK_Y_SIZE - 1, blockZ].IsActive ?? false))
+                        if ((blockY == 0 && !(chunkToBottom?.Blocks[blockX, Chunk.CHUNK_Y_SIZE - 1, blockZ].IsActive ?? true))
                             || (blockY > 0 && !chunk.Blocks[blockX, blockY - 1, blockZ].IsActive))
                         {
                             var startIndex = (uint)vertices.Count;
@@ -56,7 +56,7 @@ namespace GameEngine.Core.World
                             indicies.AddRange(CreateFaceIndicies(startIndex));
                         }
                         // Left
-                        if ((blockX == 0 && !(chunkToLeft?.Blocks[Chunk.CHUNK_Y_SIZE - 1, blockY, blockZ].IsActive ?? false))
+                        if ((blockX == 0 && !(chunkToLeft?.Blocks[Chunk.CHUNK_Y_SIZE - 1, blockY, blockZ].IsActive ?? true))
                             || (blockX > 0 && !chunk.Blocks[blockX - 1, blockY, blockZ].IsActive))
                         {
                             var startIndex = (uint)vertices.Count;
@@ -68,7 +68,7 @@ namespace GameEngine.Core.World
                             indicies.AddRange(CreateFaceIndicies(startIndex));
                         }
                         // Right
-                        if ((blockX == Chunk.CHUNK_X_SIZE - 1 && !(chunkToRight?.Blocks[0, blockY, blockZ].IsActive ?? false))
+                        if ((blockX == Chunk.CHUNK_X_SIZE - 1 && !(chunkToRight?.Blocks[0, blockY, blockZ].IsActive ?? true))
                             || (blockX < Chunk.CHUNK_X_SIZE - 1 && !chunk.Blocks[blockX + 1, blockY, blockZ].IsActive))
                         {
                             var startIndex = (uint)vertices.Count;
@@ -80,7 +80,7 @@ namespace GameEngine.Core.World
                             indicies.AddRange(CreateFaceIndicies(startIndex));
                         }
                         // Back
-                        if ((blockZ == 0 && !(chunkToBack?.Blocks[blockX, blockY, Chunk.CHUNK_Z_SIZE - 1].IsActive ?? false))
+                        if ((blockZ == 0 && !(chunkToBack?.Blocks[blockX, blockY, Chunk.CHUNK_Z_SIZE - 1].IsActive ?? true))
                             || (blockZ > 0 && !chunk.Blocks[blockX, blockY, blockZ - 1].IsActive))
                         {
                             var startIndex = (uint)vertices.Count;
@@ -92,7 +92,7 @@ namespace GameEngine.Core.World
                             indicies.AddRange(CreateFaceIndicies(startIndex));
                         }
                         // Front
-                        if ((blockZ == Chunk.CHUNK_Z_SIZE - 1 && !(chunkToFront?.Blocks[blockX, blockY, 0].IsActive ?? false))
+                        if ((blockZ == Chunk.CHUNK_Z_SIZE - 1 && !(chunkToFront?.Blocks[blockX, blockY, 0].IsActive ?? true))
                             || (blockZ < Chunk.CHUNK_Z_SIZE - 1 && !chunk.Blocks[blockX, blockY, blockZ + 1].IsActive))
                         {
                             var startIndex = (uint)vertices.Count;
