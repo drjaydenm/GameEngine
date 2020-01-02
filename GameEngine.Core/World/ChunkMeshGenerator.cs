@@ -8,8 +8,9 @@ namespace GameEngine.Core.World
     {
         public static Mesh<VertexPositionNormalMaterial> GenerateMesh(Chunk chunk, BlockWorld world)
         {
-            var vertices = new List<VertexPositionNormalMaterial>();
-            var indicies = new List<uint>();
+            // Give these lists some initial capacity to save the inevitable resizing
+            var vertices = new List<VertexPositionNormalMaterial>(500);
+            var indices = new List<uint>(1500);
 
             // Find these once off as they are the same for the whole chunk
             var chunkToTop = world.FindChunkByOffset(chunk, Coord3.UnitY);
@@ -41,7 +42,7 @@ namespace GameEngine.Core.World
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitY, blockType));
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitY, blockType));
 
-                            indicies.AddRange(CreateFaceIndicies(startIndex));
+                            AddFaceIndices(indices, startIndex);
                         }
                         // Bottom
                         if ((blockY == 0 && !(chunkToBottom?.Blocks[blockX, Chunk.CHUNK_Y_SIZE - 1, blockZ].IsActive ?? true))
@@ -53,7 +54,7 @@ namespace GameEngine.Core.World
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitY, blockType));
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitY, blockType));
 
-                            indicies.AddRange(CreateFaceIndicies(startIndex));
+                            AddFaceIndices(indices, startIndex);
                         }
                         // Left
                         if ((blockX == 0 && !(chunkToLeft?.Blocks[Chunk.CHUNK_Y_SIZE - 1, blockY, blockZ].IsActive ?? true))
@@ -65,7 +66,7 @@ namespace GameEngine.Core.World
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitX, blockType));
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitX, blockType));
 
-                            indicies.AddRange(CreateFaceIndicies(startIndex));
+                            AddFaceIndices(indices, startIndex);
                         }
                         // Right
                         if ((blockX == Chunk.CHUNK_X_SIZE - 1 && !(chunkToRight?.Blocks[0, blockY, blockZ].IsActive ?? true))
@@ -77,7 +78,7 @@ namespace GameEngine.Core.World
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, Vector3.UnitX, blockType));
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitX, blockType));
 
-                            indicies.AddRange(CreateFaceIndicies(startIndex));
+                            AddFaceIndices(indices, startIndex);
                         }
                         // Back
                         if ((blockZ == 0 && !(chunkToBack?.Blocks[blockX, blockY, Chunk.CHUNK_Z_SIZE - 1].IsActive ?? true))
@@ -89,7 +90,7 @@ namespace GameEngine.Core.World
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, blockType));
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, blockType));
 
-                            indicies.AddRange(CreateFaceIndicies(startIndex));
+                            AddFaceIndices(indices, startIndex);
                         }
                         // Front
                         if ((blockZ == Chunk.CHUNK_Z_SIZE - 1 && !(chunkToFront?.Blocks[blockX, blockY, 0].IsActive ?? true))
@@ -101,7 +102,7 @@ namespace GameEngine.Core.World
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitZ, blockType));
                             vertices.Add(new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitZ, blockType));
 
-                            indicies.AddRange(CreateFaceIndicies(startIndex));
+                            AddFaceIndices(indices, startIndex);
                         }
                     }
                 }
@@ -110,20 +111,17 @@ namespace GameEngine.Core.World
             if (vertices.Count <= 0)
                 return null;
 
-            return new Mesh<VertexPositionNormalMaterial>(vertices.ToArray(), indicies.ToArray());
+            return new Mesh<VertexPositionNormalMaterial>(vertices.ToArray(), indices.ToArray());
         }
 
-        private static uint[] CreateFaceIndicies(uint vertexStartOffset)
+        private static void AddFaceIndices(List<uint> indices, uint vertexStartOffset)
         {
-            return new uint[]
-            {
-                0 + vertexStartOffset,
-                1 + vertexStartOffset,
-                2 + vertexStartOffset,
-                0 + vertexStartOffset,
-                2 + vertexStartOffset,
-                3 + vertexStartOffset
-            };
+            indices.Add(0 + vertexStartOffset);
+            indices.Add(1 + vertexStartOffset);
+            indices.Add(2 + vertexStartOffset);
+            indices.Add(0 + vertexStartOffset);
+            indices.Add(2 + vertexStartOffset);
+            indices.Add(3 + vertexStartOffset);
         }
     }
 }

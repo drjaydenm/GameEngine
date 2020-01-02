@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 using BepuPhysics;
@@ -81,20 +81,18 @@ namespace GameEngine.Core.Physics.BepuPhysics
             {
                 using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, 8))
                 {
-                    foreach (var compound in compoundComponent.CompoundShapes)
+                    foreach (var boxCompound in compoundComponent.BoxCompoundShapes)
                     {
-                        if (compound is BoxCompoundShape boxCompound)
-                        {
-                            var shape = new Box(boxCompound.Size.X, boxCompound.Size.Y, boxCompound.Size.Z);
-                            var pose = new RigidPose(boxCompound.RelativeOffset);
-                            compoundBuilder.Add(shape, pose, 1);
-                        }
-                        else if (compound is SphereCompoundShape sphereCompound)
-                        {
-                            var shape = new Sphere(sphereCompound.Radius);
-                            var pose = new RigidPose(sphereCompound.RelativeOffset);
-                            compoundBuilder.Add(shape, pose, 1);
-                        }
+                        var shape = new Box(boxCompound.Size.X, boxCompound.Size.Y, boxCompound.Size.Z);
+                        var pose = new RigidPose(boxCompound.RelativeOffset);
+                        compoundBuilder.Add(shape, pose, 1);
+                    }
+
+                    foreach (var sphereCompound in compoundComponent.SphereCompoundShapes)
+                    {
+                        var shape = new Sphere(sphereCompound.Radius);
+                        var pose = new RigidPose(sphereCompound.RelativeOffset);
+                        compoundBuilder.Add(shape, pose, 1);
                     }
                     
                     compoundBuilder.BuildDynamicCompound(out var compoundChildren, out inertia/*, out var center*/);

@@ -3,12 +3,7 @@ using System.Numerics;
 
 namespace GameEngine.Core.Entities
 {
-    public interface ICompoundShape
-    {
-        public Vector3 RelativeOffset { get; set; }
-    }
-
-    public struct BoxCompoundShape : ICompoundShape
+    public struct BoxCompoundShape
     {
         public Vector3 RelativeOffset { get; set; }
         public Vector3 Size { get; set; }
@@ -20,7 +15,7 @@ namespace GameEngine.Core.Entities
         }
     }
 
-    public struct SphereCompoundShape : ICompoundShape
+    public struct SphereCompoundShape
     {
         public Vector3 RelativeOffset { get; set; }
         public float Radius { get; set; }
@@ -34,23 +29,26 @@ namespace GameEngine.Core.Entities
 
     public class PhysicsCompoundComponent : PhysicsComponent
     {
-        public IReadOnlyList<ICompoundShape> CompoundShapes => compoundShapes;
+        public IReadOnlyList<BoxCompoundShape> BoxCompoundShapes => boxCompoundShapes;
+        public IReadOnlyList<SphereCompoundShape> SphereCompoundShapes => sphereCompoundShapes;
 
-        private List<ICompoundShape> compoundShapes;
+        private List<BoxCompoundShape> boxCompoundShapes;
+        private List<SphereCompoundShape> sphereCompoundShapes;
 
         public PhysicsCompoundComponent(PhysicsInteractivity interactivity) : base(interactivity)
         {
-            compoundShapes = new List<ICompoundShape>();
+            boxCompoundShapes = new List<BoxCompoundShape>();
+            sphereCompoundShapes = new List<SphereCompoundShape>();
         }
 
         public void AddBox(Vector3 relativeOffset, Vector3 size)
         {
-            compoundShapes.Add(new BoxCompoundShape(relativeOffset, size));
+            boxCompoundShapes.Add(new BoxCompoundShape(relativeOffset, size));
         }
 
         public void AddSphere(Vector3 relativeOffset, float radius)
         {
-            compoundShapes.Add(new SphereCompoundShape(relativeOffset, radius));
+            sphereCompoundShapes.Add(new SphereCompoundShape(relativeOffset, radius));
         }
     }
 }
