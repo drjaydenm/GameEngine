@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Numerics;
 using Veldrid;
 using Veldrid.Sdl2;
@@ -78,7 +78,7 @@ namespace GameEngine.Core.Windowing
                 preferDepthRangeZeroToOne: true,
                 preferStandardClipSpaceYDirection: true
                 );
-            return VeldridStartup.CreateGraphicsDevice(window, options, GraphicsBackend.OpenGL);
+            return VeldridStartup.CreateGraphicsDevice(window, options);
         }
 
         public IInputManager CreateInputManager()
@@ -86,18 +86,26 @@ namespace GameEngine.Core.Windowing
             return new VeldridInputManager(this);
         }
 
-        private Sdl2Window CreateWindow()
+        private unsafe Sdl2Window CreateWindow()
         {
-            var flags = SDL_WindowFlags.OpenGL | SDL_WindowFlags.Resizable | SDL_WindowFlags.Shown;
+            var flags = SDL_WindowFlags.OpenGL | SDL_WindowFlags.Resizable | SDL_WindowFlags.Shown | SDL_WindowFlags.AllowHighDpi;
 
-            return new Sdl2Window(
+            var window = new Sdl2Window(
                 title: "Window",
-                x: 100,
-                y: 100,
-                width: 960,
-                height: 540,
+                x: 35,
+                y: 35,
+                width: 800,
+                height: 600,
                 flags: flags,
                 threadedProcessing: false);
+
+            SDL_DisplayMode displayMode;
+            Sdl2Extensions.SDL_GetDesktopDisplayMode(0, &displayMode);
+
+            window.Width = displayMode.w - 70;
+            window.Height = displayMode.h - 70;
+
+            return window;
         }
     }
 }
