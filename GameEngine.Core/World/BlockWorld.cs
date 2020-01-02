@@ -270,7 +270,7 @@ namespace GameEngine.Core.World
                 }
                 else
                 {
-                    var compound = new PhysicsCompoundComponent(PhysicsInteractivity.Static)
+                    /*var compound = new PhysicsCompoundComponent(PhysicsInteractivity.Static)
                     {
                         PositionOffset = chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f)
                     };
@@ -285,7 +285,11 @@ namespace GameEngine.Core.World
                             }
                         }
                     }
-                    physics = compound;
+                    physics = compound;*/
+                    physics = new PhysicsChunkComponent(chunk)
+                    {
+                        PositionOffset = chunk.WorldPosition
+                    };
                 }
 
                 chunkPhysics[chunkCoord] = physics;

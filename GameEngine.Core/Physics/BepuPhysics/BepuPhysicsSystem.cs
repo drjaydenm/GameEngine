@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Numerics;
 using BepuPhysics;
@@ -9,6 +9,8 @@ using GameEngine.Core.Entities;
 using BepuMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities;
 using System.Collections.Generic;
+using GameEngine.Core.Physics.BepuPhysics.CustomShapes;
+using BepuUtilities.Collections;
 
 namespace GameEngine.Core.Physics.BepuPhysics
 {
@@ -32,6 +34,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
             threadDispatcher = new DefaultThreadDispatcher(Environment.ProcessorCount);
             simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(), new DefaultPoseIntegratorCallbacks(gravity));
             registeredComponents = new Dictionary<PhysicsComponent, BepuPhysicsBody>();
+
+            RegisterCustomShapes();
         }
 
         public void DeregisterComponent(PhysicsComponent component)
@@ -79,7 +83,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
             }
             else if (component is PhysicsCompoundComponent compoundComponent)
             {
-                using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, 8))
+                var builderCapacity = compoundComponent.BoxCompoundShapes.Count + compoundComponent.SphereCompoundShapes.Count;
+                using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, builderCapacity))
                 {
                     foreach (var boxCompound in compoundComponent.BoxCompoundShapes)
                     {
@@ -100,6 +105,24 @@ namespace GameEngine.Core.Physics.BepuPhysics
                     var compundShape = new BigCompound(compoundChildren, simulation.Shapes, bufferPool);
                     shapeIndex = simulation.Shapes.Add(compundShape);
                 }
+            }
+            else if (component is PhysicsChunkComponent chunkComponent)
+            {
+                var voxels = new QuickList<Vector3>(chunkComponent.Chunk.ActiveBlockCount, bufferPool);
+                for (var x = 0; x < chunkComponent.Chunk.Blocks.GetLength(0); x++)
+                {
+                    for (var y = 0; y < chunkComponent.Chunk.Blocks.GetLength(1); y++)
+                    {
+                        for (var z = 0; z < chunkComponent.Chunk.Blocks.GetLength(2); z++)
+                        {
+                            if (chunkComponent.Chunk.Blocks[x, y, z].IsActive)
+                                voxels.AddUnsafely(new Vector3(x, y, z));
+                        }
+                    }
+                }
+
+                var voxelShape = new Voxels(voxels, Vector3.One, bufferPool);
+                shapeIndex = simulation.Shapes.Add(voxelShape);
             }
             else if (component is PhysicsMeshComponent meshComponent)
             {
@@ -243,6 +266,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 return new CollidableReference(body.BodyReference.Kinematic ? CollidableMobility.Kinematic : CollidableMobility.Dynamic, body.BodyReference.Handle);
             else
                 return new CollidableReference(CollidableMobility.Static, body.StaticReference.Handle);
+        }
+
+        private void RegisterCustomShapes()
+        {
+            VoxelsRegistration.RegisterShape(simulation);
         }
     }
 }
