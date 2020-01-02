@@ -177,8 +177,7 @@ namespace GameEngine.Game
 
             if (engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Left) && lookingAtBlock != null)
             {
-                ref var block = ref lookingAtChunk.Blocks[lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z];
-                block.IsActive = false;
+                lookingAtChunk.SetBlockIsActive(lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z, false);
 
                 world.UpdateChunk(lookingAtChunk);
             }
@@ -206,7 +205,7 @@ namespace GameEngine.Game
             if (!playerSpawned && world.ChunksToUpdateCount <= 0)
             {
                 // Spawn the player
-                var maxChunkHeight = (float)(world.Chunks.Where(c => c.IsAnyBlockActive()).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
+                var maxChunkHeight = (float)(world.Chunks.Where(c => c.IsAnyBlockActive).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
                 var playerYOffset = maxChunkHeight;
                 var hit = PhysicsSystem.Raycast(new Vector3(0, maxChunkHeight, 0), -Vector3.UnitY, 250, PhysicsInteractivity.Static);
                 if (hit.DidHit)

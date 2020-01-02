@@ -7,6 +7,7 @@ namespace GameEngine.Core.World
         public const int CHUNK_X_SIZE = 16;
         public const int CHUNK_Y_SIZE = 16;
         public const int CHUNK_Z_SIZE = 16;
+        public const int CHUNK_BLOCK_COUNT = CHUNK_X_SIZE * CHUNK_Y_SIZE * CHUNK_Z_SIZE;
         public static readonly Vector3 CHUNK_SIZE = new Vector3(CHUNK_X_SIZE, CHUNK_Y_SIZE, CHUNK_Z_SIZE);
         public static readonly Vector3 CHUNK_BLOCK_RATIO = new Vector3(1f / CHUNK_X_SIZE, 1f / CHUNK_Y_SIZE, 1f / CHUNK_Z_SIZE);
 
@@ -15,6 +16,11 @@ namespace GameEngine.Core.World
         public Vector3 WorldPosition { get; private set; }
         public Vector3 WorldPositionCentroid { get; private set; }
 
+        public int ActiveBlockCount => CHUNK_BLOCK_COUNT - InactiveBlockCount;
+        public int InactiveBlockCount { get; private set; }
+        public bool IsAnyBlockActive => InactiveBlockCount < CHUNK_BLOCK_COUNT;
+        public bool IsAnyBlockInactive => InactiveBlockCount > 0;
+
         public Chunk(Coord3 coordinate)
         {
             Coordinate = coordinate;
@@ -22,32 +28,23 @@ namespace GameEngine.Core.World
             WorldPositionCentroid = WorldPosition + (CHUNK_SIZE * 0.5f);
 
             Blocks = new Block[CHUNK_X_SIZE, CHUNK_Y_SIZE, CHUNK_Z_SIZE];
+            InactiveBlockCount = CHUNK_BLOCK_COUNT;
         }
 
-        public bool IsAnyBlockActive()
+        public void SetBlockIsActive(int x, int y, int z, bool isActive)
         {
-            return IsAnyBlock(true);
+            var wasActive = Blocks[x, y, z].IsActive;
+            Blocks[x, y, z].IsActive = isActive;
+
+            if (wasActive && !isActive)
+                InactiveBlockCount++;
+            else if (!wasActive && isActive)
+                InactiveBlockCount--;
         }
 
-        public bool IsAnyBlockInactive()
+        public void SetBlockType(int x, int y, int z, byte blockType)
         {
-            return IsAnyBlock(false);
-        }
-
-        private bool IsAnyBlock(bool active)
-        {
-            for (var x = 0; x < Blocks.GetLength(0); x++)
-            {
-                for (var y = 0; y < Blocks.GetLength(1); y++)
-                {
-                    for (var z = 0; z < Blocks.GetLength(2); z++)
-                    {
-                        if (Blocks[x, y, z].IsActive == active) return true;
-                    }
-                }
-            }
-
-            return false;
+            Blocks[x, y, z].BlockType = blockType;
         }
     }
 }

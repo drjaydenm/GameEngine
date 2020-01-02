@@ -74,9 +74,8 @@ namespace GameEngine.Game
 
                         var isEnabled = y + chunkYBlockStart <= height;
 
-                        ref var block = ref chunk.Blocks[x, y, z];
-                        block.IsActive = isEnabled;
-                        block.BlockType = (byte)blockType;
+                        chunk.SetBlockIsActive(x, y, z, isEnabled);
+                        chunk.SetBlockType(x, y, z, (byte)blockType);
                     }
                 }
             }

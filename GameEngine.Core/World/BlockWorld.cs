@@ -186,7 +186,7 @@ namespace GameEngine.Core.World
         private void AddOrUpdateRenderable(Coord3 chunkCoord)
         {
             var chunk = chunks[chunkCoord];
-            var chunkShouldRender = chunk.IsAnyBlockActive();
+            var chunkShouldRender = chunk.IsAnyBlockActive;
 
             // Make sure a key exists
             if (!chunkRenderables.ContainsKey(chunkCoord))
@@ -239,7 +239,7 @@ namespace GameEngine.Core.World
                 chunkPhysics.Add(chunkCoord, null);
 
             var chunk = chunks[chunkCoord];
-            var chunkShouldHavePhysics = chunk.IsAnyBlockActive();
+            var chunkShouldHavePhysics = chunk.IsAnyBlockActive;
 
             if (chunkPhysics[chunkCoord] != null && !chunkShouldHavePhysics)
             {
@@ -258,7 +258,7 @@ namespace GameEngine.Core.World
                 }
 
                 PhysicsComponent physics;
-                var isChunkSolid = !chunk.IsAnyBlockInactive();
+                var isChunkSolid = !chunk.IsAnyBlockInactive;
 
                 // Use a simple box for the whole chunk if possible
                 if (isChunkSolid)
