@@ -20,14 +20,14 @@ namespace GameEngine.Game
 
         private readonly Engine engine;
         private BlockWorld world;
-        private Chunk? previousChunk;
-        private Chunk? currentChunk;
+        private Chunk previousChunk;
+        private Chunk currentChunk;
         private BlockWorldGenerator worldGenerator;
         private bool shouldGenerateChunks = true;
         private bool shouldShowChunkDebug;
         private Queue<Coord3> coordsToGenerate;
         private List<Entity> boxes;
-        private Chunk? lookingAtChunk;
+        private Chunk lookingAtChunk;
         private Block? lookingAtBlock;
         private Coord3 lookingAtBlockCoord;
         private Vector3 rayHitPosition;
@@ -57,7 +57,7 @@ namespace GameEngine.Game
             world = new BlockWorld(engine, this, "World");
             AddEntity(world);
 
-            var camera = new DebugCamera(Vector3.Zero, Vector3.UnitZ, 1, 0.5f, 500, engine);
+            var camera = new DebugCamera(Vector3.Zero, Vector3.UnitZ, 1, 0.1f, 500, engine);
             camera.DisableRotation = true;
 
             playerEntity = new Entity(this, "Player");
@@ -131,7 +131,7 @@ namespace GameEngine.Game
                 }
             }
 
-            if (engine.InputManager.Mouse.IsButtonDown(MouseButtons.Left))
+            if (engine.InputManager.Mouse.ScrollDelta != 0)
             {
                 var box = ShootBox();
                 boxes.Add(box);
@@ -175,6 +175,14 @@ namespace GameEngine.Game
                 rayHitPosition = Vector3.Zero;
             }
 
+            if (engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Left) && lookingAtBlock != null)
+            {
+                ref var block = ref lookingAtChunk.Blocks[lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z];
+                block.IsActive = false;
+
+                world.UpdateChunk(lookingAtChunk);
+            }
+
             const float lightRotateSpeed = 0.5f;
             Renderer.LightDirection = new Vector3(
                 (float)Math.Sin(engine.GameTimeTotal.TotalSeconds * lightRotateSpeed),
@@ -184,8 +192,8 @@ namespace GameEngine.Game
             currentChunk = world.FindChunkByWorldPosition(ActiveCamera.Position);
             if (currentChunk?.Coordinate != previousChunk?.Coordinate && currentChunk != null && shouldGenerateChunks)
             {
-                QueueNewChunksIfRequired(currentChunk.Value);
-                UnloadChunksIfRequired(currentChunk.Value);
+                QueueNewChunksIfRequired(currentChunk);
+                UnloadChunksIfRequired(currentChunk);
             }
 
             if (coordsToGenerate.Count > 0)
@@ -240,7 +248,7 @@ namespace GameEngine.Game
             // Draw a debug cube around the block we are currently looking at
             if (lookingAtChunk != null && lookingAtBlock != null)
             {
-                var blockPosition = new Vector3(lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z) + lookingAtChunk.Value.WorldPosition + new Vector3(0.5f);
+                var blockPosition = new Vector3(lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z) + lookingAtChunk.WorldPosition + new Vector3(0.5f);
                 var transform = Matrix4x4.CreateTranslation(blockPosition);
                 engine.DebugGraphics.DrawCube(RgbaFloat.Orange, transform * camera.View * camera.Projection);
             }
@@ -293,7 +301,7 @@ namespace GameEngine.Game
         private Entity ShootBox()
         {
             var box = new Entity(this, "Box");
-            box.Transform.Position = ActiveCamera.Position;
+            box.Transform.Position = ActiveCamera.Position + (ActiveCamera.ViewDirection * 1.5f);
 
             var physicsBox = new PhysicsBoxComponent(new Vector3(0.5f), PhysicsInteractivity.Dynamic)
             {

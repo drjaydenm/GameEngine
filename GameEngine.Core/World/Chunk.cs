@@ -2,7 +2,7 @@
 
 namespace GameEngine.Core.World
 {
-    public struct Chunk
+    public class Chunk
     {
         public const int CHUNK_X_SIZE = 16;
         public const int CHUNK_Y_SIZE = 16;
