@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using GameEngine.Core;
 using GameEngine.Core.Camera;
 using GameEngine.Core.Entities;
 using GameEngine.Core.Input;
+using GameEngine.Core.Physics;
 
 namespace GameEngine.Game
 {
@@ -12,9 +14,11 @@ namespace GameEngine.Game
     {
         public PhysicsCapsuleComponent PhysicsComponent { get; private set; }
         public float CameraHeightOffset => (height / 2f) + (radius / 2f);
-        public float WalkSpeed { get; set; } = 7f;
+        public float WalkSpeed { get; set; } = 5f;
         public float SprintSpeed { get; set; } = 10f;
         public float JumpForce { get; set; } = 5f;
+        public float JumpMinTimeBetween => 0.75f;
+        public float GroundedRayLength => 0.1f;
 
         private readonly Engine engine;
         private readonly Scene scene;
@@ -25,6 +29,8 @@ namespace GameEngine.Game
         private Entity entity;
         private ICamera camera;
         private bool isGrounded;
+        private double lastJumpSeconds;
+        private List<RayHit> supports;
 
         /// <summary>
         /// Create a new instance of the <c>CharacterController</c>
@@ -42,6 +48,7 @@ namespace GameEngine.Game
             this.height = height;
             this.radius = radius;
             this.mass = mass;
+            supports = new List<RayHit>();
         }
 
         public void AttachedToEntity(Entity entity)
@@ -67,7 +74,7 @@ namespace GameEngine.Game
 
         public void Update()
         {
-            CheckCharacterGrounded();
+            CheckCharacterIsGrounded();
             var keyboard = engine.InputManager.Keyboard;
 
             // Calculate movement direction
@@ -124,9 +131,10 @@ namespace GameEngine.Game
             }
 
             // Apply jump after
-            if (keyboard.WasKeyPressed(Keys.Space) && isGrounded)
+            if (keyboard.WasKeyPressed(Keys.Space) && isGrounded && engine.GameTimeTotal.TotalSeconds - lastJumpSeconds > JumpMinTimeBetween)
             {
                 targetVelocity.Y += JumpForce * mass;
+                lastJumpSeconds = engine.GameTimeTotal.TotalSeconds;
             }
 
             // Apply the impulse
@@ -138,27 +146,29 @@ namespace GameEngine.Game
             camera.Position = entity.Transform.Position + (Vector3.UnitY * CameraHeightOffset);
         }
 
-        private void CheckCharacterGrounded()
+        private void CheckCharacterIsGrounded()
         {
             const int rayCount = 8;
 
             isGrounded = false;
+            supports.Clear();
+
             for (int i = 0; i < rayCount; i++)
             {
-                var delta = i / (float)rayCount * MathF.PI * 2;
+                var delta = i / (float)rayCount * MathF.PI * 2f;
                 var xPos = MathF.Sin(delta);
                 var zPos = MathF.Cos(delta);
-                var playerOffset = new Vector3(xPos * 0.5f, 0, zPos * 0.5f);
-                var rayStart = entity.Transform.Position - (Vector3.UnitY * 1f) + playerOffset;
+                var playerOffset = new Vector3(xPos * radius, 0, zPos * radius);
+                var rayStart = entity.Transform.Position - (Vector3.UnitY * height) + playerOffset;
 
-                var rayHit = scene.PhysicsSystem.Raycast(rayStart, -Vector3.UnitY, 0.1f,
+                var rayHit = scene.PhysicsSystem.Raycast(rayStart, -Vector3.UnitY, GroundedRayLength,
                 PhysicsInteractivity.Dynamic | PhysicsInteractivity.Kinematic | PhysicsInteractivity.Static,
                 new[] { PhysicsComponent });
 
                 if (rayHit.DidHit)
                 {
                     isGrounded = true;
-                    break;
+                    supports.Add(rayHit);
                 }
             }
         }
