@@ -93,7 +93,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
             }
             else if (component is PhysicsCompoundComponent compoundComponent)
             {
-                using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, 8))
+                var compoundCount = compoundComponent.BoxCompoundShapes.Count + compoundComponent.SphereCompoundShapes.Count;
+                using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, compoundCount))
                 {
                     foreach (var boxCompound in compoundComponent.BoxCompoundShapes)
                     {
