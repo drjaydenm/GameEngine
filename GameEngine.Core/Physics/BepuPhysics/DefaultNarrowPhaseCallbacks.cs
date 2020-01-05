@@ -57,6 +57,12 @@ namespace GameEngine.Core.Physics.BepuPhysics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ConfigureMaterial(CollidablePair pair, out PairMaterialProperties pairMaterial)
         {
+            if (pair.A.Mobility != CollidableMobility.Dynamic && pair.B.Mobility != CollidableMobility.Dynamic)
+            {
+                pairMaterial = new PairMaterialProperties();
+                return;
+            }
+
             var bodyA = PhysicsSystem.CollidableHandleToBody[new Tuple<CollidableMobility, int>(pair.A.Mobility, pair.A.Handle)];
             var bodyB = PhysicsSystem.CollidableHandleToBody[new Tuple<CollidableMobility, int>(pair.B.Mobility, pair.B.Handle)];
 
