@@ -7,7 +7,6 @@ namespace GameEngine.Core.Entities
     {
         public string Name { get; private set; }
         public Transform Transform { get; private set; }
-        public IReadOnlyCollection<IComponent> Components => components;
 
         private readonly Scene scene;
         private readonly List<IComponent> components;
@@ -28,7 +27,7 @@ namespace GameEngine.Core.Entities
         {
             var matchingComponents = new List<T>();
 
-            foreach (var component in components.ToArray())
+            foreach (var component in components)
             {
                 if (component is T)
                     matchingComponents.Add((T)component);
@@ -61,7 +60,7 @@ namespace GameEngine.Core.Entities
 
         public virtual void Update()
         {
-            foreach (var component in components.ToArray())
+            foreach (var component in components)
             {
                 component.Update();
             }
