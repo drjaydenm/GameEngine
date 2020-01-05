@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -35,6 +35,7 @@ namespace GameEngine.Game
         private CharacterController character;
         private bool playerSpawned;
         private bool debugCamera = true;
+        private Entity[] movingPlatforms;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
         private const int CHUNK_GENERATE_PER_FRAME = 10;
@@ -70,6 +71,20 @@ namespace GameEngine.Game
             var chunks = worldGenerator.GenerateWorld(CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2);
 
             chunks.ToList().ForEach(c => world.AddChunk(c));
+
+            movingPlatforms = new Entity[4];
+            var random = new Random();
+            for (var i = 0; i < movingPlatforms.Length; i++)
+            {
+                var platform = new Entity(this, $"Platform{i + 1}");
+                movingPlatforms[i] = platform;
+                AddEntity(platform);
+                platform.AddComponent(new MovingPlatformController(engine)
+                {
+                    PlatformSize = new Vector3(2, 0.1f, 2)
+                });
+                platform.Transform.Position = new Vector3((float)random.NextDouble() * 10, 50, (float)random.NextDouble() * 10);
+            }
         }
 
         public override void Update()
@@ -117,7 +132,7 @@ namespace GameEngine.Game
                 PhysicsSystem.DebugEnabled = !PhysicsSystem.DebugEnabled;
             }
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.F1))
+            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.F1) && playerSpawned)
             {
                 debugCamera = !debugCamera;
                 if (debugCamera)
@@ -235,6 +250,12 @@ namespace GameEngine.Game
 
                 playerSpawned = true;
                 debugCamera = false;
+            }
+
+            for (var i = 0; i < movingPlatforms.Length; i++)
+            {
+                var controller = movingPlatforms[i].GetComponentsOfType<MovingPlatformController>().FirstOrDefault();
+                controller.MovementDirection = Vector3.UnitX * (float)Math.Sin(engine.GameTimeTotal.TotalSeconds / 2f) * 10f;
             }
         }
 
