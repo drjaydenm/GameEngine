@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Veldrid;
 using Veldrid.Sdl2;
@@ -88,7 +88,7 @@ namespace GameEngine.Core.Windowing
 
         private unsafe Sdl2Window CreateWindow()
         {
-            var flags = SDL_WindowFlags.OpenGL | SDL_WindowFlags.Resizable | SDL_WindowFlags.Shown | SDL_WindowFlags.AllowHighDpi;
+            var flags = SDL_WindowFlags.OpenGL | SDL_WindowFlags.Resizable | SDL_WindowFlags.Shown;
 
             var window = new Sdl2Window(
                 title: "Window",
