@@ -157,8 +157,9 @@ namespace GameEngine.Core.World
             if (chunk == null)
                 return null;
 
-            var blockIndex = position - (Chunk.CHUNK_SIZE * chunk.Coordinate);
-            return chunk.Blocks[(int)Math.Floor(blockIndex.X), (int)Math.Floor(blockIndex.Y), (int)Math.Floor(blockIndex.Z)];
+            var flooredPosition = new Vector3((float)Math.Floor(position.X), (float)Math.Floor(position.Y), (float)Math.Floor(position.Z));
+            var blockIndex = flooredPosition - (Chunk.CHUNK_SIZE * chunk.Coordinate);
+            return chunk.Blocks[(int)blockIndex.X, (int)blockIndex.Y, (int)blockIndex.Z];
         }
 
         public Coord3 ConvertWorldPositionToChunkCoordinate(Vector3 position)
