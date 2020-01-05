@@ -155,7 +155,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
         public void Update()
         {
-            simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds, threadDispatcher);
+            simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds / 2f, threadDispatcher);
+            simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds / 2f, threadDispatcher);
         }
 
         public void Draw()
