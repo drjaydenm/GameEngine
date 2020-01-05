@@ -282,7 +282,19 @@ namespace GameEngine.Core.World
                             for (var z = 0; z < chunk.Blocks.GetLength(2); z++)
                             {
                                 if (chunk.Blocks[x, y, z].IsActive)
-                                    compound.AddBox(new Vector3(x, y, z), Vector3.One);
+                                {
+                                    var anySurroundingBlocksInactive =
+                                        (x > 0 ? !chunk.Blocks[x - 1, y, z].IsActive : true)
+                                        || (x < Chunk.CHUNK_X_SIZE - 1 ? !chunk.Blocks[x + 1, y, z].IsActive : true)
+                                        || (y > 0 ? !chunk.Blocks[x, y - 1, z].IsActive : true)
+                                        || (y < Chunk.CHUNK_Y_SIZE - 1 ? !chunk.Blocks[x, y + 1, z].IsActive : true)
+                                        || (z > 0 ? !chunk.Blocks[x, y, z - 1].IsActive : true)
+                                        || (z < Chunk.CHUNK_Z_SIZE - 1 ? !chunk.Blocks[x, y, z + 1].IsActive : true);
+                                    if (anySurroundingBlocksInactive)
+                                    {
+                                        compound.AddBox(new Vector3(x, y, z), Vector3.One);
+                                    }
+                                }
                             }
                         }
                     }
