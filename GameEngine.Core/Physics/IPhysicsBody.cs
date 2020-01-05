@@ -9,6 +9,7 @@ namespace GameEngine.Core.Physics
         Vector3 LinearVelocity { get; set; }
         Vector3 AngularVelocity { get; set; }
         float Mass { get; set; }
+        float Friction { get; set; }
 
         void ApplyImpulse(Vector3 impulse);
     }

@@ -21,21 +21,36 @@ namespace GameEngine.Core.Entities
             set { Body.AngularVelocity = value; }
         }
 
+        public float Friction
+        {
+            get { return friction; }
+            set
+            {
+                friction = value;
+                if (Body != null)
+                    Body.Friction = friction;
+            }
+        }
+
         public bool FreezeRotation { get; set; }
 
         internal IPhysicsBody Body { get; set; }
         internal Entity Entity { get; private set; }
+
+        private float friction;
 
         public PhysicsComponent(PhysicsInteractivity interactivity)
         {
             Interactivity = interactivity;
             PositionOffset = Vector3.Zero;
             Mass = 1;
+            Friction = 1;
         }
 
         public void AttachedToEntity(Entity entity)
         {
             Entity = entity;
+            Body.Friction = Friction;
         }
 
         public void DetachedFromEntity()

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using BepuPhysics.CollisionDetection;
@@ -9,6 +10,13 @@ namespace GameEngine.Core.Physics.BepuPhysics
     public unsafe struct DefaultNarrowPhaseCallbacks : INarrowPhaseCallbacks
     {
         public SpringSettings ContactSpringiness;
+        public BepuPhysicsSystem PhysicsSystem;
+
+        public DefaultNarrowPhaseCallbacks(BepuPhysicsSystem system)
+        {
+            ContactSpringiness = new SpringSettings();
+            PhysicsSystem = system;
+        }
 
         public void Initialize(Simulation simulation)
         {
@@ -32,7 +40,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ConfigureContactManifold<TManifold>(int workerIndex, CollidablePair pair, ref TManifold manifold, out PairMaterialProperties pairMaterial) where TManifold : struct, IContactManifold<TManifold>
         {
-            ConfigureMaterial(out pairMaterial);
+            ConfigureMaterial(pair, out pairMaterial);
             return true;
         }
 
@@ -47,9 +55,12 @@ namespace GameEngine.Core.Physics.BepuPhysics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ConfigureMaterial(out PairMaterialProperties pairMaterial)
+        private void ConfigureMaterial(CollidablePair pair, out PairMaterialProperties pairMaterial)
         {
-            pairMaterial.FrictionCoefficient = 1f;
+            var bodyA = PhysicsSystem.CollidableHandleToBody[new Tuple<CollidableMobility, int>(pair.A.Mobility, pair.A.Handle)];
+            var bodyB = PhysicsSystem.CollidableHandleToBody[new Tuple<CollidableMobility, int>(pair.B.Mobility, pair.B.Handle)];
+
+            pairMaterial.FrictionCoefficient = bodyA.Friction * bodyB.Friction;
             pairMaterial.MaximumRecoveryVelocity = 2f;
             pairMaterial.SpringSettings = ContactSpringiness;
         }

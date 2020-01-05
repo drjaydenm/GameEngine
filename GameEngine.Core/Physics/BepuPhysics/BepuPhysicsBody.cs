@@ -102,6 +102,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
             }
         }
 
+        public float Friction { get; set; }
+
         internal BodyReference BodyReference { get; set; }
         internal StaticReference StaticReference { get; set; }
         internal TypedIndex ShapeIndex { get; set; }

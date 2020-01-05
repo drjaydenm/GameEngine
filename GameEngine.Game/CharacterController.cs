@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Numerics;
 using GameEngine.Core;
@@ -50,7 +50,8 @@ namespace GameEngine.Game
             PhysicsComponent = new PhysicsCapsuleComponent(radius, height, PhysicsInteractivity.Dynamic)
             {
                 Mass = mass,
-                FreezeRotation = true
+                FreezeRotation = true,
+                Friction = 0
             };
 
             entity.AddComponent(PhysicsComponent);

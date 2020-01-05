@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Numerics;
 using BepuPhysics;
@@ -16,6 +16,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
     {
         public bool DebugEnabled { get; set; }
 
+        internal Dictionary<Tuple<CollidableMobility, int>, BepuPhysicsBody> CollidableHandleToBody;
+
         private readonly Engine engine;
         private readonly Scene scene;
         private BufferPool bufferPool;
@@ -30,8 +32,9 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
             bufferPool = new BufferPool();
             threadDispatcher = new DefaultThreadDispatcher(Environment.ProcessorCount);
-            simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(), new DefaultPoseIntegratorCallbacks(gravity));
+            simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(this), new DefaultPoseIntegratorCallbacks(gravity));
             registeredComponents = new Dictionary<PhysicsComponent, BepuPhysicsBody>();
+            CollidableHandleToBody = new Dictionary<Tuple<CollidableMobility, int>, BepuPhysicsBody>();
         }
 
         public void DeregisterComponent(PhysicsComponent component)
@@ -40,6 +43,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             {
                 var body = registeredComponents[component];
                 registeredComponents.Remove(component);
+                CollidableHandleToBody.Remove(BodyToCollidableKey(body));
 
                 simulation.Shapes.Remove(body.ShapeIndex);
                 if (component.Interactivity == PhysicsInteractivity.Static)
@@ -151,6 +155,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
             component.Body = body;
             registeredComponents.Add(component, body);
+            CollidableHandleToBody.Add(BodyToCollidableKey(body), body);
         }
 
         public void Update()
@@ -217,15 +222,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
             PhysicsComponent component = null;
             if (hitHandler.Hit)
             {
-                if (hitHandler.Collidable.Mobility == CollidableMobility.Dynamic
-                    || hitHandler.Collidable.Mobility == CollidableMobility.Kinematic)
-                {
-                    component = registeredComponents.FirstOrDefault(b => b.Value.BodyReference.Handle == hitHandler.Collidable.Handle).Key;
-                }
-                else
-                {
-                    component = registeredComponents.FirstOrDefault(b => b.Value.StaticReference.Handle == hitHandler.Collidable.Handle).Key;
-                }
+                var body = CollidableHandleToBody[new Tuple<CollidableMobility, int>(hitHandler.Collidable.Mobility, hitHandler.Collidable.Handle)];
+                component = registeredComponents.Where(c => c.Value == body).FirstOrDefault().Key;
             }
 
             return new RayHit(component?.Entity, component, hitHandler.T, hitHandler.Position, hitHandler.Normal, hitHandler.Hit);
@@ -244,6 +242,13 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 return new CollidableReference(body.BodyReference.Kinematic ? CollidableMobility.Kinematic : CollidableMobility.Dynamic, body.BodyReference.Handle);
             else
                 return new CollidableReference(CollidableMobility.Static, body.StaticReference.Handle);
+        }
+
+        internal Tuple<CollidableMobility, int> BodyToCollidableKey(BepuPhysicsBody body)
+        {
+            return new Tuple<CollidableMobility, int>(
+                body.IsBody ? body.BodyReference.Kinematic ? CollidableMobility.Kinematic : CollidableMobility.Dynamic : CollidableMobility.Static,
+                body.IsBody ? body.BodyReference.Handle : body.StaticReference.Handle);
         }
     }
 }
