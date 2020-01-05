@@ -225,11 +225,12 @@ namespace GameEngine.Game
                 var maxChunkHeight = (float)(world.Chunks.Where(c => c.IsAnyBlockActive).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
                 var playerYOffset = maxChunkHeight;
                 var hit = PhysicsSystem.Raycast(new Vector3(0, maxChunkHeight, 0), -Vector3.UnitY, 250, PhysicsInteractivity.Static);
+                var playerHeight = 1f;
                 if (hit.DidHit)
                 {
-                    playerYOffset = hit.Position.Y + 1.8f;
+                    playerYOffset = hit.Position.Y + playerHeight;
                 }
-                character = new CharacterController(engine, new Vector3(0, playerYOffset, 0), 1.8f, 0.5f, 80);
+                character = new CharacterController(engine, new Vector3(0, playerYOffset, 0), playerHeight, 0.5f, 80);
                 playerEntity.AddComponent(character);
 
                 playerSpawned = true;

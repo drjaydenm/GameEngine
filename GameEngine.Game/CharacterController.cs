@@ -10,20 +10,28 @@ namespace GameEngine.Game
 {
     public class CharacterController : IComponent
     {
-        public PhysicsCapsuleComponent PhysicsComponent => capsuleComponent;
-        public float CameraHeightOffset => height / 2f;
+        public PhysicsCapsuleComponent PhysicsComponent { get; private set; }
+        public float CameraHeightOffset => (height / 2f) + (radius / 2f);
+        public float WalkSpeed { get; set; } = 7f;
+        public float SprintSpeed { get; set; } = 10f;
+        public float JumpForce { get; set; } = 5f;
 
         private readonly Engine engine;
         private Vector3 initalPosition;
         private float height;
         private float radius;
         private float mass;
-        private PhysicsCapsuleComponent capsuleComponent;
         private Entity entity;
         private ICamera camera;
-        private float speed = 0.3f;
-        private float jumpForce = 5;
 
+        /// <summary>
+        /// Create a new instance of the <c>CharacterController</c>
+        /// </summary>
+        /// <param name="engine">The engine instance</param>
+        /// <param name="position">The initial starting position for the character</param>
+        /// <param name="height">The height of the character capsule, excluding the radius on top and bottom - e.g. height of 1 and radius 0.5 actually gives a character of height 2</param>
+        /// <param name="radius">The radius for the character capsule, also gets added to the height on the bottom and top semi-spheres</param>
+        /// <param name="mass">The mass of the character</param>
         public CharacterController(Engine engine, Vector3 position, float height, float radius, float mass)
         {
             this.engine = engine;
@@ -36,13 +44,13 @@ namespace GameEngine.Game
         public void AttachedToEntity(Entity entity)
         {
             this.entity = entity;
-            capsuleComponent = new PhysicsCapsuleComponent(radius, height, PhysicsInteractivity.Dynamic)
+            PhysicsComponent = new PhysicsCapsuleComponent(radius, height, PhysicsInteractivity.Dynamic)
             {
                 Mass = mass,
                 FreezeRotation = true
             };
 
-            entity.AddComponent(capsuleComponent);
+            entity.AddComponent(PhysicsComponent);
             entity.Transform.Position = initalPosition;
 
             camera = entity.GetComponentsOfType<ICamera>()?.First();
@@ -50,13 +58,14 @@ namespace GameEngine.Game
 
         public void DetachedFromEntity()
         {
-            entity.RemoveComponent(capsuleComponent);
+            entity.RemoveComponent(PhysicsComponent);
         }
 
         public void Update()
         {
             var keyboard = engine.InputManager.Keyboard;
 
+            // Calculate movement direction
             var headingDirection = new Vector3(camera.ViewDirection.X, 0, camera.ViewDirection.Z);
             var movementDirection = Vector3.Zero;
             if (keyboard.WasKeyDown(Keys.A))
@@ -81,19 +90,44 @@ namespace GameEngine.Game
                 movementDirection /= MathF.Sqrt(movementDirectionLengthSquared);
             }
 
-            var targetVelocity = new Vector3(
-                movementDirection.X * speed,
-                0,
-                movementDirection.Z * speed);
-
-            if (keyboard.WasKeyPressed(Keys.Space))
+            // Calculate movement speed
+            var movementSpeed = WalkSpeed;
+            if (keyboard.WasKeyDown(Keys.LeftShift))
             {
-                targetVelocity.Y += jumpForce;
+                movementSpeed = SprintSpeed;
             }
 
-            if (targetVelocity.LengthSquared() > 0)
+            // Calculate velocities
+            var targetVelocity = new Vector3(
+                movementDirection.X * movementSpeed,
+                0,
+                movementDirection.Z * movementSpeed);
+            
+            if (targetVelocity.Length() > 0)
             {
-                capsuleComponent.ApplyImpulse(targetVelocity * mass);
+                var currentVelocity = new Vector3(
+                    PhysicsComponent.LinearVelocity.X,
+                    0,
+                    PhysicsComponent.LinearVelocity.Z);
+
+                var targetVelocityLength = targetVelocity.Length();
+                var currentVelocityLength = currentVelocity.Length();
+                var diffBetweenCurrentTarget = targetVelocityLength - currentVelocityLength;
+
+                targetVelocity.X *= diffBetweenCurrentTarget;
+                targetVelocity.Z *= diffBetweenCurrentTarget;
+            }
+
+            // Apply jump after
+            if (keyboard.WasKeyPressed(Keys.Space))
+            {
+                targetVelocity.Y += JumpForce * mass;
+            }
+
+            // Apply the impulse
+            if (targetVelocity.Length() > 0)
+            {
+                PhysicsComponent.ApplyImpulse(targetVelocity);
             }
 
             camera.Position = entity.Transform.Position + (Vector3.UnitY * CameraHeightOffset);
