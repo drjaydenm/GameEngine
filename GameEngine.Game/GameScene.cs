@@ -351,7 +351,7 @@ namespace GameEngine.Game
             var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(engine, new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode));
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
-            var mesh = new Mesh<VertexPositionNormalMaterial>(vertices, indices);
+            var mesh = new Mesh<VertexPositionNormalMaterial>(ref vertices, ref indices);
             boxRenderable.SetMesh(VertexPositionNormalMaterial.VertexLayoutDescription, mesh);
             box.AddComponent(boxRenderable);
 

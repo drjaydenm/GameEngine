@@ -32,7 +32,7 @@ namespace GameEngine.Game
 
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
-            var mesh = new Mesh<VertexPositionNormalMaterial>(vertices, indices);
+            var mesh = new Mesh<VertexPositionNormalMaterial>(ref vertices, ref indices);
             renderable.SetMesh(VertexPositionNormalMaterial.VertexLayoutDescription, mesh);
 
             entity.AddComponent(renderable);
