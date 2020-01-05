@@ -17,12 +17,14 @@ namespace GameEngine.Game
         public float JumpForce { get; set; } = 5f;
 
         private readonly Engine engine;
+        private readonly Scene scene;
         private Vector3 initalPosition;
         private float height;
         private float radius;
         private float mass;
         private Entity entity;
         private ICamera camera;
+        private bool isGrounded;
 
         /// <summary>
         /// Create a new instance of the <c>CharacterController</c>
@@ -32,9 +34,10 @@ namespace GameEngine.Game
         /// <param name="height">The height of the character capsule, excluding the radius on top and bottom - e.g. height of 1 and radius 0.5 actually gives a character of height 2</param>
         /// <param name="radius">The radius for the character capsule, also gets added to the height on the bottom and top semi-spheres</param>
         /// <param name="mass">The mass of the character</param>
-        public CharacterController(Engine engine, Vector3 position, float height, float radius, float mass)
+        public CharacterController(Engine engine, Scene scene, Vector3 position, float height, float radius, float mass)
         {
             this.engine = engine;
+            this.scene = scene;
             initalPosition = position;
             this.height = height;
             this.radius = radius;
@@ -63,6 +66,7 @@ namespace GameEngine.Game
 
         public void Update()
         {
+            CheckCharacterGrounded();
             var keyboard = engine.InputManager.Keyboard;
 
             // Calculate movement direction
@@ -119,7 +123,7 @@ namespace GameEngine.Game
             }
 
             // Apply jump after
-            if (keyboard.WasKeyPressed(Keys.Space))
+            if (keyboard.WasKeyPressed(Keys.Space) && isGrounded)
             {
                 targetVelocity.Y += JumpForce * mass;
             }
@@ -131,6 +135,31 @@ namespace GameEngine.Game
             }
 
             camera.Position = entity.Transform.Position + (Vector3.UnitY * CameraHeightOffset);
+        }
+
+        private void CheckCharacterGrounded()
+        {
+            const int rayCount = 8;
+
+            isGrounded = false;
+            for (int i = 0; i < rayCount; i++)
+            {
+                var delta = i / (float)rayCount * MathF.PI * 2;
+                var xPos = MathF.Sin(delta);
+                var zPos = MathF.Cos(delta);
+                var playerOffset = new Vector3(xPos * 0.5f, 0, zPos * 0.5f);
+                var rayStart = entity.Transform.Position - (Vector3.UnitY * 1f) + playerOffset;
+
+                var rayHit = scene.PhysicsSystem.Raycast(rayStart, -Vector3.UnitY, 0.1f,
+                PhysicsInteractivity.Dynamic | PhysicsInteractivity.Kinematic | PhysicsInteractivity.Static,
+                new[] { PhysicsComponent });
+
+                if (rayHit.DidHit)
+                {
+                    isGrounded = true;
+                    break;
+                }
+            }
         }
     }
 }

@@ -230,7 +230,7 @@ namespace GameEngine.Game
                 {
                     playerYOffset = hit.Position.Y + playerHeight;
                 }
-                character = new CharacterController(engine, new Vector3(0, playerYOffset, 0), playerHeight, 0.5f, 80);
+                character = new CharacterController(engine, this, new Vector3(0, playerYOffset, 0), playerHeight, 0.5f, 80);
                 playerEntity.AddComponent(character);
 
                 playerSpawned = true;
