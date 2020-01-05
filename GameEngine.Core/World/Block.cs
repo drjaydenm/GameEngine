@@ -10,5 +10,10 @@
             IsActive = isActive;
             BlockType = blockType;
         }
+
+        public override string ToString()
+        {
+            return (IsActive ? "Active" : "Inactive") + " " + BlockType;
+        }
     }
 }

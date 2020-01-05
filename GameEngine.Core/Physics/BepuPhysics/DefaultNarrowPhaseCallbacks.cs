@@ -63,12 +63,21 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 return;
             }
 
-            var bodyA = PhysicsSystem.CollidableHandleToBody[new Tuple<CollidableMobility, int>(pair.A.Mobility, pair.A.Handle)];
-            var bodyB = PhysicsSystem.CollidableHandleToBody[new Tuple<CollidableMobility, int>(pair.B.Mobility, pair.B.Handle)];
+            var bodyA = GetBodyFromHandle(pair.A.Mobility, pair.A.Handle);
+            var bodyB = GetBodyFromHandle(pair.B.Mobility, pair.B.Handle);
 
             pairMaterial.FrictionCoefficient = bodyA.Friction * bodyB.Friction;
             pairMaterial.MaximumRecoveryVelocity = 2f;
             pairMaterial.SpringSettings = ContactSpringiness;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private BepuPhysicsBody GetBodyFromHandle(CollidableMobility mobility, int handle)
+        {
+            if (mobility == CollidableMobility.Static)
+                return PhysicsSystem.StaticHandleToBody[handle];
+            else
+                return PhysicsSystem.BodyHandleToBody[handle];
         }
     }
 }

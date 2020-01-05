@@ -16,7 +16,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
     {
         public bool DebugEnabled { get; set; }
 
-        internal Dictionary<Tuple<CollidableMobility, int>, BepuPhysicsBody> CollidableHandleToBody;
+        internal Dictionary<int, BepuPhysicsBody> BodyHandleToBody;
+        internal Dictionary<int, BepuPhysicsBody> StaticHandleToBody;
 
         private readonly Engine engine;
         private readonly Scene scene;
@@ -34,7 +35,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
             threadDispatcher = new DefaultThreadDispatcher(Environment.ProcessorCount);
             simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(this), new DefaultPoseIntegratorCallbacks(gravity));
             registeredComponents = new Dictionary<PhysicsComponent, BepuPhysicsBody>();
-            CollidableHandleToBody = new Dictionary<Tuple<CollidableMobility, int>, BepuPhysicsBody>();
+            BodyHandleToBody = new Dictionary<int, BepuPhysicsBody>();
+            StaticHandleToBody = new Dictionary<int, BepuPhysicsBody>();
         }
 
         public void DeregisterComponent(PhysicsComponent component)
@@ -43,7 +45,15 @@ namespace GameEngine.Core.Physics.BepuPhysics
             {
                 var body = registeredComponents[component];
                 registeredComponents.Remove(component);
-                CollidableHandleToBody.Remove(BodyToCollidableKey(body));
+
+                if (component.Interactivity == PhysicsInteractivity.Static)
+                {
+                    StaticHandleToBody.Remove(body.StaticReference.Handle);
+                }
+                else
+                {
+                    BodyHandleToBody.Remove(body.BodyReference.Handle);
+                }
 
                 simulation.Shapes.Remove(body.ShapeIndex);
                 if (component.Interactivity == PhysicsInteractivity.Static)
@@ -155,7 +165,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
             component.Body = body;
             registeredComponents.Add(component, body);
-            CollidableHandleToBody.Add(BodyToCollidableKey(body), body);
+
+            if (component.Interactivity == PhysicsInteractivity.Static)
+                StaticHandleToBody.Add(staticHandle, body);
+            else
+                BodyHandleToBody.Add(bodyHandle, body);
         }
 
         public void Update()
@@ -222,7 +236,12 @@ namespace GameEngine.Core.Physics.BepuPhysics
             PhysicsComponent component = null;
             if (hitHandler.Hit)
             {
-                var body = CollidableHandleToBody[new Tuple<CollidableMobility, int>(hitHandler.Collidable.Mobility, hitHandler.Collidable.Handle)];
+                BepuPhysicsBody body;
+                if (hitHandler.Collidable.Mobility == CollidableMobility.Static)
+                    body = StaticHandleToBody[hitHandler.Collidable.Handle];
+                else
+                    body = BodyHandleToBody[hitHandler.Collidable.Handle];
+
                 component = registeredComponents.Where(c => c.Value == body).FirstOrDefault().Key;
             }
 
