@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 
 namespace GameEngine.Core.World
 {
@@ -11,15 +11,18 @@ namespace GameEngine.Core.World
         public static readonly Vector3 CHUNK_SIZE = new Vector3(CHUNK_X_SIZE, CHUNK_Y_SIZE, CHUNK_Z_SIZE);
         public static readonly Vector3 CHUNK_BLOCK_RATIO = new Vector3(1f / CHUNK_X_SIZE, 1f / CHUNK_Y_SIZE, 1f / CHUNK_Z_SIZE);
 
-        public Block[,,] Blocks { get; private set; }
+        public Block[,,] Blocks => blocks;
         public Coord3 Coordinate { get; private set; }
         public Vector3 WorldPosition { get; private set; }
         public Vector3 WorldPositionCentroid { get; private set; }
 
         public int ActiveBlockCount => CHUNK_BLOCK_COUNT - InactiveBlockCount;
-        public int InactiveBlockCount { get; private set; }
+        public int InactiveBlockCount => inactiveBlockCount;
         public bool IsAnyBlockActive => InactiveBlockCount < CHUNK_BLOCK_COUNT;
         public bool IsAnyBlockInactive => InactiveBlockCount > 0;
+
+        private Block[,,] blocks;
+        private int inactiveBlockCount;
 
         public Chunk(Coord3 coordinate)
         {
@@ -27,26 +30,25 @@ namespace GameEngine.Core.World
             WorldPosition = coordinate * CHUNK_SIZE;
             WorldPositionCentroid = WorldPosition + (CHUNK_SIZE * 0.5f);
 
-            Blocks = new Block[CHUNK_X_SIZE, CHUNK_Y_SIZE, CHUNK_Z_SIZE];
-            InactiveBlockCount = CHUNK_BLOCK_COUNT;
+            blocks = new Block[CHUNK_X_SIZE, CHUNK_Y_SIZE, CHUNK_Z_SIZE];
+            inactiveBlockCount = CHUNK_BLOCK_COUNT;
         }
 
         public void SetBlockIsActive(int x, int y, int z, bool isActive)
         {
-            ref var block = ref Blocks[x, y, z];
+            ref var block = ref blocks[x, y, z];
 
-            var wasActive = block.IsActive;
+            if (block.IsActive && !isActive)
+                inactiveBlockCount++;
+            else if (!block.IsActive && isActive)
+                inactiveBlockCount--;
+
             block.IsActive = isActive;
-
-            if (wasActive && !isActive)
-                InactiveBlockCount++;
-            else if (!wasActive && isActive)
-                InactiveBlockCount--;
         }
 
         public void SetBlockType(int x, int y, int z, byte blockType)
         {
-            Blocks[x, y, z].BlockType = blockType;
+            blocks[x, y, z].BlockType = blockType;
         }
     }
 }

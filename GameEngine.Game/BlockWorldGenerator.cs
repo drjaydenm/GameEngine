@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using GameEngine.Core;
 using GameEngine.Core.World;
 
@@ -23,21 +25,21 @@ namespace GameEngine.Game
 
         public IEnumerable<Chunk> GenerateWorld(int xSize, int ySize, int zSize)
         {
-            var chunks = new List<Chunk>(xSize * ySize * zSize);
+            var chunks = new ConcurrentBag<Chunk>();
             var startXOffset = xSize / 2;
             var startYOffset = ySize / 2;
             var startZOffset = zSize / 2;
-            
-            for (var x = -startXOffset; x < xSize - startXOffset; x++)
+
+            Parallel.For(-startXOffset, xSize - startXOffset, (x) =>
             {
-                for (var y = -startYOffset; y < ySize - startYOffset; y++)
+                Parallel.For(-startYOffset, ySize - startYOffset, (y) =>
                 {
-                    for (var z = -startZOffset; z < zSize - startZOffset; z++)
+                    Parallel.For(-startZOffset, zSize - startZOffset, (z) =>
                     {
                         chunks.Add(GenerateChunk(x, y, z));
-                    }
-                }
-            }
+                    });
+                });
+            });
 
             return chunks;
         }
@@ -45,9 +47,9 @@ namespace GameEngine.Game
         public Chunk GenerateChunk(int xPos, int yPos, int zPos)
         {
             var chunk = new Chunk(new Coord3(xPos, yPos, zPos));
-            for (var x = 0; x < chunk.Blocks.GetLength(0); x++)
+            for (var x = 0; x < Chunk.CHUNK_X_SIZE; x++)
             {
-                for (var z = 0; z < chunk.Blocks.GetLength(2); z++)
+                for (var z = 0; z < Chunk.CHUNK_Z_SIZE; z++)
                 {
                     var chunkXBlockStart = chunk.Coordinate.X * Chunk.CHUNK_X_SIZE;
                     var chunkYBlockStart = chunk.Coordinate.Y * Chunk.CHUNK_Y_SIZE;
@@ -58,7 +60,7 @@ namespace GameEngine.Game
                     var height = noiseValue1 * LARGE_NOISE_SCALE;
                     height += noiseValue2 * SMALL_NOISE_SCALE;
 
-                    for (var y = 0; y < chunk.Blocks.GetLength(1); y++)
+                    for (var y = 0; y < Chunk.CHUNK_Y_SIZE; y++)
                     {
                         var actualYBlockStart = y + chunkYBlockStart;
                         var blockType = BlockType.Dirt;
