@@ -100,7 +100,8 @@ void main()
 {
     vec3 surfaceToLight = -LightDirection;
     vec4 diffuseColor = MaterialColors[fsin_MaterialId];
-    vec3 viewDirection = normalize(CameraPosition - fsin_WorldPosition);
+    vec3 cameraToFragment = CameraPosition - fsin_WorldPosition;
+    vec3 viewDirection = normalize(cameraToFragment);
 
     vec4 ambient = AmbientLight * diffuseColor;
 
@@ -118,7 +119,7 @@ void main()
 
     vec4 specular = specularCoefficient * SpecularColor * LightColor * LightIntensity;
 
-    float fogDistance = (gl_FragCoord.z / gl_FragCoord.w);
+    float fogDistance = length(cameraToFragment);
     float fogStrength = 1.0 - clamp((FogEndDistance - fogDistance) / (FogEndDistance - FogStartDistance), 0.0, 1.0);
     vec4 fog = FogColor * fogStrength;
     

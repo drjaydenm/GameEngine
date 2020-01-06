@@ -87,8 +87,8 @@ namespace GameEngine.Core.Graphics
             lightingInfo.LightIntensity = 2;
             lightingInfo.AmbientLight = new RgbaFloat(0.2f, 0.2f, 0.2f, 1);
             lightingInfo.FogColor = RgbaFloat.CornflowerBlue;
-            lightingInfo.FogStartDistance = 50;
-            lightingInfo.FogEndDistance = 140;
+            lightingInfo.FogStartDistance = 60;
+            lightingInfo.FogEndDistance = 150;
         }
 
         [StructLayout(LayoutKind.Sequential)]
