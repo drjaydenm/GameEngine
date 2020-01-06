@@ -65,13 +65,16 @@ namespace GameEngine.Core.World
 
             if (mesh == null || mesh.Vertices.Length <= 0)
                 return;
+            
+            ref var vertices = ref mesh.Vertices;
+            ref var indices = ref mesh.Indices;
 
             VertexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
-                new BufferDescription((uint)(VertexPositionNormalMaterial.SizeInBytes * mesh.Vertices.Length), BufferUsage.VertexBuffer));
+                new BufferDescription((uint)(VertexPositionNormalMaterial.SizeInBytes * vertices.Length), BufferUsage.VertexBuffer));
             IndexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
-                new BufferDescription((uint)(sizeof(uint) * mesh.Indices.Length), BufferUsage.IndexBuffer));
-            commandList.UpdateBuffer(VertexBuffer, 0, mesh.Vertices);
-            commandList.UpdateBuffer(IndexBuffer, 0, mesh.Indices);
+                new BufferDescription((uint)(sizeof(uint) * indices.Length), BufferUsage.IndexBuffer));
+            commandList.UpdateBuffer(VertexBuffer, 0, vertices);
+            commandList.UpdateBuffer(IndexBuffer, 0, indices);
 
             mesh = null;
             isDirty = false;

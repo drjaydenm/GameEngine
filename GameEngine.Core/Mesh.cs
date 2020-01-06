@@ -9,8 +9,8 @@
             public T Vertex3 { get; set; }
         }
 
-        public T[] Vertices { get; }
-        public uint[] Indices { get; }
+        public T[] Vertices;
+        public uint[] Indices;
 
         public Mesh(ref T[] vertices, ref uint[] indices)
         {
