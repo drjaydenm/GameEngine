@@ -93,28 +93,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             }
             else if (component is PhysicsCompoundComponent compoundComponent)
             {
-                var compoundCount = compoundComponent.BoxCompoundShapes.Count + compoundComponent.SphereCompoundShapes.Count;
-                using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, compoundCount))
-                {
-                    foreach (var boxCompound in compoundComponent.BoxCompoundShapes)
-                    {
-                        var shape = new Box(boxCompound.Size.X, boxCompound.Size.Y, boxCompound.Size.Z);
-                        var pose = new RigidPose(boxCompound.RelativeOffset);
-                        compoundBuilder.Add(shape, pose, 1);
-                    }
-
-                    foreach (var sphereCompound in compoundComponent.SphereCompoundShapes)
-                    {
-                        var shape = new Sphere(sphereCompound.Radius);
-                        var pose = new RigidPose(sphereCompound.RelativeOffset);
-                        compoundBuilder.Add(shape, pose, 1);
-                    }
-                    
-                    compoundBuilder.BuildDynamicCompound(out var compoundChildren, out inertia/*, out var center*/);
-
-                    var compundShape = new BigCompound(compoundChildren, simulation.Shapes, bufferPool);
-                    shapeIndex = simulation.Shapes.Add(compundShape);
-                }
+                BuildCompoundShape(compoundComponent, out inertia, out shapeIndex);
             }
             else if (component is PhysicsMeshComponent meshComponent)
             {
@@ -269,6 +248,72 @@ namespace GameEngine.Core.Physics.BepuPhysics
             return new Tuple<CollidableMobility, int>(
                 body.IsBody ? body.BodyReference.Kinematic ? CollidableMobility.Kinematic : CollidableMobility.Dynamic : CollidableMobility.Static,
                 body.IsBody ? body.BodyReference.Handle : body.StaticReference.Handle);
+        }
+
+        private void BuildCompoundShape(PhysicsCompoundComponent compoundComponent, out BodyInertia inertia, out TypedIndex shapeIndex)
+        {
+            var compoundCount = compoundComponent.BoxCompoundShapes.Count + compoundComponent.SphereCompoundShapes.Count;
+            using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, compoundCount))
+            {
+                var addedBoxShapes = new List<Tuple<Box, TypedIndex, BodyInertia>>();
+                foreach (var boxCompound in compoundComponent.BoxCompoundShapes)
+                {
+                    Tuple<Box, TypedIndex, BodyInertia> addedShape = null;
+                    foreach (var shape in addedBoxShapes)
+                    {
+                        if (shape.Item1.Width == boxCompound.Size.X && shape.Item1.Height == boxCompound.Size.Y && shape.Item1.Length == boxCompound.Size.Z)
+                        {
+                            addedShape = shape;
+                            break;
+                        }
+                    }
+
+                    if (addedShape == null)
+                    {
+                        var shape = new Box(boxCompound.Size.X, boxCompound.Size.Y, boxCompound.Size.Z);
+                        shape.ComputeInertia(1, out var compoundShapeInertia);
+                        var compoundShapeIndex = simulation.Shapes.Add(shape);
+
+                        addedShape = new Tuple<Box, TypedIndex, BodyInertia>(shape, compoundShapeIndex, compoundShapeInertia);
+                        addedBoxShapes.Add(addedShape);
+                    }
+
+                    var pose = new RigidPose(boxCompound.RelativeOffset);
+                    compoundBuilder.Add(addedShape.Item2, pose, addedShape.Item3.InverseInertiaTensor, 1);
+                }
+
+                var addedSphereShapes = new List<Tuple<Sphere, TypedIndex, BodyInertia>>();
+                foreach (var sphereCompound in compoundComponent.SphereCompoundShapes)
+                {
+                    Tuple<Sphere, TypedIndex, BodyInertia> addedShape = null;
+                    foreach (var shape in addedSphereShapes)
+                    {
+                        if (shape.Item1.Radius == sphereCompound.Radius)
+                        {
+                            addedShape = shape;
+                            break;
+                        }
+                    }
+
+                    if (addedShape == null)
+                    {
+                        var shape = new Sphere(sphereCompound.Radius);
+                        shape.ComputeInertia(1, out var compoundShapeInertia);
+                        var compoundShapeIndex = simulation.Shapes.Add(shape);
+
+                        addedShape = new Tuple<Sphere, TypedIndex, BodyInertia>(shape, compoundShapeIndex, compoundShapeInertia);
+                        addedSphereShapes.Add(addedShape);
+                    }
+
+                    var pose = new RigidPose(sphereCompound.RelativeOffset);
+                    compoundBuilder.Add(addedShape.Item2, pose, addedShape.Item3.InverseInertiaTensor, 1);
+                }
+
+                compoundBuilder.BuildDynamicCompound(out var compoundChildren, out inertia/*, out var center*/);
+
+                var compundShape = new BigCompound(compoundChildren, simulation.Shapes, bufferPool);
+                shapeIndex = simulation.Shapes.Add(compundShape);
+            }
         }
     }
 }
