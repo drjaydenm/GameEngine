@@ -13,10 +13,12 @@ namespace GameEngine.Core.World
         public int ChunksToUpdateCount => chunksToUpdate.Count;
         public int ActualRenderableCount => chunkRenderables.Where(r => r.Value != null).Count();
         public int ActualPhysicsCount => chunkPhysics.Where(r => r.Value != null).Count();
+        public Vector3 PlayerPosition { get; private set; }
+        public Coord3 PlayerInChunkCoord { get; private set; }
 
         private readonly Engine engine;
         private readonly Dictionary<Coord3, Chunk> chunks;
-        private readonly Queue<Coord3> chunksToUpdate;
+        private readonly PriorityQueue<Coord3> chunksToUpdate;
         private readonly Queue<Coord3> chunksToRemove;
         private readonly Dictionary<Coord3, ChunkRenderable> chunkRenderables;
         private readonly Dictionary<Coord3, PhysicsComponent> chunkPhysics;
@@ -30,7 +32,7 @@ namespace GameEngine.Core.World
             this.engine = engine;
 
             chunks = new Dictionary<Coord3, Chunk>();
-            chunksToUpdate = new Queue<Coord3>();
+            chunksToUpdate = new PriorityQueue<Coord3>();
             chunksToRemove = new Queue<Coord3>();
             chunkRenderables = new Dictionary<Coord3, ChunkRenderable>();
             chunkPhysics = new Dictionary<Coord3, PhysicsComponent>();
@@ -103,7 +105,7 @@ namespace GameEngine.Core.World
                 return;
 
             chunks.Add(chunk.Coordinate, chunk);
-            chunksToUpdate.Enqueue(chunk.Coordinate);
+            QueueCoordForUpdate(chunk.Coordinate);
 
             QueueSurroundingChunksForUpdate(chunk);
         }
@@ -124,7 +126,7 @@ namespace GameEngine.Core.World
             if (!chunks.ContainsKey(chunk.Coordinate))
                 return;
 
-            chunksToUpdate.Enqueue(chunk.Coordinate);
+            QueueCoordForUpdate(chunk.Coordinate);
 
             QueueSurroundingChunksForUpdate(chunk);
         }
@@ -184,6 +186,24 @@ namespace GameEngine.Core.World
                 (int)Math.Floor(blockIndex.Z));
         }
 
+        public void UpdatePlayerPosition(Vector3 newPosition)
+        {
+            PlayerPosition = newPosition;
+
+            var currentChunk = FindChunkByWorldPosition(PlayerPosition);
+            if (currentChunk != null)
+                PlayerInChunkCoord = currentChunk.Coordinate;
+            else
+                PlayerInChunkCoord = Coord3.Zero;
+        }
+
+        private void QueueCoordForUpdate(Coord3 chunkCoord)
+        {
+            var dist = PlayerInChunkCoord - chunkCoord;
+            var distanceFromPlayer = (int)Math.Abs(Math.Sqrt(dist.X * dist.X + dist.Y * dist.Y + dist.Z * dist.Z));
+            chunksToUpdate.Enqueue(chunkCoord, distanceFromPlayer);
+        }
+
         private void AddOrUpdateRenderable(Coord3 chunkCoord)
         {
             var chunk = chunks[chunkCoord];
@@ -197,7 +217,7 @@ namespace GameEngine.Core.World
             {
                 RemoveComponent(chunkRenderables[chunkCoord]);
                 chunkRenderables[chunkCoord].Dispose();
-                    
+
                 chunkRenderables[chunkCoord] = null;
             }
             else
@@ -316,7 +336,7 @@ namespace GameEngine.Core.World
                     return;
 
                 if (chunkAbove != null && !chunksToUpdate.Contains(chunkAbove.Coordinate))
-                    chunksToUpdate.Enqueue(chunkAbove.Coordinate);
+                    QueueCoordForUpdate(chunkAbove.Coordinate);
             }
 
             // Update surrounding chunks if not queued for update already

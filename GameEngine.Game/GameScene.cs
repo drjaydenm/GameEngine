@@ -58,7 +58,7 @@ namespace GameEngine.Game
             world = new BlockWorld(engine, this, "World");
             AddEntity(world);
 
-            var camera = new DebugCamera(Vector3.Zero, Vector3.UnitZ, 1, 0.1f, 500, engine);
+            var camera = new DebugCamera(new Vector3(8, 80, 8), Vector3.UnitZ, 1, 0.1f, 500, engine);
             camera.DisableRotation = true;
 
             playerEntity = new Entity(this, "Player");
@@ -225,6 +225,7 @@ namespace GameEngine.Game
             {
                 QueueNewChunksIfRequired(currentChunk);
                 UnloadChunksIfRequired(currentChunk);
+                world.UpdatePlayerPosition(ActiveCamera.Position);
             }
 
             if (coordsToGenerate.Count > 0)
