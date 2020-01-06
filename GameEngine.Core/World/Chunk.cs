@@ -33,8 +33,10 @@ namespace GameEngine.Core.World
 
         public void SetBlockIsActive(int x, int y, int z, bool isActive)
         {
-            var wasActive = Blocks[x, y, z].IsActive;
-            Blocks[x, y, z].IsActive = isActive;
+            ref var block = ref Blocks[x, y, z];
+
+            var wasActive = block.IsActive;
+            block.IsActive = isActive;
 
             if (wasActive && !isActive)
                 InactiveBlockCount++;

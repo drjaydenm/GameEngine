@@ -29,11 +29,12 @@ namespace GameEngine.Core.World
                 {
                     for (int blockZ = 0; blockZ < chunk.Blocks.GetLength(2); blockZ++)
                     {
-                        if (!chunk.Blocks[blockX, blockY, blockZ].IsActive)
+                        ref var block = ref chunk.Blocks[blockX, blockY, blockZ];
+                        if (!block.IsActive)
                             continue;
 
                         var blockOffset = new Vector3(blockX, blockY, blockZ);
-                        var blockType = chunk.Blocks[blockX, blockY, blockZ].BlockType;
+                        var blockType = block.BlockType;
 
                         // Top
                         if ((blockY == Chunk.CHUNK_Y_SIZE - 1 && !(chunkToTop?.Blocks[blockX, 0, blockZ].IsActive ?? true))
