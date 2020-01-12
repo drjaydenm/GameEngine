@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -258,6 +258,14 @@ namespace GameEngine.Game
                 var controller = movingPlatforms[i].GetComponentsOfType<MovingPlatformController>().FirstOrDefault();
                 controller.MovementDirection = Vector3.UnitX * (float)Math.Sin(engine.GameTimeTotal.TotalSeconds / 2f) * 10f;
             }
+
+            var font = "Fonts/OpenSans-Regular.woff";
+            var fontSize = 14;
+            var fontColor = RgbaFloat.Black;
+            var yAccumulated = 0;
+            var lineSpacing = 5;
+            engine.TextRenderer.DrawText($"FPS: {engine.PerformanceCounters.FramesPerSecond} / UPS: {engine.PerformanceCounters.UpdatesPerSecond}", new Vector2(5, yAccumulated += lineSpacing), fontColor, font, fontSize);
+            engine.TextRenderer.DrawText($"Chunks: {ChunkCount} / Gen: {ChunkGenerationQueuedCount} / Upd: {ChunkUpdateQueuedCount}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
         }
 
         public override void Draw()

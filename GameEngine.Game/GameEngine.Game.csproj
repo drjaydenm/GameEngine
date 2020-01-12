@@ -8,4 +8,10 @@
   <ItemGroup>
     <ProjectReference Include="..\GameEngine.Core\GameEngine.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Fonts\OpenSans-Regular.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

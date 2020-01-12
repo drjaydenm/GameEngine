@@ -13,22 +13,13 @@ namespace GameEngine.Game
         {
             base.Initialize();
 
+            Engine.Window.Title = "DemoGame";
+
             GameScene = new GameScene(Engine);
             GameScene.Initialize(new Renderer(Engine, GameScene), new BepuPhysicsSystem(Engine, GameScene, new Vector3(0, -9.8f, 0)));
             GameScene.LoadScene();
 
             Engine.AddScene(GameScene);
-        }
-
-        protected override void Update()
-        {
-            base.Update();
-
-            Engine.Window.Title = $"DemoGame FPS: {Engine.PerformanceCounters.FramesPerSecond}" +
-                $" UPS: {Engine.PerformanceCounters.UpdatesPerSecond}" +
-                $" Chunks: {GameScene.ChunkCount}" +
-                $" Chunks Gen Queued: {GameScene.ChunkGenerationQueuedCount}" +
-                $" Chunks Upd Queued: {GameScene.ChunkUpdateQueuedCount}";
         }
     }
 }

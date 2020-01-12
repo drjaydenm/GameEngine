@@ -18,6 +18,7 @@ namespace GameEngine.Core
         public GraphicsDevice GraphicsDevice { get; private set; }
         public IInputManager InputManager { get; private set; }
         public DebugGraphics DebugGraphics { get; private set; }
+        public TextRenderer TextRenderer { get; private set; }
 
         internal CommandList CommandList { get; private set; }
 
@@ -52,6 +53,7 @@ namespace GameEngine.Core
             CommandList = GraphicsDevice.ResourceFactory.CreateCommandList();
 
             DebugGraphics = new DebugGraphics(this);
+            TextRenderer = new TextRenderer(this);
         }
 
         public void Update()
@@ -62,6 +64,8 @@ namespace GameEngine.Core
             PerformanceCounters.Update();
 
             InputManager.Update();
+
+            TextRenderer.Update();
 
             foreach (var scene in scenes)
             {
@@ -86,6 +90,8 @@ namespace GameEngine.Core
             {
                 scene.Draw();
             }
+
+            TextRenderer.Draw();
 
             CommandList.End();
             GraphicsDevice.SubmitCommands(CommandList);

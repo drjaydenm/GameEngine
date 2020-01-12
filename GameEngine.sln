@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29418.71
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameEngine.Core", "GameEngine.Core\GameEngine.Core.csproj", "{DF59BE85-8CBE-40FF-B614-9C92C0119DC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine.Core", "GameEngine.Core\GameEngine.Core.csproj", "{DF59BE85-8CBE-40FF-B614-9C92C0119DC1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1236DE87-0E63-4CDE-96EA-85FDF098FAE8}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,6 +13,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameEngine.Game", "GameEngine.Game\GameEngine.Game.csproj", "{953A5BDA-599A-4B9B-B7C1-D9AE2A5D34DB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpText.Veldrid", "SharpText\SharpText.Veldrid\SharpText.Veldrid.csproj", "{EFF37B87-DC8C-40CE-A661-987A08A8A1C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpText.Core", "SharpText\SharpText.Core\SharpText.Core.csproj", "{6A5280D2-DB60-4DB6-B844-5E6A870BBC92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,6 +32,14 @@ Global
 		{953A5BDA-599A-4B9B-B7C1-D9AE2A5D34DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{953A5BDA-599A-4B9B-B7C1-D9AE2A5D34DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{953A5BDA-599A-4B9B-B7C1-D9AE2A5D34DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFF37B87-DC8C-40CE-A661-987A08A8A1C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFF37B87-DC8C-40CE-A661-987A08A8A1C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFF37B87-DC8C-40CE-A661-987A08A8A1C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFF37B87-DC8C-40CE-A661-987A08A8A1C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A5280D2-DB60-4DB6-B844-5E6A870BBC92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A5280D2-DB60-4DB6-B844-5E6A870BBC92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A5280D2-DB60-4DB6-B844-5E6A870BBC92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A5280D2-DB60-4DB6-B844-5E6A870BBC92}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
