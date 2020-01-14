@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -256,15 +256,16 @@ namespace GameEngine.Game
             for (var i = 0; i < movingPlatforms.Length; i++)
             {
                 var controller = movingPlatforms[i].GetComponentsOfType<MovingPlatformController>().FirstOrDefault();
-                controller.MovementDirection = Vector3.UnitX * (float)Math.Sin(engine.GameTimeTotal.TotalSeconds / 2f) * 10f;
+                controller.MovementDirection = Vector3.UnitX * (float)Math.Sin(engine.GameTimeTotal.TotalSeconds / 2f) * 4f;
             }
 
             var font = "Fonts/OpenSans-Regular.woff";
-            var fontSize = 14;
-            var fontColor = RgbaFloat.Black;
+            var fontSize = 15;
+            var fontColor = RgbaFloat.White;
             var yAccumulated = 0;
             var lineSpacing = 5;
             engine.TextRenderer.DrawText($"FPS: {engine.PerformanceCounters.FramesPerSecond} / UPS: {engine.PerformanceCounters.UpdatesPerSecond}", new Vector2(5, yAccumulated += lineSpacing), fontColor, font, fontSize);
+            engine.TextRenderer.DrawText($"Pos: {playerEntity.Transform.Position}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
             engine.TextRenderer.DrawText($"Chunks: {ChunkCount} / Gen: {ChunkGenerationQueuedCount} / Upd: {ChunkUpdateQueuedCount}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
         }
 

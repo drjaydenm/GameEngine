@@ -19,6 +19,7 @@ namespace GameEngine.Game
         public float JumpForce { get; set; } = 5f;
         public float JumpMinTimeBetween => 0.75f;
         public float GroundedRayLength => 0.1f;
+        public float DecelerationSpeed => 10f;
 
         private readonly Engine engine;
         private readonly Scene scene;
@@ -30,7 +31,7 @@ namespace GameEngine.Game
         private ICamera camera;
         private bool isGrounded;
         private double lastJumpSeconds;
-        private List<RayHit> supports;
+        private List<RayHit> supportHits;
 
         /// <summary>
         /// Create a new instance of the <c>CharacterController</c>
@@ -48,7 +49,7 @@ namespace GameEngine.Game
             this.height = height;
             this.radius = radius;
             this.mass = mass;
-            supports = new List<RayHit>();
+            supportHits = new List<RayHit>();
         }
 
         public void AttachedToEntity(Entity entity)
@@ -75,10 +76,11 @@ namespace GameEngine.Game
         public void Update()
         {
             CheckCharacterIsGrounded();
+            var hasMainSupport = GetMainSupport(out var mainSupportHit);
             var keyboard = engine.InputManager.Keyboard;
 
             // Calculate movement direction
-            var headingDirection = new Vector3(camera.ViewDirection.X, 0, camera.ViewDirection.Z);
+            var headingDirection = Vector3.Normalize(new Vector3(camera.ViewDirection.X, 0, camera.ViewDirection.Z));
             var movementDirection = Vector3.Zero;
             if (keyboard.WasKeyDown(Keys.A))
             {
@@ -109,25 +111,43 @@ namespace GameEngine.Game
                 movementSpeed = SprintSpeed;
             }
 
+            // Calculate main support object velocity
+            Vector3 supportVelocity;
+            if (hasMainSupport)
+            {
+                supportVelocity = new Vector3(
+                    mainSupportHit.PhysicsComponent.LinearVelocity.X,
+                    0,
+                    mainSupportHit.PhysicsComponent.LinearVelocity.Z);
+            }
+            else
+            {
+                supportVelocity = Vector3.Zero;
+            }
+
             // Calculate velocities
             var targetVelocity = new Vector3(
                 movementDirection.X * movementSpeed,
                 0,
                 movementDirection.Z * movementSpeed);
-            
+
+            var currentVelocity = PhysicsComponent.LinearVelocity;
+            var currentHorizontalVelocity = new Vector3(
+                    currentVelocity.X,
+                    0,
+                    currentVelocity.Z);
             if (targetVelocity.Length() > 0)
             {
-                var currentVelocity = new Vector3(
-                    PhysicsComponent.LinearVelocity.X,
-                    0,
-                    PhysicsComponent.LinearVelocity.Z);
-
                 var targetVelocityLength = targetVelocity.Length();
-                var currentVelocityLength = currentVelocity.Length();
+                var currentVelocityLength = currentHorizontalVelocity.Length();
                 var diffBetweenCurrentTarget = targetVelocityLength - currentVelocityLength;
 
                 targetVelocity.X *= diffBetweenCurrentTarget;
                 targetVelocity.Z *= diffBetweenCurrentTarget;
+            }
+            else if (isGrounded)
+            {
+                targetVelocity = (Vector3.Zero - currentHorizontalVelocity + supportVelocity) * DecelerationSpeed;
             }
 
             // Apply jump after
@@ -151,7 +171,7 @@ namespace GameEngine.Game
             const int rayCount = 8;
 
             isGrounded = false;
-            supports.Clear();
+            supportHits.Clear();
 
             for (int i = 0; i < rayCount; i++)
             {
@@ -168,9 +188,23 @@ namespace GameEngine.Game
                 if (rayHit.DidHit)
                 {
                     isGrounded = true;
-                    supports.Add(rayHit);
+                    supportHits.Add(rayHit);
                 }
             }
+        }
+
+        private bool GetMainSupport(out RayHit hit)
+        {
+            hit = new RayHit();
+
+            foreach (var rayHit in supportHits)
+            {
+                // TODO implement a more fancy heuristic here
+                hit = rayHit;
+                return true;
+            }
+
+            return false;
         }
     }
 }
