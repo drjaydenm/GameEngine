@@ -75,34 +75,13 @@ namespace GameEngine.Game
 
         public void Update()
         {
+            // Check for supports and if the character is grounded
             CheckCharacterIsGrounded();
             var hasMainSupport = GetMainSupport(out var mainSupportHit);
             var keyboard = engine.InputManager.Keyboard;
 
             // Calculate movement direction
-            var headingDirection = Vector3.Normalize(new Vector3(camera.ViewDirection.X, 0, camera.ViewDirection.Z));
-            var movementDirection = Vector3.Zero;
-            if (keyboard.WasKeyDown(Keys.A))
-            {
-                movementDirection += Vector3.Cross(Vector3.UnitY, headingDirection);
-            }
-            if (keyboard.WasKeyDown(Keys.D))
-            {
-                movementDirection -= Vector3.Cross(Vector3.UnitY, headingDirection);
-            }
-            if (keyboard.WasKeyDown(Keys.W))
-            {
-                movementDirection += headingDirection;
-            }
-            if (keyboard.WasKeyDown(Keys.S))
-            {
-                movementDirection -= headingDirection;
-            }
-            var movementDirectionLengthSquared = movementDirection.LengthSquared();
-            if (movementDirectionLengthSquared > 0)
-            {
-                movementDirection /= MathF.Sqrt(movementDirectionLengthSquared);
-            }
+            var movementDirection = GetInputMovementDirection();
 
             // Calculate movement speed
             var movementSpeed = WalkSpeed;
@@ -112,7 +91,7 @@ namespace GameEngine.Game
             }
 
             // Calculate main support object velocity
-            Vector3 supportVelocity;
+            var supportVelocity = Vector3.Zero;
             if (hasMainSupport)
             {
                 supportVelocity = new Vector3(
@@ -120,50 +99,55 @@ namespace GameEngine.Game
                     0,
                     mainSupportHit.PhysicsComponent.LinearVelocity.Z);
             }
-            else
-            {
-                supportVelocity = Vector3.Zero;
-            }
 
             // Calculate velocities
-            var targetVelocity = new Vector3(
-                movementDirection.X * movementSpeed,
-                0,
-                movementDirection.Z * movementSpeed);
+            var targetMovementVelocity = movementDirection * movementSpeed;
 
             var currentVelocity = PhysicsComponent.LinearVelocity;
             var currentHorizontalVelocity = new Vector3(
                     currentVelocity.X,
                     0,
                     currentVelocity.Z);
-            if (targetVelocity.Length() > 0)
-            {
-                var targetVelocityLength = targetVelocity.Length();
-                var currentVelocityLength = currentHorizontalVelocity.Length();
-                var diffBetweenCurrentTarget = targetVelocityLength - currentVelocityLength;
 
-                targetVelocity.X *= diffBetweenCurrentTarget;
-                targetVelocity.Z *= diffBetweenCurrentTarget;
+            // If the player wants to try and move the character
+            if (targetMovementVelocity.Length() > 0)
+            {
+                var targetVelocityLength = targetMovementVelocity.Length();
+                var currentVelocityLength = (currentHorizontalVelocity - supportVelocity).Length();
+                var diffBetweenCurrentTarget = Math.Max(targetVelocityLength - currentVelocityLength, 0);
+
+                targetMovementVelocity.X *= diffBetweenCurrentTarget;
+                targetMovementVelocity.Z *= diffBetweenCurrentTarget;
             }
             else if (isGrounded)
             {
-                targetVelocity = (Vector3.Zero - currentHorizontalVelocity + supportVelocity) * DecelerationSpeed;
+                // No desired player movement, so approach the support velocity
+                targetMovementVelocity = (Vector3.Zero - currentHorizontalVelocity + supportVelocity) * DecelerationSpeed;
             }
 
             // Apply jump after
             if (keyboard.WasKeyPressed(Keys.Space) && isGrounded && engine.GameTimeTotal.TotalSeconds - lastJumpSeconds > JumpMinTimeBetween)
             {
-                targetVelocity.Y += JumpForce * mass;
+                targetMovementVelocity.Y += JumpForce * mass;
                 lastJumpSeconds = engine.GameTimeTotal.TotalSeconds;
             }
 
             // Apply the impulse
-            if (targetVelocity.Length() > 0)
+            if (targetMovementVelocity.Length() > 0)
             {
-                PhysicsComponent.ApplyImpulse(targetVelocity);
+                PhysicsComponent.ApplyImpulse(targetMovementVelocity);
             }
 
             camera.Position = entity.Transform.Position + (Vector3.UnitY * CameraHeightOffset);
+
+            // Debug text
+            var font = "Fonts/OpenSans-Regular.woff";
+            var fontSize = 15;
+            var fontColor = Veldrid.RgbaFloat.White;
+            var yAccumulated = 100;
+            var lineSpacing = 5;
+            engine.TextRenderer.DrawText($"Movement Dir: {movementDirection}", new Vector2(5, yAccumulated += lineSpacing), fontColor, font, fontSize);
+            engine.TextRenderer.DrawText($"Target Vel: {targetMovementVelocity}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
         }
 
         private void CheckCharacterIsGrounded()
@@ -205,6 +189,43 @@ namespace GameEngine.Game
             }
 
             return false;
+        }
+
+        private Vector3 GetInputMovementDirection()
+        {
+            var keyboard = engine.InputManager.Keyboard;
+
+            var headingDirection = Vector3.Normalize(new Vector3(camera.ViewDirection.X, 0, camera.ViewDirection.Z));
+            var movementDirection = Vector3.Zero;
+
+            if (keyboard.WasKeyDown(Keys.A))
+            {
+                movementDirection += Vector3.Cross(Vector3.UnitY, headingDirection);
+            }
+            if (keyboard.WasKeyDown(Keys.D))
+            {
+                movementDirection -= Vector3.Cross(Vector3.UnitY, headingDirection);
+            }
+            if (keyboard.WasKeyDown(Keys.W))
+            {
+                movementDirection += headingDirection;
+            }
+            if (keyboard.WasKeyDown(Keys.S))
+            {
+                movementDirection -= headingDirection;
+            }
+
+            // Make sure there is no vertical contribution
+            movementDirection.Y = 0;
+
+            // Normalize
+            var movementDirectionLengthSquared = movementDirection.LengthSquared();
+            if (movementDirectionLengthSquared > 0)
+            {
+                movementDirection /= MathF.Sqrt(movementDirectionLengthSquared);
+            }
+
+            return movementDirection;
         }
     }
 }
