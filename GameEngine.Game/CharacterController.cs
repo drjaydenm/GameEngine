@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -14,8 +14,8 @@ namespace GameEngine.Game
     {
         public PhysicsCapsuleComponent PhysicsComponent { get; private set; }
         public float CameraHeightOffset => (height / 2f) + (radius / 2f);
-        public float WalkSpeed { get; set; } = 4f;
-        public float SprintSpeed { get; set; } = 5.5f;
+        public float WalkSpeed { get; set; } = 4.5f;
+        public float SprintSpeed { get; set; } = 6.5f;
         public float JumpForce { get; set; } = 5f;
         public float JumpMinTimeBetween => 0.6f;
         public float GroundedRayLength => 0.15f;
