@@ -17,9 +17,12 @@ namespace GameEngine.Game
         public float WalkSpeed { get; set; } = 5f;
         public float SprintSpeed { get; set; } = 10f;
         public float JumpForce { get; set; } = 5f;
-        public float JumpMinTimeBetween => 0.75f;
-        public float GroundedRayLength => 0.1f;
+        public float JumpMinTimeBetween => 0.6f;
+        public float GroundedRayLength => 0.15f;
         public float DecelerationSpeed => 10f;
+        public float DirectionChangeFactor => 2f;
+        public int GroundedRayCount => 8;
+        public float GroundedRayRadius => radius * 0.9f;
 
         private readonly Engine engine;
         private readonly Scene scene;
@@ -118,6 +121,14 @@ namespace GameEngine.Game
 
                 targetMovementVelocity.X *= diffBetweenCurrentTarget;
                 targetMovementVelocity.Z *= diffBetweenCurrentTarget;
+
+                // Subtract off a portion of the current direction to help change target directions
+                targetMovementVelocity.X -= currentVelocity.X * DirectionChangeFactor;
+                targetMovementVelocity.Z -= currentVelocity.Z * DirectionChangeFactor;
+
+                // Add on the support velocity
+                targetMovementVelocity.X += supportVelocity.X;
+                targetMovementVelocity.Z += supportVelocity.Z;
             }
             else if (isGrounded)
             {
@@ -139,35 +150,24 @@ namespace GameEngine.Game
             }
 
             camera.Position = entity.Transform.Position + (Vector3.UnitY * CameraHeightOffset);
-
-            // Debug text
-            var font = "Fonts/OpenSans-Regular.woff";
-            var fontSize = 15;
-            var fontColor = Veldrid.RgbaFloat.White;
-            var yAccumulated = 100;
-            var lineSpacing = 5;
-            engine.TextRenderer.DrawText($"Movement Dir: {movementDirection}", new Vector2(5, yAccumulated += lineSpacing), fontColor, font, fontSize);
-            engine.TextRenderer.DrawText($"Target Vel: {targetMovementVelocity}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
         }
 
         private void CheckCharacterIsGrounded()
         {
-            const int rayCount = 8;
-
             isGrounded = false;
             supportHits.Clear();
 
-            for (int i = 0; i < rayCount; i++)
+            for (int i = 0; i < GroundedRayCount; i++)
             {
-                var delta = i / (float)rayCount * MathF.PI * 2f;
+                var delta = i / (float)GroundedRayCount * MathF.PI * 2f;
                 var xPos = MathF.Sin(delta);
                 var zPos = MathF.Cos(delta);
-                var playerOffset = new Vector3(xPos * radius, 0, zPos * radius);
+                var playerOffset = new Vector3(xPos * GroundedRayRadius, 0, zPos * GroundedRayRadius);
                 var rayStart = entity.Transform.Position - (Vector3.UnitY * height) + playerOffset;
 
                 var rayHit = scene.PhysicsSystem.Raycast(rayStart, -Vector3.UnitY, GroundedRayLength,
-                PhysicsInteractivity.Dynamic | PhysicsInteractivity.Kinematic | PhysicsInteractivity.Static,
-                new[] { PhysicsComponent });
+                    PhysicsInteractivity.Dynamic | PhysicsInteractivity.Kinematic | PhysicsInteractivity.Static,
+                    new[] { PhysicsComponent });
 
                 if (rayHit.DidHit)
                 {
