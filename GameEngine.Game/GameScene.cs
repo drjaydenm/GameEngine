@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -239,7 +239,7 @@ namespace GameEngine.Game
             if (!playerSpawned && world.ChunksToUpdateCount <= 0)
             {
                 // Spawn the player
-                var maxChunkHeight = (float)(world.Chunks.Where(c => c.IsAnyBlockActive).Max(c => c.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
+                var maxChunkHeight = (float)(world.Chunks.Where(c => c.Chunk.IsAnyBlockActive).Max(c => c.Chunk.Coordinate.Y) + 1) * Chunk.CHUNK_Y_SIZE;
                 var playerYOffset = maxChunkHeight;
                 var hit = PhysicsSystem.Raycast(new Vector3(8, maxChunkHeight, 8), -Vector3.UnitY, 250, PhysicsInteractivity.Static);
                 var playerHeight = 0.9f;
@@ -286,10 +286,10 @@ namespace GameEngine.Game
                 foreach (var chunk in world.Chunks)
                 {
                     // Make the cube slightly smaller so we can see all sides of it
-                    var scale = cameraInChunk?.Coordinate == chunk.Coordinate ? Chunk.CHUNK_X_SIZE * 0.99f : Chunk.CHUNK_X_SIZE;
-                    var color = cameraInChunk?.Coordinate == chunk.Coordinate ? RgbaFloat.White : RgbaFloat.Pink;
+                    var scale = cameraInChunk?.Coordinate == chunk.Chunk.Coordinate ? Chunk.CHUNK_X_SIZE * 0.99f : Chunk.CHUNK_X_SIZE;
+                    var color = cameraInChunk?.Coordinate == chunk.Chunk.Coordinate ? RgbaFloat.White : RgbaFloat.Pink;
 
-                    var transform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateTranslation(chunk.WorldPositionCentroid);
+                    var transform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateTranslation(chunk.Chunk.WorldPositionCentroid);
                     Engine.DebugGraphics.DrawCube(color, transform * camera.View * camera.Projection);
                 }
             }
@@ -328,11 +328,11 @@ namespace GameEngine.Game
         {
             foreach (var chunk in world.Chunks)
             {
-                if (chunk.Coordinate.X < newChunk.Coordinate.X - CHUNK_GENERATION_RADIUS - 1 || chunk.Coordinate.X > newChunk.Coordinate.X + CHUNK_GENERATION_RADIUS + 1
-                    || chunk.Coordinate.Y < newChunk.Coordinate.Y - CHUNK_GENERATION_RADIUS - 1 || chunk.Coordinate.Y > newChunk.Coordinate.Y + CHUNK_GENERATION_RADIUS + 1
-                    || chunk.Coordinate.Z < newChunk.Coordinate.Z - CHUNK_GENERATION_RADIUS - 1 || chunk.Coordinate.Z > newChunk.Coordinate.Z + CHUNK_GENERATION_RADIUS + 1)
+                if (chunk.Chunk.Coordinate.X < newChunk.Coordinate.X - CHUNK_GENERATION_RADIUS - 1 || chunk.Chunk.Coordinate.X > newChunk.Coordinate.X + CHUNK_GENERATION_RADIUS + 1
+                    || chunk.Chunk.Coordinate.Y < newChunk.Coordinate.Y - CHUNK_GENERATION_RADIUS - 1 || chunk.Chunk.Coordinate.Y > newChunk.Coordinate.Y + CHUNK_GENERATION_RADIUS + 1
+                    || chunk.Chunk.Coordinate.Z < newChunk.Coordinate.Z - CHUNK_GENERATION_RADIUS - 1 || chunk.Chunk.Coordinate.Z > newChunk.Coordinate.Z + CHUNK_GENERATION_RADIUS + 1)
                 {
-                    world.RemoveChunk(chunk);
+                    world.RemoveChunk(chunk.Chunk);
                 }
             }
         }
