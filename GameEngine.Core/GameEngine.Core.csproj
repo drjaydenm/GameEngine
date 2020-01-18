@@ -7,13 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SharpText.Veldrid" Version="0.1.6" />
     <PackageReference Include="Veldrid" Version="4.7.0" />
     <PackageReference Include="Veldrid.SPIRV" Version="1.0.11" />
     <PackageReference Include="Veldrid.StartupUtilities" Version="4.7.0" />
     <PackageReference Include="BEPUphysics" Version="2.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\SharpText\SharpText.Veldrid\SharpText.Veldrid.csproj" />
   </ItemGroup>
 </Project>
