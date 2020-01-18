@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -196,6 +196,10 @@ namespace GameEngine.Game
 
                 world.UpdateChunk(lookingAtChunk);
             }
+            if (engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Middle) && lookingAtBlock != null)
+            {
+                BlowUpVoxels(rayHit.Position, 4);
+            }
             if (engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Right) && lookingAtBlock != null)
             {
                 var normalAsCoord = NormalToCoord(rayHit.Normal);
@@ -386,6 +390,53 @@ namespace GameEngine.Game
                 return -Coord3.UnitZ;
             else
                 return Coord3.UnitX;
+        }
+
+        private void BlowUpVoxels(Vector3 explosionOrigin, int radius)
+        {
+            var updatedChunks = new HashSet<Chunk>();
+            var originChunk = world.FindChunkByWorldPosition(explosionOrigin);
+            if (originChunk == null)
+                return;
+
+            var originBlockCoord = world.ConvertWorldPositionToBlockCoordinate(explosionOrigin);
+            var originBlockCentroid = originChunk.WorldPosition + originBlockCoord + new Vector3(0.5f);
+
+            for (var x = -radius; x <= radius; x++)
+            {
+                for (var y = -radius; y <= radius; y++)
+                {
+                    for (var z = -radius; z <= radius; z++)
+                    {
+                        var dist = (originBlockCentroid - new Vector3(originBlockCentroid.X + x, originBlockCentroid.Y + y, originBlockCentroid.Z + z)).Length();
+                        if (dist > radius)
+                            continue;
+
+                        var currentChunkOffset = new Coord3(
+                            (int)Math.Floor((float)(originBlockCoord.X + x) / Chunk.CHUNK_X_SIZE),
+                            (int)Math.Floor((float)(originBlockCoord.Y + y) / Chunk.CHUNK_Y_SIZE),
+                            (int)Math.Floor((float)(originBlockCoord.Z + z) / Chunk.CHUNK_Z_SIZE));
+                        var currentChunk = originChunk;
+                        if (currentChunkOffset != Coord3.Zero)
+                        {
+                            currentChunk = world.FindChunkByOffset(originChunk, currentChunkOffset);
+                            if (currentChunk == null)
+                                continue;
+                        }
+
+                        var currentBlockCoord = new Vector3(originBlockCoord.X + x, originBlockCoord.Y + y, originBlockCoord.Z + z);
+                        currentBlockCoord += Chunk.CHUNK_SIZE * -currentChunkOffset;
+                        currentChunk.SetBlockIsActive((int)currentBlockCoord.X, (int)currentBlockCoord.Y, (int)currentBlockCoord.Z,
+                            false);
+                        updatedChunks.Add(currentChunk);
+                    }
+                }
+            }
+
+            foreach (var chunk in updatedChunks)
+            {
+                world.UpdateChunk(chunk);
+            }
         }
     }
 }
