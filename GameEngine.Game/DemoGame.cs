@@ -1,25 +1,24 @@
-﻿using System.Numerics;
-using GameEngine.Core;
+﻿using GameEngine.Core;
 using GameEngine.Core.Graphics;
-using GameEngine.Core.Physics.BepuPhysics;
 
 namespace GameEngine.Game
 {
     public class DemoGame : Core.Game
     {
-        public GameScene GameScene { get; private set; }
+        public LoadingScene LoadingScene { get; private set; }
 
         public override void Initialize()
         {
             base.Initialize();
 
             Engine.Window.Title = "DemoGame";
+            Engine.Window.Size = Engine.Window.ScreenSize - (Engine.Window.Position * 2);
 
-            GameScene = new GameScene(Engine);
-            GameScene.Initialize(new Renderer(Engine, GameScene), new BepuPhysicsSystem(Engine, GameScene, new Vector3(0, -9.8f, 0)));
-            GameScene.LoadScene();
+            LoadingScene = new LoadingScene();
+            LoadingScene.Initialize(Engine, new Renderer(Engine, LoadingScene), null);
+            LoadingScene.LoadScene();
 
-            Engine.AddScene(GameScene);
+            Engine.AddScene(LoadingScene);
         }
     }
 }

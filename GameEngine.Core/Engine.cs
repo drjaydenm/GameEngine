@@ -24,12 +24,17 @@ namespace GameEngine.Core
 
         private bool isShuttingDown;
         private List<Scene> scenes;
+        private List<Scene> scenesToRemove;
+        private List<Scene> scenesToAdd;
+        private bool scenesDirty;
 
         public Engine()
         {
             PerformanceCounters = new PerformanceCounters(this);
 
             scenes = new List<Scene>();
+            scenesToRemove = new List<Scene>();
+            scenesToAdd = new List<Scene>();
         }
 
         public void Init(IWindow window)
@@ -71,6 +76,21 @@ namespace GameEngine.Core
             {
                 scene.Update();
             }
+
+            if (scenesDirty)
+            {
+                foreach (var scene in scenesToRemove)
+                {
+                    scenes.Remove(scene);
+                }
+                foreach (var scene in scenesToAdd)
+                {
+                    scenes.Add(scene);
+                }
+                scenesToRemove.Clear();
+                scenesToAdd.Clear();
+                scenesDirty = false;
+            }
         }
 
         public void Draw()
@@ -102,12 +122,14 @@ namespace GameEngine.Core
 
         public void AddScene(Scene scene)
         {
-            scenes.Add(scene);
+            scenesToAdd.Add(scene);
+            scenesDirty = true;
         }
 
         public void RemoveScene(Scene scene)
         {
-            scenes.Remove(scene);
+            scenesToRemove.Add(scene);
+            scenesDirty = true;
         }
 
         private void OnWindowResized()

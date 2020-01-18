@@ -12,6 +12,7 @@ namespace GameEngine.Core
         public Renderer Renderer { get; private set; }
         public IPhysicsSystem PhysicsSystem { get; private set; }
         public ICamera ActiveCamera { get; private set; }
+        public Engine Engine { get; private set; }
 
         private readonly List<Entity> entities;
 
@@ -30,8 +31,9 @@ namespace GameEngine.Core
             entities.Remove(entity);
         }
 
-        public void Initialize(Renderer renderer, IPhysicsSystem physicsSystem)
+        public void Initialize(Engine engine, Renderer renderer, IPhysicsSystem physicsSystem)
         {
+            Engine = engine;
             Renderer = renderer;
             PhysicsSystem = physicsSystem;
         }
@@ -42,7 +44,8 @@ namespace GameEngine.Core
 
         public virtual void Update()
         {
-            PhysicsSystem.Update();
+            if (PhysicsSystem != null)
+                PhysicsSystem.Update();
 
             foreach (var entity in entities)
             {
@@ -54,7 +57,8 @@ namespace GameEngine.Core
         {
             Renderer.Draw();
 
-            PhysicsSystem.Draw();
+            if (PhysicsSystem != null)
+                PhysicsSystem.Draw();
         }
 
         public void SetActiveCamera(ICamera camera)

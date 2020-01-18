@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -18,7 +18,6 @@ namespace GameEngine.Game
         public int ChunkGenerationQueuedCount => coordsToGenerate.Count;
         public int ChunkUpdateQueuedCount => world.ChunksToUpdateCount;
 
-        private readonly Engine engine;
         private BlockWorld world;
         private Chunk previousChunk;
         private Chunk currentChunk;
@@ -40,10 +39,8 @@ namespace GameEngine.Game
         private const int CHUNK_GENERATION_RADIUS = 10;
         private const int CHUNK_GENERATE_PER_FRAME = 10;
 
-        public GameScene(Engine engine)
+        public GameScene()
         {
-            this.engine = engine;
-
             worldGenerator = new BlockWorldGenerator();
             coordsToGenerate = new Queue<Coord3>();
             boxes = new List<Entity>();
@@ -55,10 +52,10 @@ namespace GameEngine.Game
 
             Renderer.LightDirection = Vector3.Normalize(new Vector3(1, -1, 1));
 
-            world = new BlockWorld(engine, this, "World");
+            world = new BlockWorld(Engine, this, "World");
             AddEntity(world);
 
-            var camera = new DebugCamera(new Vector3(8, 80, 8), Vector3.UnitZ, 1, 0.1f, 500, engine);
+            var camera = new DebugCamera(new Vector3(8, 80, 8), Vector3.UnitZ, 1, 0.1f, 500, Engine);
             camera.DisableRotation = true;
 
             playerEntity = new Entity(this, "Player");
@@ -66,7 +63,7 @@ namespace GameEngine.Game
             AddEntity(playerEntity);
             SetActiveCamera(camera);
 
-            engine.InputManager.Mouse.IsMouseLocked = true;
+            Engine.InputManager.Mouse.IsMouseLocked = true;
 
             var chunks = worldGenerator.GenerateWorld(CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2, CHUNK_GENERATION_RADIUS * 2);
 
@@ -79,7 +76,7 @@ namespace GameEngine.Game
                 var platform = new Entity(this, $"Platform{i + 1}");
                 movingPlatforms[i] = platform;
                 AddEntity(platform);
-                platform.AddComponent(new MovingPlatformController(engine)
+                platform.AddComponent(new MovingPlatformController(Engine)
                 {
                     PlatformSize = new Vector3(2, 0.1f, 2)
                 });
@@ -91,48 +88,48 @@ namespace GameEngine.Game
         {
             base.Update();
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.Escape))
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.Escape))
             {
-                engine.Window.Exit();
+                Engine.Window.Exit();
             }
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.F11))
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.F11))
             {
-                engine.Window.WindowState = engine.Window.WindowState != WindowState.BorderlessFullScreen ? WindowState.BorderlessFullScreen : WindowState.Normal;
+                Engine.Window.WindowState = Engine.Window.WindowState != WindowState.BorderlessFullScreen ? WindowState.BorderlessFullScreen : WindowState.Normal;
             }
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.F10))
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.F10))
             {
-                engine.Window.WindowState = engine.Window.WindowState != WindowState.FullScreen ? WindowState.FullScreen : WindowState.Normal;
+                Engine.Window.WindowState = Engine.Window.WindowState != WindowState.FullScreen ? WindowState.FullScreen : WindowState.Normal;
             }
 
-            if (engine.GameTimeTotal.TotalMilliseconds > 500 && engine.InputManager.Mouse.IsMouseLocked)
+            if (Engine.GameTimeTotal.TotalMilliseconds > 500 && Engine.InputManager.Mouse.IsMouseLocked)
             {
                 ((DebugCamera)ActiveCamera).DisableRotation = false;
             }
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.Tilde))
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.Tilde))
             {
-                engine.InputManager.Mouse.IsMouseLocked = !engine.InputManager.Mouse.IsMouseLocked;
-                ((DebugCamera)ActiveCamera).DisableRotation = !engine.InputManager.Mouse.IsMouseLocked;
+                Engine.InputManager.Mouse.IsMouseLocked = !Engine.InputManager.Mouse.IsMouseLocked;
+                ((DebugCamera)ActiveCamera).DisableRotation = !Engine.InputManager.Mouse.IsMouseLocked;
             }
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.Backslash))
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.Backslash))
             {
                 shouldGenerateChunks = !shouldGenerateChunks;
             }
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.Slash))
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.Slash))
             {
                 shouldShowChunkDebug = !shouldShowChunkDebug;
             }
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.Enter))
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.Enter))
             {
                 PhysicsSystem.DebugEnabled = !PhysicsSystem.DebugEnabled;
             }
 
-            if (engine.InputManager.Keyboard.WasKeyPressed(Keys.F1) && playerSpawned)
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.F1) && playerSpawned)
             {
                 debugCamera = !debugCamera;
                 if (debugCamera)
@@ -146,7 +143,7 @@ namespace GameEngine.Game
                 }
             }
 
-            if (engine.InputManager.Mouse.ScrollDelta != 0)
+            if (Engine.InputManager.Mouse.ScrollDelta != 0)
             {
                 var box = ShootBox();
                 boxes.Add(box);
@@ -190,17 +187,17 @@ namespace GameEngine.Game
                 rayHitPosition = Vector3.Zero;
             }
 
-            if (engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Left) && lookingAtBlock != null)
+            if (Engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Left) && lookingAtBlock != null)
             {
                 lookingAtChunk.SetBlockIsActive(lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z, false);
 
                 world.UpdateChunk(lookingAtChunk);
             }
-            if (engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Middle) && lookingAtBlock != null)
+            if (Engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Middle) && lookingAtBlock != null)
             {
                 BlowUpVoxels(rayHit.Position, 4);
             }
-            if (engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Right) && lookingAtBlock != null)
+            if (Engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Right) && lookingAtBlock != null)
             {
                 var normalAsCoord = NormalToCoord(rayHit.Normal);
                 var coordOfBlockToAdd = lookingAtBlockCoord + normalAsCoord;
@@ -220,9 +217,9 @@ namespace GameEngine.Game
 
             const float lightRotateSpeed = 0.5f;
             Renderer.LightDirection = new Vector3(
-                (float)Math.Sin(engine.GameTimeTotal.TotalSeconds * lightRotateSpeed),
+                (float)Math.Sin(Engine.GameTimeTotal.TotalSeconds * lightRotateSpeed),
                 Renderer.LightDirection.Y,
-                (float)Math.Cos(engine.GameTimeTotal.TotalSeconds * lightRotateSpeed));
+                (float)Math.Cos(Engine.GameTimeTotal.TotalSeconds * lightRotateSpeed));
             
             currentChunk = world.FindChunkByWorldPosition(ActiveCamera.Position);
             if (currentChunk?.Coordinate != previousChunk?.Coordinate && currentChunk != null && shouldGenerateChunks)
@@ -250,7 +247,7 @@ namespace GameEngine.Game
                 {
                     playerYOffset = hit.Position.Y + playerHeight;
                 }
-                character = new CharacterController(engine, this, new Vector3(8, playerYOffset, 8), playerHeight, 0.4f, 80);
+                character = new CharacterController(Engine, this, new Vector3(8, playerYOffset, 8), playerHeight, 0.4f, 80);
                 playerEntity.AddComponent(character);
 
                 playerSpawned = true;
@@ -260,7 +257,7 @@ namespace GameEngine.Game
             for (var i = 0; i < movingPlatforms.Length; i++)
             {
                 var controller = movingPlatforms[i].GetComponentsOfType<MovingPlatformController>().FirstOrDefault();
-                controller.MovementDirection = Vector3.UnitX * (float)Math.Sin(engine.GameTimeTotal.TotalSeconds / 2f) * 4f;
+                controller.MovementDirection = Vector3.UnitX * (float)Math.Sin(Engine.GameTimeTotal.TotalSeconds / 2f) * 4f;
             }
 
             var font = "Fonts/OpenSans-Regular.woff";
@@ -268,9 +265,9 @@ namespace GameEngine.Game
             var fontColor = RgbaFloat.White;
             var yAccumulated = 0;
             var lineSpacing = 5;
-            engine.TextRenderer.DrawText($"FPS: {engine.PerformanceCounters.FramesPerSecond} / UPS: {engine.PerformanceCounters.UpdatesPerSecond}", new Vector2(5, yAccumulated += lineSpacing), fontColor, font, fontSize);
-            engine.TextRenderer.DrawText($"Pos: {playerEntity.Transform.Position}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
-            engine.TextRenderer.DrawText($"Chunks: {ChunkCount} / Gen: {ChunkGenerationQueuedCount} / Upd: {ChunkUpdateQueuedCount}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
+            Engine.TextRenderer.DrawText($"FPS: {Engine.PerformanceCounters.FramesPerSecond} / UPS: {Engine.PerformanceCounters.UpdatesPerSecond}", new Vector2(5, yAccumulated += lineSpacing), fontColor, font, fontSize);
+            Engine.TextRenderer.DrawText($"Pos: {playerEntity.Transform.Position}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
+            Engine.TextRenderer.DrawText($"Chunks: {ChunkCount} / Gen: {ChunkGenerationQueuedCount} / Upd: {ChunkUpdateQueuedCount}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
         }
 
         public override void Draw()
@@ -278,10 +275,10 @@ namespace GameEngine.Game
             base.Draw();
 
             var camera = ActiveCamera;
-            engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitX * 50, RgbaFloat.Red, camera.View * camera.Projection);
-            engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitY * 50, RgbaFloat.Green, camera.View * camera.Projection);
-            engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitZ * 50, RgbaFloat.Blue, camera.View * camera.Projection);
-            engine.DebugGraphics.DrawArrow(-Renderer.LightDirection * 100 + camera.Position, -Renderer.LightDirection * 60 + camera.Position, RgbaFloat.Yellow, camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitX * 50, RgbaFloat.Red, camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitY * 50, RgbaFloat.Green, camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitZ * 50, RgbaFloat.Blue, camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawArrow(-Renderer.LightDirection * 100 + camera.Position, -Renderer.LightDirection * 60 + camera.Position, RgbaFloat.Yellow, camera.View * camera.Projection);
 
             if (shouldShowChunkDebug)
             {
@@ -293,7 +290,7 @@ namespace GameEngine.Game
                     var color = cameraInChunk?.Coordinate == chunk.Coordinate ? RgbaFloat.White : RgbaFloat.Pink;
 
                     var transform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateTranslation(chunk.WorldPositionCentroid);
-                    engine.DebugGraphics.DrawCube(color, transform * camera.View * camera.Projection);
+                    Engine.DebugGraphics.DrawCube(color, transform * camera.View * camera.Projection);
                 }
             }
 
@@ -302,10 +299,10 @@ namespace GameEngine.Game
             {
                 var blockPosition = new Vector3(lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z) + lookingAtChunk.WorldPosition + new Vector3(0.5f);
                 var transform = Matrix4x4.CreateTranslation(blockPosition);
-                engine.DebugGraphics.DrawCube(RgbaFloat.Orange, transform * camera.View * camera.Projection);
+                Engine.DebugGraphics.DrawCube(RgbaFloat.Orange, transform * camera.View * camera.Projection);
             }
             var rayHitTransform = Matrix4x4.CreateScale(0.05f) * Matrix4x4.CreateTranslation(rayHitPosition);
-            engine.DebugGraphics.DrawCube(RgbaFloat.Black, rayHitTransform * camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawCube(RgbaFloat.Black, rayHitTransform * camera.View * camera.Projection);
         }
 
         private void QueueNewChunksIfRequired(Chunk newChunk)
@@ -362,7 +359,7 @@ namespace GameEngine.Game
             box.AddComponent(physicsBox);
             physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;
 
-            var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(engine, new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode));
+            var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(Engine, new Material(Engine, ShaderCode.VertexCode, ShaderCode.FragmentCode));
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
             var mesh = new Mesh<VertexPositionNormalMaterial>(ref vertices, ref indices);

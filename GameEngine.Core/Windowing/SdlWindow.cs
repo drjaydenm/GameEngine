@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Numerics;
 using Veldrid;
 using Veldrid.Sdl2;
@@ -17,11 +17,31 @@ namespace GameEngine.Core.Windowing
             get => window.Title;
             set => window.Title = value;
         }
-        public WindowState WindowState {
-            get => window.WindowState; 
-            set => window.WindowState = value; 
+        public WindowState WindowState
+        {
+            get => window.WindowState;
+            set => window.WindowState = value;
         }
-        public Vector2 Size => new Vector2(window.Width, window.Height);
+        public Vector2 Position => new Vector2(window.X, window.Y);
+        public Vector2 Size
+        {
+            get => new Vector2(window.Width, window.Height);
+            set
+            {
+                window.Width = (int)value.X;
+                window.Height = (int)value.Y;
+            }
+        }
+        public unsafe Vector2 ScreenSize
+        {
+            get
+            {
+                SDL_DisplayMode displayMode;
+                Sdl2Extensions.SDL_GetDesktopDisplayMode(0, &displayMode);
+
+                return new Vector2(displayMode.w, displayMode.h);
+            }
+        }
         public float AspectRatio => (float)window.Width / window.Height;
         public bool Running => window.Exists;
 
@@ -98,12 +118,6 @@ namespace GameEngine.Core.Windowing
                 height: 600,
                 flags: flags,
                 threadedProcessing: false);
-
-            SDL_DisplayMode displayMode;
-            Sdl2Extensions.SDL_GetDesktopDisplayMode(0, &displayMode);
-
-            window.Width = displayMode.w - 70;
-            window.Height = displayMode.h - 70;
 
             return window;
         }
