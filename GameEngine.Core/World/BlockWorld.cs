@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using GameEngine.Core.Entities;
@@ -101,8 +101,6 @@ namespace GameEngine.Core.World
                 return;
 
             chunksToRemove.Enqueue(chunk.Coordinate);
-
-            // TODO update surrounding chunks
         }
 
         public void UpdateChunk(Chunk chunk)
@@ -309,7 +307,7 @@ namespace GameEngine.Core.World
                 if (chunkAbove == null)
                     return;
 
-                if (chunkAbove != null && !chunksToUpdate.Contains(chunkAbove.Coordinate))
+                if (!chunksToUpdate.Contains(chunkAbove.Coordinate))
                     QueueCoordForUpdate(chunkAbove.Coordinate);
             }
 

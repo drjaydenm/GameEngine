@@ -47,6 +47,13 @@ namespace GameEngine.Game
         public Chunk GenerateChunk(int xPos, int yPos, int zPos)
         {
             var chunk = new Chunk(new Coord3(xPos, yPos, zPos));
+            GenerateChunk(chunk);
+
+            return chunk;
+        }
+
+        public void GenerateChunk(Chunk chunk)
+        {
             for (var x = 0; x < Chunk.CHUNK_X_SIZE; x++)
             {
                 for (var z = 0; z < Chunk.CHUNK_Z_SIZE; z++)
@@ -81,8 +88,6 @@ namespace GameEngine.Game
                     }
                 }
             }
-
-            return chunk;
         }
 
         private float GetNoise(Noise noise, int x, int y)
