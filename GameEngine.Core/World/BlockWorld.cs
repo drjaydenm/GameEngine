@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Numerics;
 using GameEngine.Core.Entities;
@@ -18,6 +19,7 @@ namespace GameEngine.Core.World
         private readonly PriorityQueue<Coord3> chunksToUpdate;
         private readonly Queue<Coord3> chunksToRemove;
         private readonly Material material;
+        private readonly ArrayPool<Block> blockPool;
 
         private const int CHUNKS_UPDATE_PER_FRAME = 10;
         private const int CHUNKS_REMOVE_PER_FRAME = 10;
@@ -30,6 +32,7 @@ namespace GameEngine.Core.World
             chunksToUpdate = new PriorityQueue<Coord3>();
             chunksToRemove = new Queue<Coord3>();
             material = new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode);
+            blockPool = ArrayPool<Block>.Shared;
         }
 
         public override void Update()
@@ -44,6 +47,11 @@ namespace GameEngine.Core.World
             {
                 RemoveChunks();
             }
+        }
+
+        public Chunk CreateChunk(Coord3 coord)
+        {
+            return new Chunk(coord, blockPool);
         }
 
         private void UpdateChunks()
@@ -80,6 +88,7 @@ namespace GameEngine.Core.World
                 {
                     RemoveComponent(chunk.Physics);
                 }
+                chunk.Chunk.Dispose();
                 chunks.Remove(chunkCoord);
             }
         }
@@ -148,7 +157,7 @@ namespace GameEngine.Core.World
 
             var flooredPosition = new Vector3((float)Math.Floor(position.X), (float)Math.Floor(position.Y), (float)Math.Floor(position.Z));
             var blockIndex = flooredPosition - (Chunk.CHUNK_SIZE * chunk.Coordinate);
-            return chunk.Blocks[(int)blockIndex.X, (int)blockIndex.Y, (int)blockIndex.Z];
+            return chunk.Blocks[(int)blockIndex.X + ((int)blockIndex.Y * Chunk.CHUNK_X_SIZE) + ((int)blockIndex.Z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)];
         }
 
         public Coord3 ConvertWorldPositionToChunkCoordinate(Vector3 position)
@@ -268,34 +277,10 @@ namespace GameEngine.Core.World
                 }
                 else
                 {
-                    var compound = new PhysicsCompoundComponent(PhysicsInteractivity.Static)
+                    physics = new PhysicsChunkComponent(chunk, PhysicsInteractivity.Static)
                     {
                         PositionOffset = chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f)
                     };
-                    for (var x = 0; x < chunk.Blocks.GetLength(0); x++)
-                    {
-                        for (var y = 0; y < chunk.Blocks.GetLength(1); y++)
-                        {
-                            for (var z = 0; z < chunk.Blocks.GetLength(2); z++)
-                            {
-                                if (chunk.Blocks[x, y, z].IsActive)
-                                {
-                                    var anySurroundingBlocksInactive =
-                                        (x > 0 ? !chunk.Blocks[x - 1, y, z].IsActive : true)
-                                        || (x < Chunk.CHUNK_X_SIZE - 1 ? !chunk.Blocks[x + 1, y, z].IsActive : true)
-                                        || (y > 0 ? !chunk.Blocks[x, y - 1, z].IsActive : true)
-                                        || (y < Chunk.CHUNK_Y_SIZE - 1 ? !chunk.Blocks[x, y + 1, z].IsActive : true)
-                                        || (z > 0 ? !chunk.Blocks[x, y, z - 1].IsActive : true)
-                                        || (z < Chunk.CHUNK_Z_SIZE - 1 ? !chunk.Blocks[x, y, z + 1].IsActive : true);
-                                    if (anySurroundingBlocksInactive)
-                                    {
-                                        compound.AddBox(new Vector3(x, y, z), Vector3.One);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    physics = compound;
                 }
 
                 loadedChunk.Physics = physics;

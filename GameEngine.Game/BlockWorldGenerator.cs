@@ -12,11 +12,13 @@ namespace GameEngine.Game
         private const float LARGE_NOISE_SCALE = 60;
         private const float SMALL_NOISE_SCALE = 10;
 
+        private readonly BlockWorld world;
         private readonly Noise largeNoise;
         private readonly Noise smallNoise;
 
-        public BlockWorldGenerator()
+        public BlockWorldGenerator(BlockWorld world)
         {
+            this.world = world;
             largeNoise = new Noise(123);
             largeNoise.SetFrequency(0.009f);
             smallNoise = new Noise(456);
@@ -46,7 +48,7 @@ namespace GameEngine.Game
 
         public Chunk GenerateChunk(int xPos, int yPos, int zPos)
         {
-            var chunk = new Chunk(new Coord3(xPos, yPos, zPos));
+            var chunk = world.CreateChunk(new Coord3(xPos, yPos, zPos));
             GenerateChunk(chunk);
 
             return chunk;

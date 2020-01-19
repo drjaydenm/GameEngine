@@ -41,7 +41,6 @@ namespace GameEngine.Game
 
         public GameScene()
         {
-            worldGenerator = new BlockWorldGenerator();
             coordsToGenerate = new Queue<Coord3>();
             boxes = new List<Entity>();
         }
@@ -54,6 +53,7 @@ namespace GameEngine.Game
 
             world = new BlockWorld(Engine, this, "World");
             AddEntity(world);
+            worldGenerator = new BlockWorldGenerator(world);
 
             var camera = new DebugCamera(new Vector3(8, 80, 8), Vector3.UnitZ, 1, 0.1f, 500, Engine);
             camera.DisableRotation = true;
