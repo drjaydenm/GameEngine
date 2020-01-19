@@ -90,6 +90,11 @@ namespace GameEngine.Core.World
                 return;
 
             chunks.Add(chunk.Coordinate, new LoadedChunk(chunk));
+
+            // Can return early as we don't need to update anything as this chunk is fully inactive
+            if (!chunk.IsAnyBlockActive)
+                return;
+
             QueueCoordForUpdate(chunk.Coordinate);
 
             QueueSurroundingChunksForUpdate(chunk);
