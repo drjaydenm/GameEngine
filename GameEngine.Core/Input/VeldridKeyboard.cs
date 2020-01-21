@@ -23,8 +23,9 @@ namespace GameEngine.Core.Input
 
             previouslyPressedKeys = new HashSet<Key>(currentlyPressedKeys);
 
-            foreach (var keyEvent in currentSnapshot.KeyEvents)
+            for (var i = 0; i < currentSnapshot.KeyEvents.Count; i++)
             {
+                var keyEvent = currentSnapshot.KeyEvents[i];
                 if (keyEvent.Down && !currentlyPressedKeys.Contains(keyEvent.Key))
                 {
                     currentlyPressedKeys.Add(keyEvent.Key);

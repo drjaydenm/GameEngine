@@ -47,9 +47,9 @@ namespace GameEngine.Core
             if (PhysicsSystem != null)
                 PhysicsSystem.Update();
 
-            foreach (var entity in entities)
+            for (var i = 0; i < entities.Count; i++)
             {
-                entity.Update();
+                entities[i].Update();
             }
         }
 
