@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using GameEngine.Core.Graphics;
@@ -7,13 +8,23 @@ namespace GameEngine.Core.World
 {
     public class ChunkMeshGenerator
     {
-        public static Mesh<VertexPositionNormalMaterial> GenerateMesh(Chunk chunk, BlockWorld world)
+        private ArrayPool<VertexPositionNormalMaterial> vertexPool;
+        private ArrayPool<uint> indexPool;
+
+        public ChunkMeshGenerator()
+        {
+            var numBlocksPerChunk = Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE * Chunk.CHUNK_Z_SIZE;
+            vertexPool = ArrayPool<VertexPositionNormalMaterial>.Create(4 * 6 * numBlocksPerChunk, 10);
+            indexPool = ArrayPool<uint>.Create(6 * 6 * numBlocksPerChunk, 10);
+        }
+
+        public void GenerateMesh(Chunk chunk, BlockWorld world, out VertexPositionNormalMaterial[] outVertices, out uint vertexCount, out uint[] outIndices, out uint indexCount)
         {
             // Give these lists some initial capacity to save the inevitable resizing
-            var vertices = new VertexPositionNormalMaterial[3000];
-            var indices = new uint[4500];
-            uint vertexCount = 0;
-            uint indexCount = 0;
+            var vertices = vertexPool.Rent(3000);
+            var indices = indexPool.Rent(4500);
+            vertexCount = 0;
+            indexCount = 0;
 
             // Find these once off as they are the same for the whole chunk
             var chunkToTop = world.FindChunkByOffset(chunk, Coord3.UnitY);
@@ -41,7 +52,7 @@ namespace GameEngine.Core.World
                             || (blockY < Chunk.CHUNK_Y_SIZE - 1 && !chunk.Blocks[blockX + ((blockY + 1) * Chunk.CHUNK_X_SIZE) + (blockZ * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive))
                         {
                             if (vertexCount + 4 > vertices.Length)
-                                Array.Resize(ref vertices, vertices.Length * 2);
+                                ResizeVertexArray(ref vertices);
 
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitY, blockType);
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitY, blockType);
@@ -55,7 +66,7 @@ namespace GameEngine.Core.World
                             || (blockY > 0 && !chunk.Blocks[blockX + ((blockY - 1) * Chunk.CHUNK_X_SIZE) + (blockZ * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive))
                         {
                             if (vertexCount + 4 > vertices.Length)
-                                Array.Resize(ref vertices, vertices.Length * 2);
+                                ResizeVertexArray(ref vertices);
 
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitY, blockType);
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitY, blockType);
@@ -69,7 +80,7 @@ namespace GameEngine.Core.World
                             || (blockX > 0 && !chunk.Blocks[blockX - 1 + (blockY * Chunk.CHUNK_X_SIZE) + (blockZ * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive))
                         {
                             if (vertexCount + 4 > vertices.Length)
-                                Array.Resize(ref vertices, vertices.Length * 2);
+                                ResizeVertexArray(ref vertices);
 
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitX, blockType);
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, -Vector3.UnitX, blockType);
@@ -83,7 +94,7 @@ namespace GameEngine.Core.World
                             || (blockX < Chunk.CHUNK_X_SIZE - 1 && !chunk.Blocks[blockX + 1 + (blockY * Chunk.CHUNK_X_SIZE) + (blockZ * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive))
                         {
                             if (vertexCount + 4 > vertices.Length)
-                                Array.Resize(ref vertices, vertices.Length * 2);
+                                ResizeVertexArray(ref vertices);
 
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitX, blockType);
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitX, blockType);
@@ -97,7 +108,7 @@ namespace GameEngine.Core.World
                             || (blockZ > 0 && !chunk.Blocks[blockX + (blockY * Chunk.CHUNK_X_SIZE) + ((blockZ - 1) * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive))
                         {
                             if (vertexCount + 4 > vertices.Length)
-                                Array.Resize(ref vertices, vertices.Length * 2);
+                                ResizeVertexArray(ref vertices);
 
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, blockType);
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, blockType);
@@ -111,7 +122,7 @@ namespace GameEngine.Core.World
                             || (blockZ < Chunk.CHUNK_Z_SIZE - 1 && !chunk.Blocks[blockX + (blockY * Chunk.CHUNK_X_SIZE) + ((blockZ + 1) * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive))
                         {
                             if (vertexCount + 4 > vertices.Length)
-                                Array.Resize(ref vertices, vertices.Length * 2);
+                                ResizeVertexArray(ref vertices);
 
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitZ, blockType);
                             vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitZ, blockType);
@@ -125,16 +136,28 @@ namespace GameEngine.Core.World
             }
 
             if (vertexCount <= 0)
-                return null;
+            {
+                outVertices = null;
+                outIndices = null;
+                FreeBuffers(vertices, indices);
+                return;
+            }
 
-            return new Mesh<VertexPositionNormalMaterial>(ref vertices, ref indices);
+            outVertices = vertices;
+            outIndices = indices;
+        }
+
+        public void FreeBuffers(VertexPositionNormalMaterial[] vertices, uint[] indices)
+        {
+            vertexPool.Return(vertices);
+            indexPool.Return(indices);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddFaceIndices(ref uint[] indices, ref uint indexCount, uint vertexStartOffset)
+        private void AddFaceIndices(ref uint[] indices, ref uint indexCount, uint vertexStartOffset)
         {
             if (indexCount + 6 > indices.Length)
-                Array.Resize(ref indices, indices.Length * 2);
+                ResizeIndexArray(ref indices);
 
             indices[indexCount++] = 0 + vertexStartOffset;
             indices[indexCount++] = 1 + vertexStartOffset;
@@ -142,6 +165,24 @@ namespace GameEngine.Core.World
             indices[indexCount++] = 0 + vertexStartOffset;
             indices[indexCount++] = 2 + vertexStartOffset;
             indices[indexCount++] = 3 + vertexStartOffset;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ResizeVertexArray(ref VertexPositionNormalMaterial[] vertices)
+        {
+            var newArray = vertexPool.Rent(vertices.Length * 2);
+            Array.Copy(vertices, newArray, vertices.Length);
+            vertexPool.Return(vertices);
+            vertices = newArray;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ResizeIndexArray(ref uint[] indices)
+        {
+            var newArray = indexPool.Rent(indices.Length * 2);
+            Array.Copy(indices, newArray, indices.Length);
+            indexPool.Return(indices);
+            indices = newArray;
         }
     }
 }

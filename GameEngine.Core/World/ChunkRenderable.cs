@@ -15,12 +15,17 @@ namespace GameEngine.Core.World
         public Matrix4x4 WorldTransform { get; private set; }
 
         private readonly Engine engine;
-        private Mesh<VertexPositionNormalMaterial> mesh;
+        private readonly ChunkMeshGenerator meshGenerator;
+        private VertexPositionNormalMaterial[] vertices;
+        private uint vertexCount;
+        private uint[] indices;
+        private uint indexCount;
         private bool isDirty;
 
-        public ChunkRenderable(Chunk chunk, Engine engine, Material material)
+        public ChunkRenderable(Chunk chunk, ChunkMeshGenerator meshGenerator, Engine engine, Material material)
         {
             this.engine = engine;
+            this.meshGenerator = meshGenerator;
 
             Material = material;
 
@@ -29,9 +34,12 @@ namespace GameEngine.Core.World
             WorldTransform = Matrix4x4.CreateTranslation(chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f));
         }
 
-        public void UpdateChunk(Mesh<VertexPositionNormalMaterial> mesh)
+        public void UpdateChunk(VertexPositionNormalMaterial[] vertices, uint vertexCount, uint[] indices, uint indexCount)
         {
-            this.mesh = mesh;
+            this.vertices = vertices;
+            this.vertexCount = vertexCount;
+            this.indices = indices;
+            this.indexCount = indexCount;
             isDirty = true;
         }
 
@@ -53,7 +61,7 @@ namespace GameEngine.Core.World
             IndexBuffer?.Dispose();
         }
 
-        public void UpdateBuffers(CommandList commandList)
+        public unsafe void UpdateBuffers(CommandList commandList)
         {
             if (!isDirty)
                 return;
@@ -63,20 +71,27 @@ namespace GameEngine.Core.World
             if (IndexBuffer != null)
                 IndexBuffer.Dispose();
 
-            if (mesh == null || mesh.Vertices.Length <= 0)
+            if (vertexCount <= 0)
                 return;
-            
-            ref var vertices = ref mesh.Vertices;
-            ref var indices = ref mesh.Indices;
 
+            var vertexBytes = (uint)(VertexPositionNormalMaterial.SizeInBytes * vertexCount);
+            var indexBytes = (uint)(sizeof(uint) * indexCount);
             VertexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
-                new BufferDescription((uint)(VertexPositionNormalMaterial.SizeInBytes * vertices.Length), BufferUsage.VertexBuffer));
+                new BufferDescription(vertexBytes, BufferUsage.VertexBuffer));
             IndexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
-                new BufferDescription((uint)(sizeof(uint) * indices.Length), BufferUsage.IndexBuffer));
-            commandList.UpdateBuffer(VertexBuffer, 0, vertices);
-            commandList.UpdateBuffer(IndexBuffer, 0, indices);
+                new BufferDescription(indexBytes, BufferUsage.IndexBuffer));
 
-            mesh = null;
+            fixed (VertexPositionNormalMaterial* pVertices = vertices)
+            fixed(uint* pIndices = indices)
+            {
+                commandList.UpdateBuffer(VertexBuffer, 0, new IntPtr(pVertices), vertexBytes);
+                commandList.UpdateBuffer(IndexBuffer, 0, new IntPtr(pIndices), indexBytes);
+            }
+
+            meshGenerator.FreeBuffers(vertices, indices);
+
+            vertices = null;
+            indices = null;
             isDirty = false;
         }
     }

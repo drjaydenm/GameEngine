@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Numerics;
@@ -20,6 +20,7 @@ namespace GameEngine.Core.World
         private readonly Queue<Coord3> chunksToRemove;
         private readonly Material material;
         private readonly ArrayPool<Block> blockPool;
+        private readonly ChunkMeshGenerator meshGenerator;
 
         private const int CHUNKS_UPDATE_PER_FRAME = 10;
         private const int CHUNKS_REMOVE_PER_FRAME = 10;
@@ -33,6 +34,7 @@ namespace GameEngine.Core.World
             chunksToRemove = new Queue<Coord3>();
             material = new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode);
             blockPool = ArrayPool<Block>.Shared;
+            meshGenerator = new ChunkMeshGenerator();
         }
 
         public override void Update()
@@ -215,11 +217,11 @@ namespace GameEngine.Core.World
             }
             else
             {
-                var mesh = ChunkMeshGenerator.GenerateMesh(chunk, this);
+                meshGenerator.GenerateMesh(chunk, this, out var vertices, out var vertexCount, out var indices, out var indexCount);
                 if (loadedChunk.Renderable != null)
                 {
-                    loadedChunk.Renderable.UpdateChunk(mesh);
-                    if (mesh == null)
+                    loadedChunk.Renderable.UpdateChunk(vertices, vertexCount, indices, indexCount);
+                    if (vertexCount <= 0)
                     {
                         RemoveComponent(loadedChunk.Renderable);
                         loadedChunk.Renderable.Dispose();
@@ -229,10 +231,10 @@ namespace GameEngine.Core.World
                 }
                 else
                 {
-                    if (mesh != null)
+                    if (vertexCount > 0)
                     {
-                        var renderable = new ChunkRenderable(chunk, engine, material);
-                        renderable.UpdateChunk(mesh);
+                        var renderable = new ChunkRenderable(chunk, meshGenerator, engine, material);
+                        renderable.UpdateChunk(vertices, vertexCount, indices, indexCount);
 
                         loadedChunk.Renderable = renderable;
 
