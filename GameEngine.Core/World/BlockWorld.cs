@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Numerics;
@@ -102,13 +102,13 @@ namespace GameEngine.Core.World
 
             chunks.Add(chunk.Coordinate, new LoadedChunk(chunk));
 
+            QueueSurroundingChunksForUpdate(chunk.Coordinate);
+
             // Can return early as we don't need to update anything as this chunk is fully inactive
             if (!chunk.IsAnyBlockActive)
                 return;
 
             QueueCoordForUpdate(chunk.Coordinate);
-
-            QueueSurroundingChunksForUpdate(chunk);
         }
 
         public void RemoveChunk(Chunk chunk)
@@ -117,6 +117,8 @@ namespace GameEngine.Core.World
                 return;
 
             chunksToRemove.Enqueue(chunk.Coordinate);
+
+            QueueSurroundingChunksForUpdate(chunk.Coordinate);
         }
 
         public void UpdateChunk(Chunk chunk)
@@ -126,7 +128,7 @@ namespace GameEngine.Core.World
 
             QueueCoordForUpdate(chunk.Coordinate);
 
-            QueueSurroundingChunksForUpdate(chunk);
+            QueueSurroundingChunksForUpdate(chunk.Coordinate);
         }
 
         public Chunk FindChunkByOffset(Chunk chunk, Coord3 offset)
@@ -279,10 +281,38 @@ namespace GameEngine.Core.World
                 }
                 else
                 {
-                    physics = new PhysicsChunkComponent(chunk, PhysicsInteractivity.Static)
+                    /*var compound = new PhysicsCompoundComponent(PhysicsInteractivity.Static)
                     {
                         PositionOffset = chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f)
                     };
+                    for (var x = 0; x < Chunk.CHUNK_X_SIZE; x++)
+                    {
+                        for (var y = 0; y < Chunk.CHUNK_Y_SIZE; y++)
+                        {
+                            for (var z = 0; z < Chunk.CHUNK_Z_SIZE; z++)
+                            {
+                                if (chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive)
+                                {
+                                    var anySurroundingBlocksInactive =
+                                        (x > 0 ? !chunk.Blocks[x - 1 + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                        || (x < Chunk.CHUNK_X_SIZE - 1 ? !chunk.Blocks[x + 1 + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                        || (y > 0 ? !chunk.Blocks[x + ((y - 1) * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                        || (y < Chunk.CHUNK_Y_SIZE - 1 ? !chunk.Blocks[x + ((y + 1) * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                        || (z > 0 ? !chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + ((z - 1) * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                        || (z < Chunk.CHUNK_Z_SIZE - 1 ? !chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + ((z + 1) * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true);
+                                    if (anySurroundingBlocksInactive)
+                                    {
+                                        compound.AddBox(new Vector3(x, y, z), Vector3.One);
+                                    }
+                                }
+                            }
+                        }
+                    }*/
+                    var compound = new PhysicsChunkComponent(chunk, PhysicsInteractivity.Static)
+                    {
+                        PositionOffset = chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f)
+                    };
+                    physics = compound;
                 }
 
                 loadedChunk.Physics = physics;
@@ -291,11 +321,11 @@ namespace GameEngine.Core.World
             }
         }
 
-        private void QueueSurroundingChunksForUpdate(Chunk chunk)
+        private void QueueSurroundingChunksForUpdate(Coord3 coord)
         {
             void QueueChunkForUpdateIfExists(Coord3 coordOffset)
             {
-                var chunkAbove = FindChunkByOffset(chunk, coordOffset);
+                var chunkAbove = FindChunkByCoordinate(coord + coordOffset);
                 if (chunkAbove == null)
                     return;
 

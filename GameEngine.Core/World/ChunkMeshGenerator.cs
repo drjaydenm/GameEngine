@@ -20,9 +20,6 @@ namespace GameEngine.Core.World
 
         public void GenerateMesh(Chunk chunk, BlockWorld world, out VertexPositionNormalMaterial[] outVertices, out uint vertexCount, out uint[] outIndices, out uint indexCount)
         {
-            // Give these lists some initial capacity to save the inevitable resizing
-            var vertices = vertexPool.Rent(3000);
-            var indices = indexPool.Rent(4500);
             vertexCount = 0;
             indexCount = 0;
 
@@ -33,6 +30,23 @@ namespace GameEngine.Core.World
             var chunkToRight = world.FindChunkByOffset(chunk, Coord3.UnitX);
             var chunkToBack = world.FindChunkByOffset(chunk, -Coord3.UnitZ);
             var chunkToFront = world.FindChunkByOffset(chunk, Coord3.UnitZ);
+
+            // Do a quick little check to see if this chunk is easily concealed and can be hidden
+            if ((chunkToTop == null || !chunkToTop.IsAnyBlockInactive)
+                && (chunkToBottom == null || !chunkToBottom.IsAnyBlockInactive)
+                && (chunkToLeft == null || !chunkToLeft.IsAnyBlockInactive)
+                && (chunkToRight == null || !chunkToRight.IsAnyBlockInactive)
+                && (chunkToBack == null || !chunkToBack.IsAnyBlockInactive)
+                && (chunkToFront == null || !chunkToFront.IsAnyBlockInactive))
+            {
+                outVertices = null;
+                outIndices = null;
+                return;
+            }
+
+            // Give these lists some initial capacity to save the inevitable resizing
+            var vertices = vertexPool.Rent(3000);
+            var indices = indexPool.Rent(4500);
 
             for (int blockX = 0; blockX < Chunk.CHUNK_X_SIZE; blockX++)
             {

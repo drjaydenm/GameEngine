@@ -261,72 +261,34 @@ namespace GameEngine.Core.Physics.BepuPhysics
             var compoundCount = compoundComponent.BoxCompoundShapes.Count + compoundComponent.SphereCompoundShapes.Count;
             using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, compoundCount))
             {
-                var addedBoxShapes = new List<Tuple<Box, TypedIndex, BodyInertia>>();
                 foreach (var boxCompound in compoundComponent.BoxCompoundShapes)
                 {
-                    Tuple<Box, TypedIndex, BodyInertia> addedShape = null;
-                    foreach (var shape in addedBoxShapes)
-                    {
-                        if (shape.Item1.Width == boxCompound.Size.X && shape.Item1.Height == boxCompound.Size.Y && shape.Item1.Length == boxCompound.Size.Z)
-                        {
-                            addedShape = shape;
-                            break;
-                        }
-                    }
+                    var shape = new Box(boxCompound.Size.X, boxCompound.Size.Y, boxCompound.Size.Z);
 
-                    if (addedShape == null)
-                    {
-                        var shape = new Box(boxCompound.Size.X, boxCompound.Size.Y, boxCompound.Size.Z);
-
-                        BodyInertia compoundShapeInertia = default;
-                        if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
-                            shape.ComputeInertia(1, out compoundShapeInertia);
-
-                        var compoundShapeIndex = simulation.Shapes.Add(shape);
-
-                        addedShape = new Tuple<Box, TypedIndex, BodyInertia>(shape, compoundShapeIndex, compoundShapeInertia);
-                        addedBoxShapes.Add(addedShape);
-                    }
+                    BodyInertia compoundShapeInertia = default;
+                    if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
+                        shape.ComputeInertia(1, out compoundShapeInertia);
 
                     var pose = new RigidPose(boxCompound.RelativeOffset);
                     if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
-                        compoundBuilder.Add(addedShape.Item2, pose, addedShape.Item3.InverseInertiaTensor, 1);
+                        compoundBuilder.Add(shape, pose, 1);
                     else
-                        compoundBuilder.AddForKinematic(addedShape.Item2, pose, 1);
+                        compoundBuilder.AddForKinematic(shape, pose, 1);
                 }
 
-                var addedSphereShapes = new List<Tuple<Sphere, TypedIndex, BodyInertia>>();
                 foreach (var sphereCompound in compoundComponent.SphereCompoundShapes)
                 {
-                    Tuple<Sphere, TypedIndex, BodyInertia> addedShape = null;
-                    foreach (var shape in addedSphereShapes)
-                    {
-                        if (shape.Item1.Radius == sphereCompound.Radius)
-                        {
-                            addedShape = shape;
-                            break;
-                        }
-                    }
+                    var shape = new Sphere(sphereCompound.Radius);
 
-                    if (addedShape == null)
-                    {
-                        var shape = new Sphere(sphereCompound.Radius);
-
-                        BodyInertia compoundShapeInertia = default;
-                        if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
-                            shape.ComputeInertia(1, out compoundShapeInertia);
-
-                        var compoundShapeIndex = simulation.Shapes.Add(shape);
-
-                        addedShape = new Tuple<Sphere, TypedIndex, BodyInertia>(shape, compoundShapeIndex, compoundShapeInertia);
-                        addedSphereShapes.Add(addedShape);
-                    }
+                    BodyInertia compoundShapeInertia = default;
+                    if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
+                        shape.ComputeInertia(1, out compoundShapeInertia);
 
                     var pose = new RigidPose(sphereCompound.RelativeOffset);
                     if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
-                        compoundBuilder.Add(addedShape.Item2, pose, addedShape.Item3.InverseInertiaTensor, 1);
+                        compoundBuilder.Add(shape, pose, 1);
                     else
-                        compoundBuilder.AddForKinematic(addedShape.Item2, pose, 1);
+                        compoundBuilder.AddForKinematic(shape, pose, 1);
                 }
 
                 Buffer<CompoundChild> compoundChildren = default;
@@ -343,9 +305,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
         private void BuildChunkShape(PhysicsChunkComponent chunkComponent, out TypedIndex shapeIndex)
         {
             var voxelShape = new Box(1, 1, 1);
-            var voxelShapeIndex = simulation.Shapes.Add(voxelShape);
 
-            using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, 100))
+            using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, 1000))
             {
                 for (var x = 0; x < Chunk.CHUNK_X_SIZE; x++)
                 {
@@ -365,7 +326,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
                                 if (anySurroundingBlocksInactive)
                                 {
                                     var pose = new RigidPose(new Vector3(x, y, z));
-                                    compoundBuilder.AddForKinematic(voxelShapeIndex, pose, 1);
+                                    compoundBuilder.AddForKinematic(voxelShape, pose, 1);
                                 }
                             }
                         }

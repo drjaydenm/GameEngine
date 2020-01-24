@@ -24,7 +24,8 @@ namespace GameEngine.Game
         private BlockWorldGenerator worldGenerator;
         private bool shouldGenerateChunks = true;
         private bool shouldShowChunkDebug;
-        private Queue<Coord3> coordsToGenerate;
+        private PriorityQueue<Coord3> coordsToGenerate;
+        private HashSet<Coord3> coordsToGenerateSet;
         private List<Entity> boxes;
         private Chunk lookingAtChunk;
         private Block? lookingAtBlock;
@@ -41,7 +42,8 @@ namespace GameEngine.Game
 
         public GameScene()
         {
-            coordsToGenerate = new Queue<Coord3>();
+            coordsToGenerate = new PriorityQueue<Coord3>();
+            coordsToGenerateSet = new HashSet<Coord3>();
             boxes = new List<Entity>();
         }
 
@@ -315,9 +317,12 @@ namespace GameEngine.Game
                     {
                         var coord = new Coord3(x, y, z);
                         var chunkExists = world.FindChunkByCoordinate(coord) != null;
-                        if (!chunkExists && !coordsToGenerate.Contains(coord))
+                        if (!chunkExists && !coordsToGenerateSet.Contains(coord))
                         {
-                            coordsToGenerate.Enqueue(coord);
+                            var dist = ActiveCamera.Position - coord;
+                            var distanceFromPlayer = (int)Math.Abs(Math.Sqrt(dist.X * dist.X + dist.Y * dist.Y + dist.Z * dist.Z));
+                            coordsToGenerate.Enqueue(coord, distanceFromPlayer);
+                            coordsToGenerateSet.Add(coord);
                         }
                     }
                 }
@@ -340,8 +345,10 @@ namespace GameEngine.Game
         private void GenerateChunks()
         {
             var chunksAlreadyGenerated = 0;
-            while (chunksAlreadyGenerated < CHUNK_GENERATE_PER_FRAME && coordsToGenerate.TryDequeue(out var coord))
+            while (chunksAlreadyGenerated < CHUNK_GENERATE_PER_FRAME && coordsToGenerate.Count > 0)
             {
+                var coord = coordsToGenerate.Dequeue();
+                coordsToGenerateSet.Remove(coord);
                 world.AddChunk(worldGenerator.GenerateChunk(coord.X, coord.Y, coord.Z));
                 chunksAlreadyGenerated++;
             }
