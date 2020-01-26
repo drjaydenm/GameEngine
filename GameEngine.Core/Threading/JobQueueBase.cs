@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace GameEngine.Core.Threading
 {
-    public abstract class JobQueueBase
+    public abstract class JobQueueBase : IJobQueue
     {
         public int JobCount => QueuedJobs.Count;
         public ManualResetEvent JobQueueEmpty { get; }

@@ -72,7 +72,7 @@ namespace GameEngine.Core
 
             Draw();
 
-            while (accumulatedTime + (frameTimeStopwatch.Elapsed + currentTime) < Engine.GameTimeTargetElapsed
+            while (accumulatedTime + (frameTimeStopwatch.Elapsed - currentTime) < Engine.GameTimeTargetElapsed
                 && Engine.Jobs.WhenIdle.JobCount > 0)
             {
                 Engine.Jobs.WhenIdle.ExecuteSingleJob();

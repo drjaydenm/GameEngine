@@ -5,9 +5,8 @@ namespace GameEngine.Core.Threading
 {
     public class ThreadedJobQueue : JobQueueBase
     {
-        public Thread[] workerThreads;
-
         private CancellationToken cancellationToken;
+        private Thread[] workerThreads;
 
         public ThreadedJobQueue(int numberOfThreads, CancellationToken cancellationToken)
         {

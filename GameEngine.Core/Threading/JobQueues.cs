@@ -5,8 +5,8 @@ namespace GameEngine.Core.Threading
 {
     public class JobQueues
     {
-        public ThreadedJobQueue Background { get; }
-        public SynchronousJobQueue WhenIdle { get; }
+        public IJobQueue Background { get; }
+        public IJobQueue WhenIdle { get; }
 
         private CancellationTokenSource cancellationTokenSource;
 

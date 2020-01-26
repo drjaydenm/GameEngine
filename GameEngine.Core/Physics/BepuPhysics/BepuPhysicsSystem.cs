@@ -10,11 +10,20 @@ using BepuMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities;
 using System.Collections.Generic;
 using GameEngine.Core.World;
+using System.Collections.Concurrent;
 
 namespace GameEngine.Core.Physics.BepuPhysics
 {
     public class BepuPhysicsSystem : IPhysicsSystem, IDisposable
     {
+        private struct AsyncShapeCreationResult
+        {
+            public Entity Entity;
+            public PhysicsComponent Component;
+            public BodyInertia Inertia;
+            public TypedIndex ShapeIndex;
+        }
+
         public bool DebugEnabled { get; set; }
 
         internal Dictionary<int, BepuPhysicsBody> BodyHandleToBody;
@@ -26,6 +35,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
         private Simulation simulation;
         private DefaultThreadDispatcher threadDispatcher;
         private Dictionary<PhysicsComponent, BepuPhysicsBody> registeredComponents;
+        private ConcurrentQueue<AsyncShapeCreationResult> asyncShapeQueue;
 
         public BepuPhysicsSystem(Engine engine, Scene scene, Vector3 gravity)
         {
@@ -36,6 +46,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             threadDispatcher = new DefaultThreadDispatcher(Environment.ProcessorCount);
             simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(this), new DefaultPoseIntegratorCallbacks(gravity));
             registeredComponents = new Dictionary<PhysicsComponent, BepuPhysicsBody>();
+            asyncShapeQueue = new ConcurrentQueue<AsyncShapeCreationResult>();
             BodyHandleToBody = new Dictionary<int, BepuPhysicsBody>();
             StaticHandleToBody = new Dictionary<int, BepuPhysicsBody>();
         }
@@ -70,11 +81,9 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
         public void RegisterComponent(Entity entity, PhysicsComponent component)
         {
-            BepuPhysicsBody body;
-            int bodyHandle = -1;
-            int staticHandle = -1;
-            var shapeIndex = new TypedIndex();
-            var inertia = new BodyInertia();
+            TypedIndex shapeIndex = default;
+            BodyInertia inertia = default;
+            var isAsyncShape = false;
 
             if (component is PhysicsBoxComponent boxComponent)
             {
@@ -94,11 +103,33 @@ namespace GameEngine.Core.Physics.BepuPhysics
             }
             else if (component is PhysicsCompoundComponent compoundComponent)
             {
-                BuildCompoundShape(compoundComponent, out inertia, out shapeIndex);
+                isAsyncShape = true;
+                engine.Jobs.WhenIdle.EnqueueJob(() =>
+                {
+                    BuildCompoundShape(compoundComponent, out inertia, out shapeIndex);
+                    asyncShapeQueue.Enqueue(new AsyncShapeCreationResult
+                    {
+                        Entity = entity,
+                        Component = component,
+                        Inertia = inertia,
+                        ShapeIndex = shapeIndex
+                    });
+                });
             }
             else if (component is PhysicsChunkComponent chunkComponent)
             {
-                BuildChunkShape(chunkComponent, out shapeIndex);
+                isAsyncShape = true;
+                engine.Jobs.WhenIdle.EnqueueJob(() =>
+                {
+                    BuildChunkShape(chunkComponent, out shapeIndex);
+                    asyncShapeQueue.Enqueue(new AsyncShapeCreationResult
+                    {
+                        Entity = entity,
+                        Component = component,
+                        Inertia = inertia,
+                        ShapeIndex = shapeIndex
+                    });
+                });
             }
             else if (component is PhysicsMeshComponent meshComponent)
             {
@@ -114,51 +145,15 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 shapeIndex = simulation.Shapes.Add(mesh);
             }
 
-            if (component.FreezeRotation)
-            {
-                inertia.InverseInertiaTensor = new Symmetric3x3();
-            }
-
-            var collidable = new CollidableDescription(shapeIndex, 0.1f);
-            var activity = new BodyActivityDescription(0.01f);
-
-            if (component.Interactivity == PhysicsInteractivity.Dynamic)
-            {
-                var bodyDescription = BodyDescription.CreateDynamic(
-                    entity.Transform.Position + component.PositionOffset, inertia, collidable, activity);
-                bodyHandle = simulation.Bodies.Add(bodyDescription);
-            }
-            else if (component.Interactivity == PhysicsInteractivity.Kinematic)
-            {
-                var bodyDescription = BodyDescription.CreateKinematic(
-                    entity.Transform.Position + component.PositionOffset, collidable, activity);
-                bodyHandle = simulation.Bodies.Add(bodyDescription);
-            }
-            else if (component.Interactivity == PhysicsInteractivity.Static)
-            {
-                var staticDescription = new StaticDescription(entity.Transform.Position + component.PositionOffset, collidable);
-                staticHandle = simulation.Statics.Add(staticDescription);
-            }
-
-            body = new BepuPhysicsBody(simulation, bodyHandle != -1);
-            body.ShapeIndex = shapeIndex;
-
-            if (bodyHandle != -1)
-                body.BodyReference = new BodyReference(bodyHandle, simulation.Bodies);
-            else if (staticHandle != -1)
-                body.StaticReference = new StaticReference(staticHandle, simulation.Statics);
-
-            component.Body = body;
-            registeredComponents.Add(component, body);
-
-            if (component.Interactivity == PhysicsInteractivity.Static)
-                StaticHandleToBody.Add(staticHandle, body);
-            else
-                BodyHandleToBody.Add(bodyHandle, body);
+            if (!isAsyncShape)
+                AddPhysicsBody(entity, component, ref inertia, ref shapeIndex);
         }
 
         public void Update()
         {
+            while (asyncShapeQueue.TryDequeue(out var shape))
+                AddPhysicsBody(shape.Entity, shape.Component, ref shape.Inertia, ref shape.ShapeIndex);
+
             simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds / 2f, threadDispatcher);
             simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds / 2f, threadDispatcher);
         }
@@ -238,6 +233,55 @@ namespace GameEngine.Core.Physics.BepuPhysics
             simulation.Dispose();
             bufferPool.Clear();
             threadDispatcher.Dispose();
+        }
+
+        private void AddPhysicsBody(Entity entity, PhysicsComponent component, ref BodyInertia inertia, ref TypedIndex shapeIndex)
+        {
+            BepuPhysicsBody body;
+            int bodyHandle = -1;
+            int staticHandle = -1;
+
+            if (component.FreezeRotation)
+            {
+                inertia.InverseInertiaTensor = new Symmetric3x3();
+            }
+
+            var collidable = new CollidableDescription(shapeIndex, 0.1f);
+            var activity = new BodyActivityDescription(0.01f);
+
+            if (component.Interactivity == PhysicsInteractivity.Dynamic)
+            {
+                var bodyDescription = BodyDescription.CreateDynamic(
+                    entity.Transform.Position + component.PositionOffset, inertia, collidable, activity);
+                bodyHandle = simulation.Bodies.Add(bodyDescription);
+            }
+            else if (component.Interactivity == PhysicsInteractivity.Kinematic)
+            {
+                var bodyDescription = BodyDescription.CreateKinematic(
+                    entity.Transform.Position + component.PositionOffset, collidable, activity);
+                bodyHandle = simulation.Bodies.Add(bodyDescription);
+            }
+            else if (component.Interactivity == PhysicsInteractivity.Static)
+            {
+                var staticDescription = new StaticDescription(entity.Transform.Position + component.PositionOffset, collidable);
+                staticHandle = simulation.Statics.Add(staticDescription);
+            }
+
+            body = new BepuPhysicsBody(simulation, bodyHandle != -1);
+            body.ShapeIndex = shapeIndex;
+
+            if (bodyHandle != -1)
+                body.BodyReference = new BodyReference(bodyHandle, simulation.Bodies);
+            else if (staticHandle != -1)
+                body.StaticReference = new StaticReference(staticHandle, simulation.Statics);
+
+            component.Body = body;
+            registeredComponents.Add(component, body);
+
+            if (component.Interactivity == PhysicsInteractivity.Static)
+                StaticHandleToBody.Add(staticHandle, body);
+            else
+                BodyHandleToBody.Add(bodyHandle, body);
         }
 
         private CollidableReference BodyToCollidableReference(BepuPhysicsBody body)
