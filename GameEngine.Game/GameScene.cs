@@ -92,7 +92,7 @@ namespace GameEngine.Game
 
             if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.Escape))
             {
-                Engine.Window.Exit();
+                Game.Exit();
             }
 
             if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.F11))

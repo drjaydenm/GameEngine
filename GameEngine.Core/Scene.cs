@@ -13,6 +13,7 @@ namespace GameEngine.Core
         public IPhysicsSystem PhysicsSystem { get; private set; }
         public ICamera ActiveCamera { get; private set; }
         public Engine Engine { get; private set; }
+        public Game Game { get; private set; }
 
         private readonly List<Entity> entities;
 
@@ -31,9 +32,10 @@ namespace GameEngine.Core
             entities.Remove(entity);
         }
 
-        public void Initialize(Engine engine, Renderer renderer, IPhysicsSystem physicsSystem)
+        public void Initialize(Engine engine, Game game, Renderer renderer, IPhysicsSystem physicsSystem)
         {
             Engine = engine;
+            Game = game;
             Renderer = renderer;
             PhysicsSystem = physicsSystem;
         }

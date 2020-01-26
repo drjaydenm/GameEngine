@@ -42,6 +42,8 @@ namespace GameEngine.Core
 
         public virtual void Exit()
         {
+            Engine.Shutdown();
+
             Engine.Window.Exit();
         }
 
@@ -69,6 +71,14 @@ namespace GameEngine.Core
             }
 
             Draw();
+
+            while (accumulatedTime + (frameTimeStopwatch.Elapsed + currentTime) < Engine.GameTimeTargetElapsed
+                && Engine.Jobs.WhenIdle.JobCount > 0)
+            {
+                Engine.Jobs.WhenIdle.ExecuteSingleJob();
+            }
+
+            Engine.WaitForVsync();
         }
     }
 }

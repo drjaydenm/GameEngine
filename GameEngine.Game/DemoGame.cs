@@ -15,7 +15,7 @@ namespace GameEngine.Game
             //Engine.Window.Size = Engine.Window.ScreenSize - (Engine.Window.Position * 2);
 
             LoadingScene = new LoadingScene();
-            LoadingScene.Initialize(Engine, new Renderer(Engine, LoadingScene), null);
+            LoadingScene.Initialize(Engine, this, new Renderer(Engine, LoadingScene), null);
             LoadingScene.LoadScene();
 
             Engine.AddScene(LoadingScene);

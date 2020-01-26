@@ -4,6 +4,7 @@ using Veldrid;
 using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
 using GameEngine.Core.Windowing;
+using GameEngine.Core.Threading;
 
 namespace GameEngine.Core
 {
@@ -19,6 +20,7 @@ namespace GameEngine.Core
         public IInputManager InputManager { get; private set; }
         public DebugGraphics DebugGraphics { get; private set; }
         public TextRenderer TextRenderer { get; private set; }
+        public JobQueues Jobs { get; private set; }
 
         internal CommandList CommandList { get; private set; }
 
@@ -59,6 +61,7 @@ namespace GameEngine.Core
 
             DebugGraphics = new DebugGraphics(this);
             TextRenderer = new TextRenderer(this);
+            Jobs = new JobQueues();
         }
 
         public void Update()
@@ -115,9 +118,12 @@ namespace GameEngine.Core
 
             CommandList.End();
             GraphicsDevice.SubmitCommands(CommandList);
-
-            GraphicsDevice.WaitForIdle();
             GraphicsDevice.SwapBuffers();
+        }
+
+        public void Shutdown()
+        {
+            Jobs.ShutdownQueues();
         }
 
         public void AddScene(Scene scene)
@@ -130,6 +136,11 @@ namespace GameEngine.Core
         {
             scenesToRemove.Add(scene);
             scenesDirty = true;
+        }
+
+        internal void WaitForVsync()
+        {
+            GraphicsDevice.WaitForIdle();
         }
 
         private void OnWindowResized()
