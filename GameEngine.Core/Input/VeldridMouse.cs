@@ -42,8 +42,9 @@ namespace GameEngine.Core.Input
 
             previouslyPressedButtons = new HashSet<MouseButton>(currentlyPressedButtons);
 
-            foreach (var mouseEvent in currentSnapshot.MouseEvents)
+            for (var i = 0; i < currentSnapshot.MouseEvents.Count; i++)
             {
+                var mouseEvent = currentSnapshot.MouseEvents[i];
                 if (mouseEvent.Down && !currentlyPressedButtons.Contains(mouseEvent.MouseButton))
                 {
                     currentlyPressedButtons.Add(mouseEvent.MouseButton);

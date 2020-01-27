@@ -12,7 +12,7 @@
         public T[] Vertices;
         public uint[] Indices;
 
-        public Mesh(ref T[] vertices, ref uint[] indices)
+        public Mesh(T[] vertices, uint[] indices)
         {
             Vertices = vertices;
             Indices = indices;

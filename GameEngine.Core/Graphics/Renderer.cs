@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Veldrid;
-using GameEngine.Core.Camera;
 
 namespace GameEngine.Core.Graphics
 {
@@ -42,10 +39,14 @@ namespace GameEngine.Core.Graphics
             commandList.UpdateBuffer(CameraBuffer, 0, cameraInfo);
             commandList.UpdateBuffer(LightingBuffer, 0, lightingInfo);
 
-            foreach (var entity in scene.Entities)
+            for (var i = 0; i < scene.Entities.Count; i++)
             {
-                foreach (var renderable in entity.GetComponentsOfType<IRenderable>())
+                for (var j = 0; j < scene.Entities[i].Components.Count; j++)
                 {
+                    var component = scene.Entities[i].Components[j];
+                    if (!(component is IRenderable renderable))
+                        continue;
+
                     renderable.UpdateBuffers(commandList);
 
                     renderable.Material.Bind(commandList, this, renderable.LayoutDescription);

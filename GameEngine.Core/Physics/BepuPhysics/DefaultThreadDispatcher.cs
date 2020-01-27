@@ -26,7 +26,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
             workers = new Worker[threadCount - 1];
             for (int i = 0; i < workers.Length; ++i)
             {
-                workers[i] = new Worker { Thread = new Thread(WorkerLoop), Signal = new AutoResetEvent(false) };
+                workers[i] = new Worker
+                {
+                    Thread = new Thread(WorkerLoop)
+                    {
+                        Name = nameof(DefaultThreadDispatcher) + i
+                    },
+                    Signal = new AutoResetEvent(false)
+                };
                 workers[i].Thread.IsBackground = true;
                 workers[i].Thread.Start(workers[i].Signal);
             }

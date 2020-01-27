@@ -9,11 +9,20 @@ using GameEngine.Core.Entities;
 using BepuMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities;
 using System.Collections.Generic;
+using GameEngine.Core.World;
+using System.Collections.Concurrent;
 
 namespace GameEngine.Core.Physics.BepuPhysics
 {
     public class BepuPhysicsSystem : IPhysicsSystem, IDisposable
     {
+        private struct AsyncShapeCreationResult
+        {
+            public PhysicsComponent Component;
+            public BodyInertia Inertia;
+            public TypedIndex ShapeIndex;
+        }
+
         public bool DebugEnabled { get; set; }
 
         internal Dictionary<int, BepuPhysicsBody> BodyHandleToBody;
@@ -25,6 +34,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
         private Simulation simulation;
         private DefaultThreadDispatcher threadDispatcher;
         private Dictionary<PhysicsComponent, BepuPhysicsBody> registeredComponents;
+        private ConcurrentQueue<AsyncShapeCreationResult> asyncShapeQueue;
+        private HashSet<PhysicsComponent> pendingAsyncShapes;
 
         public BepuPhysicsSystem(Engine engine, Scene scene, Vector3 gravity)
         {
@@ -35,6 +46,9 @@ namespace GameEngine.Core.Physics.BepuPhysics
             threadDispatcher = new DefaultThreadDispatcher(Environment.ProcessorCount);
             simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(this), new DefaultPoseIntegratorCallbacks(gravity));
             registeredComponents = new Dictionary<PhysicsComponent, BepuPhysicsBody>();
+            asyncShapeQueue = new ConcurrentQueue<AsyncShapeCreationResult>();
+            pendingAsyncShapes = new HashSet<PhysicsComponent>();
+
             BodyHandleToBody = new Dictionary<int, BepuPhysicsBody>();
             StaticHandleToBody = new Dictionary<int, BepuPhysicsBody>();
         }
@@ -55,7 +69,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
                     BodyHandleToBody.Remove(body.BodyReference.Handle);
                 }
 
-                simulation.Shapes.Remove(body.ShapeIndex);
+                simulation.Shapes.RecursivelyRemoveAndDispose(body.ShapeIndex, bufferPool);
                 if (component.Interactivity == PhysicsInteractivity.Static)
                 {
                     simulation.Statics.Remove(body.StaticReference.Handle);
@@ -65,15 +79,18 @@ namespace GameEngine.Core.Physics.BepuPhysics
                     simulation.Bodies.Remove(body.BodyReference.Handle);
                 }
             }
+            
+            if (pendingAsyncShapes.Contains(component))
+            {
+                pendingAsyncShapes.Remove(component);
+            }
         }
 
-        public void RegisterComponent(Entity entity, PhysicsComponent component)
+        public void RegisterComponent(PhysicsComponent component)
         {
-            BepuPhysicsBody body;
-            int bodyHandle = -1;
-            int staticHandle = -1;
-            var shapeIndex = new TypedIndex();
-            var inertia = new BodyInertia();
+            TypedIndex shapeIndex = default;
+            BodyInertia inertia = default;
+            var isAsyncShape = false;
 
             if (component is PhysicsBoxComponent boxComponent)
             {
@@ -93,7 +110,39 @@ namespace GameEngine.Core.Physics.BepuPhysics
             }
             else if (component is PhysicsCompoundComponent compoundComponent)
             {
-                BuildCompoundShape(compoundComponent, out inertia, out shapeIndex);
+                isAsyncShape = true;
+                pendingAsyncShapes.Add(component);
+                engine.Jobs.WhenIdle.EnqueueJob(() =>
+                {
+                    if (!pendingAsyncShapes.Contains(component))
+                        return;
+
+                    BuildCompoundShape(compoundComponent, out inertia, out shapeIndex);
+                    asyncShapeQueue.Enqueue(new AsyncShapeCreationResult
+                    {
+                        Component = component,
+                        Inertia = inertia,
+                        ShapeIndex = shapeIndex
+                    });
+                });
+            }
+            else if (component is PhysicsChunkComponent chunkComponent)
+            {
+                isAsyncShape = true;
+                pendingAsyncShapes.Add(component);
+                engine.Jobs.WhenIdle.EnqueueJob(() =>
+                {
+                    if (!pendingAsyncShapes.Contains(component))
+                        return;
+
+                    BuildChunkShape(chunkComponent, out shapeIndex);
+                    asyncShapeQueue.Enqueue(new AsyncShapeCreationResult
+                    {
+                        Component = component,
+                        Inertia = inertia,
+                        ShapeIndex = shapeIndex
+                    });
+                });
             }
             else if (component is PhysicsMeshComponent meshComponent)
             {
@@ -109,51 +158,45 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 shapeIndex = simulation.Shapes.Add(mesh);
             }
 
-            if (component.FreezeRotation)
+            if (!isAsyncShape)
+                AddPhysicsBody(component, ref inertia, ref shapeIndex);
+        }
+
+        public void UpdateComponent(PhysicsComponent component)
+        {
+            if (component is PhysicsChunkComponent chunkComponent)
             {
-                inertia.InverseInertiaTensor = new Symmetric3x3();
+                pendingAsyncShapes.Add(component);
+                engine.Jobs.WhenIdle.EnqueueJob(() =>
+                {
+                    if (!pendingAsyncShapes.Contains(component))
+                        return;
+
+                    BuildChunkShape(chunkComponent, out var shapeIndex);
+                    asyncShapeQueue.Enqueue(new AsyncShapeCreationResult
+                    {
+                        Component = component,
+                        Inertia = default,
+                        ShapeIndex = shapeIndex
+                    });
+                });
             }
-
-            var collidable = new CollidableDescription(shapeIndex, 0.1f);
-            var activity = new BodyActivityDescription(0.01f);
-
-            if (component.Interactivity == PhysicsInteractivity.Dynamic)
-            {
-                var bodyDescription = BodyDescription.CreateDynamic(
-                    entity.Transform.Position + component.PositionOffset, inertia, collidable, activity);
-                bodyHandle = simulation.Bodies.Add(bodyDescription);
-            }
-            else if (component.Interactivity == PhysicsInteractivity.Kinematic)
-            {
-                var bodyDescription = BodyDescription.CreateKinematic(
-                    entity.Transform.Position + component.PositionOffset, collidable, activity);
-                bodyHandle = simulation.Bodies.Add(bodyDescription);
-            }
-            else if (component.Interactivity == PhysicsInteractivity.Static)
-            {
-                var staticDescription = new StaticDescription(entity.Transform.Position + component.PositionOffset, collidable);
-                staticHandle = simulation.Statics.Add(staticDescription);
-            }
-
-            body = new BepuPhysicsBody(simulation, bodyHandle != -1);
-            body.ShapeIndex = shapeIndex;
-
-            if (bodyHandle != -1)
-                body.BodyReference = new BodyReference(bodyHandle, simulation.Bodies);
-            else if (staticHandle != -1)
-                body.StaticReference = new StaticReference(staticHandle, simulation.Statics);
-
-            component.Body = body;
-            registeredComponents.Add(component, body);
-
-            if (component.Interactivity == PhysicsInteractivity.Static)
-                StaticHandleToBody.Add(staticHandle, body);
-            else
-                BodyHandleToBody.Add(bodyHandle, body);
         }
 
         public void Update()
         {
+            while (asyncShapeQueue.TryDequeue(out var shape))
+            {
+                // The component could have been deregistered in the meantime
+                if (!pendingAsyncShapes.Contains(shape.Component))
+                    continue;
+
+                if (registeredComponents.ContainsKey(shape.Component))
+                    DeregisterComponent(shape.Component);
+
+                AddPhysicsBody(shape.Component, ref shape.Inertia, ref shape.ShapeIndex);
+            }
+
             simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds / 2f, threadDispatcher);
             simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds / 2f, threadDispatcher);
         }
@@ -235,6 +278,55 @@ namespace GameEngine.Core.Physics.BepuPhysics
             threadDispatcher.Dispose();
         }
 
+        private void AddPhysicsBody(PhysicsComponent component, ref BodyInertia inertia, ref TypedIndex shapeIndex)
+        {
+            BepuPhysicsBody body;
+            int bodyHandle = -1;
+            int staticHandle = -1;
+
+            if (component.FreezeRotation)
+            {
+                inertia.InverseInertiaTensor = new Symmetric3x3();
+            }
+
+            var collidable = new CollidableDescription(shapeIndex, 0.1f);
+            var activity = new BodyActivityDescription(0.01f);
+
+            if (component.Interactivity == PhysicsInteractivity.Dynamic)
+            {
+                var bodyDescription = BodyDescription.CreateDynamic(
+                    component.Entity.Transform.Position + component.PositionOffset, inertia, collidable, activity);
+                bodyHandle = simulation.Bodies.Add(bodyDescription);
+            }
+            else if (component.Interactivity == PhysicsInteractivity.Kinematic)
+            {
+                var bodyDescription = BodyDescription.CreateKinematic(
+                    component.Entity.Transform.Position + component.PositionOffset, collidable, activity);
+                bodyHandle = simulation.Bodies.Add(bodyDescription);
+            }
+            else if (component.Interactivity == PhysicsInteractivity.Static)
+            {
+                var staticDescription = new StaticDescription(component.Entity.Transform.Position + component.PositionOffset, collidable);
+                staticHandle = simulation.Statics.Add(staticDescription);
+            }
+
+            body = new BepuPhysicsBody(simulation, bodyHandle != -1);
+            body.ShapeIndex = shapeIndex;
+
+            if (bodyHandle != -1)
+                body.BodyReference = new BodyReference(bodyHandle, simulation.Bodies);
+            else if (staticHandle != -1)
+                body.StaticReference = new StaticReference(staticHandle, simulation.Statics);
+
+            component.Body = body;
+            registeredComponents.Add(component, body);
+
+            if (component.Interactivity == PhysicsInteractivity.Static)
+                StaticHandleToBody.Add(staticHandle, body);
+            else
+                BodyHandleToBody.Add(bodyHandle, body);
+        }
+
         private CollidableReference BodyToCollidableReference(BepuPhysicsBody body)
         {
             if (body.IsBody)
@@ -252,64 +344,83 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
         private void BuildCompoundShape(PhysicsCompoundComponent compoundComponent, out BodyInertia inertia, out TypedIndex shapeIndex)
         {
+            inertia = default;
             var compoundCount = compoundComponent.BoxCompoundShapes.Count + compoundComponent.SphereCompoundShapes.Count;
             using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, compoundCount))
             {
-                var addedBoxShapes = new List<Tuple<Box, TypedIndex, BodyInertia>>();
                 foreach (var boxCompound in compoundComponent.BoxCompoundShapes)
                 {
-                    Tuple<Box, TypedIndex, BodyInertia> addedShape = null;
-                    foreach (var shape in addedBoxShapes)
-                    {
-                        if (shape.Item1.Width == boxCompound.Size.X && shape.Item1.Height == boxCompound.Size.Y && shape.Item1.Length == boxCompound.Size.Z)
-                        {
-                            addedShape = shape;
-                            break;
-                        }
-                    }
+                    var shape = new Box(boxCompound.Size.X, boxCompound.Size.Y, boxCompound.Size.Z);
 
-                    if (addedShape == null)
-                    {
-                        var shape = new Box(boxCompound.Size.X, boxCompound.Size.Y, boxCompound.Size.Z);
-                        shape.ComputeInertia(1, out var compoundShapeInertia);
-                        var compoundShapeIndex = simulation.Shapes.Add(shape);
-
-                        addedShape = new Tuple<Box, TypedIndex, BodyInertia>(shape, compoundShapeIndex, compoundShapeInertia);
-                        addedBoxShapes.Add(addedShape);
-                    }
+                    BodyInertia compoundShapeInertia = default;
+                    if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
+                        shape.ComputeInertia(1, out compoundShapeInertia);
 
                     var pose = new RigidPose(boxCompound.RelativeOffset);
-                    compoundBuilder.Add(addedShape.Item2, pose, addedShape.Item3.InverseInertiaTensor, 1);
+                    if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
+                        compoundBuilder.Add(shape, pose, 1);
+                    else
+                        compoundBuilder.AddForKinematic(shape, pose, 1);
                 }
 
-                var addedSphereShapes = new List<Tuple<Sphere, TypedIndex, BodyInertia>>();
                 foreach (var sphereCompound in compoundComponent.SphereCompoundShapes)
                 {
-                    Tuple<Sphere, TypedIndex, BodyInertia> addedShape = null;
-                    foreach (var shape in addedSphereShapes)
-                    {
-                        if (shape.Item1.Radius == sphereCompound.Radius)
-                        {
-                            addedShape = shape;
-                            break;
-                        }
-                    }
+                    var shape = new Sphere(sphereCompound.Radius);
 
-                    if (addedShape == null)
-                    {
-                        var shape = new Sphere(sphereCompound.Radius);
-                        shape.ComputeInertia(1, out var compoundShapeInertia);
-                        var compoundShapeIndex = simulation.Shapes.Add(shape);
-
-                        addedShape = new Tuple<Sphere, TypedIndex, BodyInertia>(shape, compoundShapeIndex, compoundShapeInertia);
-                        addedSphereShapes.Add(addedShape);
-                    }
+                    BodyInertia compoundShapeInertia = default;
+                    if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
+                        shape.ComputeInertia(1, out compoundShapeInertia);
 
                     var pose = new RigidPose(sphereCompound.RelativeOffset);
-                    compoundBuilder.Add(addedShape.Item2, pose, addedShape.Item3.InverseInertiaTensor, 1);
+                    if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
+                        compoundBuilder.Add(shape, pose, 1);
+                    else
+                        compoundBuilder.AddForKinematic(shape, pose, 1);
                 }
 
-                compoundBuilder.BuildDynamicCompound(out var compoundChildren, out inertia/*, out var center*/);
+                Buffer<CompoundChild> compoundChildren = default;
+                if (compoundComponent.Interactivity == PhysicsInteractivity.Dynamic)
+                    compoundBuilder.BuildDynamicCompound(out compoundChildren, out inertia/*, out var center*/);
+                else
+                    compoundBuilder.BuildKinematicCompound(out compoundChildren);
+
+                var compundShape = new BigCompound(compoundChildren, simulation.Shapes, bufferPool);
+                shapeIndex = simulation.Shapes.Add(compundShape);
+            }
+        }
+
+        private void BuildChunkShape(PhysicsChunkComponent chunkComponent, out TypedIndex shapeIndex)
+        {
+            var voxelShape = new Box(1, 1, 1);
+
+            using (var compoundBuilder = new CompoundBuilder(bufferPool, simulation.Shapes, 1000))
+            {
+                for (var x = 0; x < Chunk.CHUNK_X_SIZE; x++)
+                {
+                    for (var y = 0; y < Chunk.CHUNK_Y_SIZE; y++)
+                    {
+                        for (var z = 0; z < Chunk.CHUNK_Z_SIZE; z++)
+                        {
+                            if (chunkComponent.Chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive)
+                            {
+                                var anySurroundingBlocksInactive =
+                                    (x > 0 ? !chunkComponent.Chunk.Blocks[x - 1 + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                    || (x < Chunk.CHUNK_X_SIZE - 1 ? !chunkComponent.Chunk.Blocks[x + 1 + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                    || (y > 0 ? !chunkComponent.Chunk.Blocks[x + ((y - 1) * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                    || (y < Chunk.CHUNK_Y_SIZE - 1 ? !chunkComponent.Chunk.Blocks[x + ((y + 1) * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                    || (z > 0 ? !chunkComponent.Chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + ((z - 1) * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
+                                    || (z < Chunk.CHUNK_Z_SIZE - 1 ? !chunkComponent.Chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + ((z + 1) * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true);
+                                if (anySurroundingBlocksInactive)
+                                {
+                                    var pose = new RigidPose(new Vector3(x, y, z));
+                                    compoundBuilder.AddForKinematic(voxelShape, pose, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                compoundBuilder.BuildKinematicCompound(out var compoundChildren);
 
                 var compundShape = new BigCompound(compoundChildren, simulation.Shapes, bufferPool);
                 shapeIndex = simulation.Shapes.Add(compundShape);

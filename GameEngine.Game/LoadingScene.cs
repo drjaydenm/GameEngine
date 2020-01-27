@@ -25,7 +25,7 @@ namespace GameEngine.Game
 
             if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.Escape))
             {
-                Engine.Window.Exit();
+                Game.Exit();
             }
 
             var font = "Fonts/OpenSans-Regular.woff";
@@ -44,7 +44,7 @@ namespace GameEngine.Game
         public void LoadGameScene()
         {
             GameScene = new GameScene();
-            GameScene.Initialize(Engine, new Renderer(Engine, GameScene), new BepuPhysicsSystem(Engine, GameScene, new Vector3(0, -9.8f, 0)));
+            GameScene.Initialize(Engine, Game, new Renderer(Engine, GameScene), new BepuPhysicsSystem(Engine, GameScene, new Vector3(0, -9.8f, 0)));
             GameScene.LoadScene();
 
             Engine.AddScene(GameScene);

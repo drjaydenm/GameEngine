@@ -9,6 +9,7 @@ using GameEngine.Core.Entities;
 using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
 using GameEngine.Core.World;
+using System.Collections.Concurrent;
 
 namespace GameEngine.Game
 {
@@ -24,7 +25,8 @@ namespace GameEngine.Game
         private BlockWorldGenerator worldGenerator;
         private bool shouldGenerateChunks = true;
         private bool shouldShowChunkDebug;
-        private Queue<Coord3> coordsToGenerate;
+        private PriorityQueue<Coord3> coordsToGenerate;
+        private HashSet<Coord3> coordsToGenerateSet;
         private List<Entity> boxes;
         private Chunk lookingAtChunk;
         private Block? lookingAtBlock;
@@ -37,12 +39,12 @@ namespace GameEngine.Game
         private Entity[] movingPlatforms;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
-        private const int CHUNK_GENERATE_PER_FRAME = 10;
+        private const int CHUNK_GENERATE_PER_FRAME = 20;
 
         public GameScene()
         {
-            worldGenerator = new BlockWorldGenerator();
-            coordsToGenerate = new Queue<Coord3>();
+            coordsToGenerate = new PriorityQueue<Coord3>();
+            coordsToGenerateSet = new HashSet<Coord3>();
             boxes = new List<Entity>();
         }
 
@@ -54,6 +56,7 @@ namespace GameEngine.Game
 
             world = new BlockWorld(Engine, this, "World");
             AddEntity(world);
+            worldGenerator = new BlockWorldGenerator(Engine, world);
 
             var camera = new DebugCamera(new Vector3(8, 80, 8), Vector3.UnitZ, 1, 0.1f, 500, Engine);
             camera.DisableRotation = true;
@@ -90,7 +93,7 @@ namespace GameEngine.Game
 
             if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.Escape))
             {
-                Engine.Window.Exit();
+                Game.Exit();
             }
 
             if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.F11))
@@ -315,9 +318,12 @@ namespace GameEngine.Game
                     {
                         var coord = new Coord3(x, y, z);
                         var chunkExists = world.FindChunkByCoordinate(coord) != null;
-                        if (!chunkExists && !coordsToGenerate.Contains(coord))
+                        if (!chunkExists && !coordsToGenerateSet.Contains(coord))
                         {
-                            coordsToGenerate.Enqueue(coord);
+                            var dist = ActiveCamera.Position - coord;
+                            var distanceFromPlayer = (int)Math.Abs(Math.Sqrt(dist.X * dist.X + dist.Y * dist.Y + dist.Z * dist.Z));
+                            coordsToGenerate.Enqueue(coord, distanceFromPlayer);
+                            coordsToGenerateSet.Add(coord);
                         }
                     }
                 }
@@ -340,10 +346,25 @@ namespace GameEngine.Game
         private void GenerateChunks()
         {
             var chunksAlreadyGenerated = 0;
-            while (chunksAlreadyGenerated < CHUNK_GENERATE_PER_FRAME && coordsToGenerate.TryDequeue(out var coord))
+            var generatedChunks = new ConcurrentQueue<Chunk>();
+            while (chunksAlreadyGenerated < CHUNK_GENERATE_PER_FRAME && coordsToGenerate.Count > 0)
             {
-                world.AddChunk(worldGenerator.GenerateChunk(coord.X, coord.Y, coord.Z));
+                var coord = coordsToGenerate.Dequeue();
+                coordsToGenerateSet.Remove(coord);
+
+                Engine.Jobs.Background.EnqueueJob(() =>
+                {
+                    generatedChunks.Enqueue(worldGenerator.GenerateChunk(coord.X, coord.Y, coord.Z));
+                });
+
                 chunksAlreadyGenerated++;
+            }
+
+            Engine.Jobs.Background.JobQueueEmpty.WaitOne();
+
+            while (generatedChunks.TryDequeue(out var chunk))
+            {
+                world.AddChunk(chunk);
             }
         }
 
@@ -362,7 +383,7 @@ namespace GameEngine.Game
             var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(Engine, new Material(Engine, ShaderCode.VertexCode, ShaderCode.FragmentCode));
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
-            var mesh = new Mesh<VertexPositionNormalMaterial>(ref vertices, ref indices);
+            var mesh = new Mesh<VertexPositionNormalMaterial>(vertices, indices);
             boxRenderable.SetMesh(VertexPositionNormalMaterial.VertexLayoutDescription, mesh);
             box.AddComponent(boxRenderable);
 

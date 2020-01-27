@@ -34,10 +34,22 @@ namespace GameEngine.Core.Entities
 
         public bool FreezeRotation { get; set; }
 
-        internal IPhysicsBody Body { get; set; }
+        internal IPhysicsBody Body
+        {
+            get { return body; }
+            set
+            {
+                body = value;
+
+                if (value != null)
+                    OnPhysicsBodyCreated();
+            }
+        }
+
         internal Entity Entity { get; private set; }
 
         private float friction;
+        private IPhysicsBody body;
 
         public PhysicsComponent(PhysicsInteractivity interactivity)
         {
@@ -50,7 +62,6 @@ namespace GameEngine.Core.Entities
         public void AttachedToEntity(Entity entity)
         {
             Entity = entity;
-            Body.Friction = Friction;
         }
 
         public void DetachedFromEntity()
@@ -60,6 +71,9 @@ namespace GameEngine.Core.Entities
 
         public void Update()
         {
+            if (body == null)
+                return;
+
             Entity.Transform.InternalPosition = Body.Position - PositionOffset;
             Entity.Transform.InternalRotation = Body.Rotation;
         }
@@ -67,6 +81,11 @@ namespace GameEngine.Core.Entities
         public void ApplyImpulse(Vector3 impulse)
         {
             Body.ApplyImpulse(impulse);
+        }
+
+        private void OnPhysicsBodyCreated()
+        {
+            Body.Friction = Friction;
         }
     }
 }
