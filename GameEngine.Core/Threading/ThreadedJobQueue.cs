@@ -28,7 +28,12 @@ namespace GameEngine.Core.Threading
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (JobAdded.WaitOne(TimeSpan.FromMilliseconds(500)))
-                    ExecuteSingleJob();
+                {
+                    while (QueuedJobs.Count > 0)
+                    {
+                        ExecuteSingleJob();
+                    }
+                }
             }
         }
     }

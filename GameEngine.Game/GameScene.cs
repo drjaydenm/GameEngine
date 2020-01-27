@@ -39,7 +39,7 @@ namespace GameEngine.Game
         private Entity[] movingPlatforms;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
-        private const int CHUNK_GENERATE_PER_FRAME = 50;
+        private const int CHUNK_GENERATE_PER_FRAME = 20;
 
         public GameScene()
         {
