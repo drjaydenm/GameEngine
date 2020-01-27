@@ -10,5 +10,10 @@ namespace GameEngine.Core.Entities
         {
             Chunk = chunk;
         }
+
+        public void UpdateChunk()
+        {
+            Entity.Scene.PhysicsSystem.UpdateComponent(this);
+        }
     }
 }

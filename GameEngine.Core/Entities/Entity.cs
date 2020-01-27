@@ -8,8 +8,8 @@ namespace GameEngine.Core.Entities
         public string Name { get; private set; }
         public Transform Transform { get; private set; }
         public IReadOnlyList<IComponent> Components => components;
+        public Scene Scene { get; }
 
-        private readonly Scene scene;
         private readonly List<IComponent> components;
 
         public Entity(Scene scene, string name)
@@ -17,7 +17,7 @@ namespace GameEngine.Core.Entities
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("Name cannot be null or empty", nameof(name));
 
-            this.scene = scene;
+            Scene = scene;
 
             Name = name;
             components = new List<IComponent>();
@@ -35,13 +35,13 @@ namespace GameEngine.Core.Entities
 
         public void AddComponent(IComponent component)
         {
-            if (component is PhysicsComponent physicsComponent)
-            {
-                scene.PhysicsSystem.RegisterComponent(this, physicsComponent);
-            }
-
             component.AttachedToEntity(this);
             components.Add(component);
+
+            if (component is PhysicsComponent physicsComponent)
+            {
+                Scene.PhysicsSystem.RegisterComponent(physicsComponent);
+            }
         }
 
         public void RemoveComponent(IComponent component)
@@ -51,7 +51,7 @@ namespace GameEngine.Core.Entities
 
             if (component is PhysicsComponent physicsComponent)
             {
-                scene.PhysicsSystem.DeregisterComponent(physicsComponent);
+                Scene.PhysicsSystem.DeregisterComponent(physicsComponent);
             }
         }
 

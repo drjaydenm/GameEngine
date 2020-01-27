@@ -18,7 +18,6 @@ namespace GameEngine.Core.Physics.BepuPhysics
     {
         private struct AsyncShapeCreationResult
         {
-            public Entity Entity;
             public PhysicsComponent Component;
             public BodyInertia Inertia;
             public TypedIndex ShapeIndex;
@@ -36,6 +35,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
         private DefaultThreadDispatcher threadDispatcher;
         private Dictionary<PhysicsComponent, BepuPhysicsBody> registeredComponents;
         private ConcurrentQueue<AsyncShapeCreationResult> asyncShapeQueue;
+        private HashSet<PhysicsComponent> pendingAsyncShapes;
 
         public BepuPhysicsSystem(Engine engine, Scene scene, Vector3 gravity)
         {
@@ -47,6 +47,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
             simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(this), new DefaultPoseIntegratorCallbacks(gravity));
             registeredComponents = new Dictionary<PhysicsComponent, BepuPhysicsBody>();
             asyncShapeQueue = new ConcurrentQueue<AsyncShapeCreationResult>();
+            pendingAsyncShapes = new HashSet<PhysicsComponent>();
+
             BodyHandleToBody = new Dictionary<int, BepuPhysicsBody>();
             StaticHandleToBody = new Dictionary<int, BepuPhysicsBody>();
         }
@@ -77,9 +79,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
                     simulation.Bodies.Remove(body.BodyReference.Handle);
                 }
             }
+            
+            if (pendingAsyncShapes.Contains(component))
+            {
+                pendingAsyncShapes.Remove(component);
+            }
         }
 
-        public void RegisterComponent(Entity entity, PhysicsComponent component)
+        public void RegisterComponent(PhysicsComponent component)
         {
             TypedIndex shapeIndex = default;
             BodyInertia inertia = default;
@@ -104,12 +111,15 @@ namespace GameEngine.Core.Physics.BepuPhysics
             else if (component is PhysicsCompoundComponent compoundComponent)
             {
                 isAsyncShape = true;
+                pendingAsyncShapes.Add(component);
                 engine.Jobs.WhenIdle.EnqueueJob(() =>
                 {
+                    if (!pendingAsyncShapes.Contains(component))
+                        return;
+
                     BuildCompoundShape(compoundComponent, out inertia, out shapeIndex);
                     asyncShapeQueue.Enqueue(new AsyncShapeCreationResult
                     {
-                        Entity = entity,
                         Component = component,
                         Inertia = inertia,
                         ShapeIndex = shapeIndex
@@ -119,12 +129,15 @@ namespace GameEngine.Core.Physics.BepuPhysics
             else if (component is PhysicsChunkComponent chunkComponent)
             {
                 isAsyncShape = true;
+                pendingAsyncShapes.Add(component);
                 engine.Jobs.WhenIdle.EnqueueJob(() =>
                 {
+                    if (!pendingAsyncShapes.Contains(component))
+                        return;
+
                     BuildChunkShape(chunkComponent, out shapeIndex);
                     asyncShapeQueue.Enqueue(new AsyncShapeCreationResult
                     {
-                        Entity = entity,
                         Component = component,
                         Inertia = inertia,
                         ShapeIndex = shapeIndex
@@ -146,13 +159,43 @@ namespace GameEngine.Core.Physics.BepuPhysics
             }
 
             if (!isAsyncShape)
-                AddPhysicsBody(entity, component, ref inertia, ref shapeIndex);
+                AddPhysicsBody(component, ref inertia, ref shapeIndex);
+        }
+
+        public void UpdateComponent(PhysicsComponent component)
+        {
+            if (component is PhysicsChunkComponent chunkComponent)
+            {
+                pendingAsyncShapes.Add(component);
+                engine.Jobs.WhenIdle.EnqueueJob(() =>
+                {
+                    if (!pendingAsyncShapes.Contains(component))
+                        return;
+
+                    BuildChunkShape(chunkComponent, out var shapeIndex);
+                    asyncShapeQueue.Enqueue(new AsyncShapeCreationResult
+                    {
+                        Component = component,
+                        Inertia = default,
+                        ShapeIndex = shapeIndex
+                    });
+                });
+            }
         }
 
         public void Update()
         {
             while (asyncShapeQueue.TryDequeue(out var shape))
-                AddPhysicsBody(shape.Entity, shape.Component, ref shape.Inertia, ref shape.ShapeIndex);
+            {
+                // The component could have been deregistered in the meantime
+                if (!pendingAsyncShapes.Contains(shape.Component))
+                    continue;
+
+                if (registeredComponents.ContainsKey(shape.Component))
+                    DeregisterComponent(shape.Component);
+
+                AddPhysicsBody(shape.Component, ref shape.Inertia, ref shape.ShapeIndex);
+            }
 
             simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds / 2f, threadDispatcher);
             simulation.Timestep((float)engine.GameTimeElapsed.TotalSeconds / 2f, threadDispatcher);
@@ -235,7 +278,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
             threadDispatcher.Dispose();
         }
 
-        private void AddPhysicsBody(Entity entity, PhysicsComponent component, ref BodyInertia inertia, ref TypedIndex shapeIndex)
+        private void AddPhysicsBody(PhysicsComponent component, ref BodyInertia inertia, ref TypedIndex shapeIndex)
         {
             BepuPhysicsBody body;
             int bodyHandle = -1;
@@ -252,18 +295,18 @@ namespace GameEngine.Core.Physics.BepuPhysics
             if (component.Interactivity == PhysicsInteractivity.Dynamic)
             {
                 var bodyDescription = BodyDescription.CreateDynamic(
-                    entity.Transform.Position + component.PositionOffset, inertia, collidable, activity);
+                    component.Entity.Transform.Position + component.PositionOffset, inertia, collidable, activity);
                 bodyHandle = simulation.Bodies.Add(bodyDescription);
             }
             else if (component.Interactivity == PhysicsInteractivity.Kinematic)
             {
                 var bodyDescription = BodyDescription.CreateKinematic(
-                    entity.Transform.Position + component.PositionOffset, collidable, activity);
+                    component.Entity.Transform.Position + component.PositionOffset, collidable, activity);
                 bodyHandle = simulation.Bodies.Add(bodyDescription);
             }
             else if (component.Interactivity == PhysicsInteractivity.Static)
             {
-                var staticDescription = new StaticDescription(entity.Transform.Position + component.PositionOffset, collidable);
+                var staticDescription = new StaticDescription(component.Entity.Transform.Position + component.PositionOffset, collidable);
                 staticHandle = simulation.Statics.Add(staticDescription);
             }
 

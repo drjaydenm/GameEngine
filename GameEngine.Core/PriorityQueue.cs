@@ -17,7 +17,7 @@ namespace GameEngine.Core
     }
 
     /// <summary>
-    /// A priority queue that can enqueue/dequeue based on the specified priority
+    /// A priority queue that can enqueue/dequeue based on the specified priority.
     /// Based on https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp/blob/master/Priority%20Queue/FastPriorityQueue.cs
     /// </summary>
     /// <typeparam name="T">The type of item to queue</typeparam>

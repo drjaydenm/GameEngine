@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Numerics;
 
@@ -35,6 +35,11 @@ namespace GameEngine.Core.World
             WorldPositionCentroid = WorldPosition + (CHUNK_SIZE * 0.5f);
 
             blocks = blockPool.Rent(CHUNK_X_SIZE * CHUNK_Y_SIZE * CHUNK_Z_SIZE);
+            for (var i = 0; i < blocks.Length; i++)
+            {
+                blocks[i] = default;
+            }
+
             inactiveBlockCount = CHUNK_BLOCK_COUNT;
         }
 
@@ -57,7 +62,7 @@ namespace GameEngine.Core.World
 
         public void Dispose()
         {
-            blockPool.Return(blocks, true);
+            blockPool.Return(blocks);
             blocks = null;
         }
     }

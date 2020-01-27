@@ -17,7 +17,9 @@ namespace GameEngine.Core.World
         private readonly Engine engine;
         private readonly Dictionary<Coord3, LoadedChunk> chunks;
         private readonly PriorityQueue<Coord3> chunksToUpdate;
+        private readonly HashSet<Coord3> chunksToUpdateSet;
         private readonly Queue<Coord3> chunksToRemove;
+        private readonly HashSet<Coord3> chunksToRemoveSet;
         private readonly Material material;
         private readonly ArrayPool<Block> blockPool;
         private readonly ChunkMeshGenerator meshGenerator;
@@ -31,7 +33,9 @@ namespace GameEngine.Core.World
 
             chunks = new Dictionary<Coord3, LoadedChunk>();
             chunksToUpdate = new PriorityQueue<Coord3>();
+            chunksToUpdateSet = new HashSet<Coord3>();
             chunksToRemove = new Queue<Coord3>();
+            chunksToRemoveSet = new HashSet<Coord3>();
             material = new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode);
             blockPool = ArrayPool<Block>.Shared;
             meshGenerator = new ChunkMeshGenerator();
@@ -62,6 +66,10 @@ namespace GameEngine.Core.World
             while (chunksUpdatedThisFrame < CHUNKS_UPDATE_PER_FRAME && chunksToUpdate.Count > 0)
             {
                 var chunkCoord = chunksToUpdate.Dequeue();
+                chunksToUpdateSet.Remove(chunkCoord);
+
+                if (chunksToRemoveSet.Contains(chunkCoord))
+                    continue;
 
                 // Check if this chunk has since been removed
                 if (!chunks.ContainsKey(chunkCoord))
@@ -80,6 +88,8 @@ namespace GameEngine.Core.World
             while (chunksRemovedThisFrame < CHUNKS_REMOVE_PER_FRAME && chunksToRemove.Count > 0)
             {
                 var chunkCoord = chunksToRemove.Dequeue();
+                chunksToRemoveSet.Remove(chunkCoord);
+
                 var chunk = chunks[chunkCoord];
                 if (chunk.Renderable != null)
                 {
@@ -113,10 +123,11 @@ namespace GameEngine.Core.World
 
         public void RemoveChunk(Chunk chunk)
         {
-            if (!chunks.ContainsKey(chunk.Coordinate))
+            if (!chunks.ContainsKey(chunk.Coordinate) || chunksToRemoveSet.Contains(chunk.Coordinate))
                 return;
 
             chunksToRemove.Enqueue(chunk.Coordinate);
+            chunksToRemoveSet.Add(chunk.Coordinate);
 
             QueueSurroundingChunksForUpdate(chunk.Coordinate);
         }
@@ -199,9 +210,13 @@ namespace GameEngine.Core.World
 
         private void QueueCoordForUpdate(Coord3 chunkCoord)
         {
+            if (chunksToUpdateSet.Contains(chunkCoord))
+                return;
+
             var dist = PlayerInChunkCoord - chunkCoord;
             var distanceFromPlayer = (int)Math.Abs(Math.Sqrt(dist.X * dist.X + dist.Y * dist.Y + dist.Z * dist.Z));
             chunksToUpdate.Enqueue(chunkCoord, distanceFromPlayer);
+            chunksToUpdateSet.Add(chunkCoord);
         }
 
         private void AddOrUpdateRenderable(Coord3 chunkCoord)
@@ -263,61 +278,44 @@ namespace GameEngine.Core.World
                 // If we already have a physics object, remove it
                 if (loadedChunk.Physics != null)
                 {
-                    RemoveComponent(loadedChunk.Physics);
+                    if (loadedChunk.Physics is PhysicsBoxComponent)
+                    {
+                        RemoveComponent(loadedChunk.Physics);
 
-                    loadedChunk.Physics = null;
+                        loadedChunk.Physics = null;
+                    }
+                    else if (loadedChunk.Physics is PhysicsChunkComponent chunkComponent)
+                    {
+                        chunkComponent.UpdateChunk();
+                    }
                 }
 
-                PhysicsComponent physics;
-                var isChunkSolid = !chunk.IsAnyBlockInactive;
+                if (loadedChunk.Physics == null)
+                {
+                    PhysicsComponent physics;
+                    var isChunkSolid = !chunk.IsAnyBlockInactive;
 
-                // Use a simple box for the whole chunk if possible
-                if (isChunkSolid)
-                {
-                    physics = new PhysicsBoxComponent(Chunk.CHUNK_SIZE, PhysicsInteractivity.Static)
+                    // Use a simple box for the whole chunk if possible
+                    if (isChunkSolid)
                     {
-                        PositionOffset = chunk.WorldPositionCentroid
-                    };
-                }
-                else
-                {
-                    /*var compound = new PhysicsCompoundComponent(PhysicsInteractivity.Static)
-                    {
-                        PositionOffset = chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f)
-                    };
-                    for (var x = 0; x < Chunk.CHUNK_X_SIZE; x++)
-                    {
-                        for (var y = 0; y < Chunk.CHUNK_Y_SIZE; y++)
+                        physics = new PhysicsBoxComponent(Chunk.CHUNK_SIZE, PhysicsInteractivity.Static)
                         {
-                            for (var z = 0; z < Chunk.CHUNK_Z_SIZE; z++)
-                            {
-                                if (chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive)
-                                {
-                                    var anySurroundingBlocksInactive =
-                                        (x > 0 ? !chunk.Blocks[x - 1 + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
-                                        || (x < Chunk.CHUNK_X_SIZE - 1 ? !chunk.Blocks[x + 1 + (y * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
-                                        || (y > 0 ? !chunk.Blocks[x + ((y - 1) * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
-                                        || (y < Chunk.CHUNK_Y_SIZE - 1 ? !chunk.Blocks[x + ((y + 1) * Chunk.CHUNK_X_SIZE) + (z * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
-                                        || (z > 0 ? !chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + ((z - 1) * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true)
-                                        || (z < Chunk.CHUNK_Z_SIZE - 1 ? !chunk.Blocks[x + (y * Chunk.CHUNK_X_SIZE) + ((z + 1) * Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE)].IsActive : true);
-                                    if (anySurroundingBlocksInactive)
-                                    {
-                                        compound.AddBox(new Vector3(x, y, z), Vector3.One);
-                                    }
-                                }
-                            }
-                        }
-                    }*/
-                    var compound = new PhysicsChunkComponent(chunk, PhysicsInteractivity.Static)
+                            PositionOffset = chunk.WorldPositionCentroid
+                        };
+                    }
+                    else
                     {
-                        PositionOffset = chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f)
-                    };
-                    physics = compound;
+                        var compound = new PhysicsChunkComponent(chunk, PhysicsInteractivity.Static)
+                        {
+                            PositionOffset = chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f)
+                        };
+                        physics = compound;
+                    }
+
+                    loadedChunk.Physics = physics;
+
+                    AddComponent(physics);
                 }
-
-                loadedChunk.Physics = physics;
-
-                AddComponent(physics);
             }
         }
 
@@ -329,8 +327,7 @@ namespace GameEngine.Core.World
                 if (chunkAbove == null)
                     return;
 
-                if (!chunksToUpdate.Contains(chunkAbove.Coordinate))
-                    QueueCoordForUpdate(chunkAbove.Coordinate);
+                QueueCoordForUpdate(chunkAbove.Coordinate);
             }
 
             // Update surrounding chunks if not queued for update already
