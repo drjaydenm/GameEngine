@@ -9,6 +9,7 @@ using GameEngine.Core.Entities;
 using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
 using GameEngine.Core.World;
+using System.Collections.Concurrent;
 
 namespace GameEngine.Game
 {
@@ -38,7 +39,7 @@ namespace GameEngine.Game
         private Entity[] movingPlatforms;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
-        private const int CHUNK_GENERATE_PER_FRAME = 10;
+        private const int CHUNK_GENERATE_PER_FRAME = 50;
 
         public GameScene()
         {
@@ -55,7 +56,7 @@ namespace GameEngine.Game
 
             world = new BlockWorld(Engine, this, "World");
             AddEntity(world);
-            worldGenerator = new BlockWorldGenerator(world);
+            worldGenerator = new BlockWorldGenerator(Engine, world);
 
             var camera = new DebugCamera(new Vector3(8, 80, 8), Vector3.UnitZ, 1, 0.1f, 500, Engine);
             camera.DisableRotation = true;
@@ -345,12 +346,25 @@ namespace GameEngine.Game
         private void GenerateChunks()
         {
             var chunksAlreadyGenerated = 0;
+            var generatedChunks = new ConcurrentQueue<Chunk>();
             while (chunksAlreadyGenerated < CHUNK_GENERATE_PER_FRAME && coordsToGenerate.Count > 0)
             {
                 var coord = coordsToGenerate.Dequeue();
                 coordsToGenerateSet.Remove(coord);
-                world.AddChunk(worldGenerator.GenerateChunk(coord.X, coord.Y, coord.Z));
+
+                Engine.Jobs.Background.EnqueueJob(() =>
+                {
+                    generatedChunks.Enqueue(worldGenerator.GenerateChunk(coord.X, coord.Y, coord.Z));
+                });
+
                 chunksAlreadyGenerated++;
+            }
+
+            Engine.Jobs.Background.JobQueueEmpty.WaitOne();
+
+            while (generatedChunks.TryDequeue(out var chunk))
+            {
+                world.AddChunk(chunk);
             }
         }
 

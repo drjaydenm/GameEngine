@@ -12,12 +12,14 @@ namespace GameEngine.Game
         private const float LARGE_NOISE_SCALE = 60;
         private const float SMALL_NOISE_SCALE = 10;
 
+        private readonly Engine engine;
         private readonly BlockWorld world;
         private readonly Noise largeNoise;
         private readonly Noise smallNoise;
 
-        public BlockWorldGenerator(BlockWorld world)
+        public BlockWorldGenerator(Engine engine, BlockWorld world)
         {
+            this.engine = engine;
             this.world = world;
             largeNoise = new Noise(123);
             largeNoise.SetFrequency(0.009f);
@@ -32,16 +34,24 @@ namespace GameEngine.Game
             var startYOffset = ySize / 2;
             var startZOffset = zSize / 2;
 
-            Parallel.For(-startXOffset, xSize - startXOffset, (x) =>
+            for (var x = -startXOffset; x < xSize - startXOffset; x++)
             {
-                Parallel.For(-startYOffset, ySize - startYOffset, (y) =>
+                for (var y = -startYOffset; y < ySize - startYOffset; y++)
                 {
-                    Parallel.For(-startZOffset, zSize - startZOffset, (z) =>
+                    for (var z = -startZOffset; z < zSize - startZOffset; z++)
                     {
-                        chunks.Add(GenerateChunk(x, y, z));
-                    });
-                });
-            });
+                        var chunkX = x;
+                        var chunkY = y;
+                        var chunkZ = z;
+                        engine.Jobs.Background.EnqueueJob(() =>
+                        {
+                            chunks.Add(GenerateChunk(chunkX, chunkY, chunkZ));
+                        });
+                    }
+                }
+            }
+
+            engine.Jobs.Background.JobQueueEmpty.WaitOne();
 
             return chunks;
         }

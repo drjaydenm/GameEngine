@@ -24,8 +24,8 @@ namespace GameEngine.Core.World
         private readonly ArrayPool<Block> blockPool;
         private readonly ChunkMeshGenerator meshGenerator;
 
-        private const int CHUNKS_UPDATE_PER_FRAME = 10;
-        private const int CHUNKS_REMOVE_PER_FRAME = 10;
+        private const int CHUNKS_UPDATE_PER_FRAME = 50;
+        private const int CHUNKS_REMOVE_PER_FRAME = 50;
 
         public BlockWorld(Engine engine, Scene scene, string name) : base(scene, name)
         {
