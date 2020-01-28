@@ -5,6 +5,8 @@ using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
 using GameEngine.Core.Windowing;
 using GameEngine.Core.Threading;
+using GameEngine.Core.Content;
+using System.IO;
 
 namespace GameEngine.Core
 {
@@ -21,6 +23,7 @@ namespace GameEngine.Core
         public DebugGraphics DebugGraphics { get; private set; }
         public TextRenderer TextRenderer { get; private set; }
         public JobQueues Jobs { get; private set; }
+        public IContentManager ContentManager { get; private set; }
 
         internal CommandList CommandList { get; private set; }
 
@@ -39,7 +42,7 @@ namespace GameEngine.Core
             scenesToAdd = new List<Scene>();
         }
 
-        public void Init(IWindow window)
+        public void Init(IWindow window, string baseDirectory)
         {
             Window = window;
             Window.Resized += (sender, e) =>
@@ -62,6 +65,7 @@ namespace GameEngine.Core
             DebugGraphics = new DebugGraphics(this);
             TextRenderer = new TextRenderer(this);
             Jobs = new JobQueues();
+            ContentManager = new ContentManager(Path.Combine(baseDirectory, "Content"));
         }
 
         public void Update()
