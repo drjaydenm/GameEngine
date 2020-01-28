@@ -12,6 +12,8 @@ namespace GameEngine.Core.Threading
         protected ConcurrentQueue<Action> QueuedJobs { get; }
         protected AutoResetEvent JobAdded { get; }
 
+        private int jobRunningCount;
+
         public JobQueueBase()
         {
             QueuedJobs = new ConcurrentQueue<Action>();
@@ -33,9 +35,17 @@ namespace GameEngine.Core.Threading
         {
             if (QueuedJobs.TryDequeue(out var job))
             {
-                job();
+                Interlocked.Increment(ref jobRunningCount);
 
-                if (QueuedJobs.Count <= 0)
+                try
+                {
+                    job();
+                }
+                catch { }
+
+                Interlocked.Decrement(ref jobRunningCount);
+
+                if (jobRunningCount == 0 && QueuedJobs.Count <= 0)
                     JobQueueEmpty.Set();
             }
         }
