@@ -58,7 +58,7 @@ namespace GameEngine.Game
             AddEntity(world);
             worldGenerator = new BlockWorldGenerator(Engine, world);
 
-            var camera = new DebugCamera(new Vector3(8, 80, 8), Vector3.UnitZ, 1, 0.1f, 500, Engine);
+            var camera = new DebugCamera(new Vector3(8, 80, 8), Vector3.UnitZ, 75, 0.1f, 500, Engine);
             camera.DisableRotation = true;
 
             playerEntity = new Entity(this, "Player");

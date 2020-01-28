@@ -7,6 +7,8 @@ namespace GameEngine.Core.Camera
 {
     public class DebugCamera : ICamera
     {
+        private const float DEG_2_RAD = (float)Math.PI / 180f;
+
         public Matrix4x4 View { get; private set; }
         public Matrix4x4 Projection { get; private set; }
         public Quaternion Rotation { get; private set; }
@@ -16,12 +18,6 @@ namespace GameEngine.Core.Camera
         public float AspectRatio => engine.Window.AspectRatio;
         public bool DisableRotation { get; set; }
 
-        private float mouseSensitivity = 0.1f;
-        private float movementSpeed = 15f;
-        private float slowMovementSpeed = 2f;
-        private float fastMovementSpeed = 50f;
-        private float accumPitch { get; set; }
-        private float maxPitch = (float)Math.PI / 2 - .05f;
         public Vector3 Position
         {
             get { return position; }
@@ -41,6 +37,12 @@ namespace GameEngine.Core.Camera
             }
         }
 
+        private float mouseSensitivity = 0.1f;
+        private float movementSpeed = 15f;
+        private float slowMovementSpeed = 2f;
+        private float fastMovementSpeed = 50f;
+        private float accumPitch { get; set; }
+        private float maxPitch = (float)Math.PI / 2 - .05f;
         private Vector3 position;
         private Vector3 direction;
         private Engine engine;
@@ -139,7 +141,7 @@ namespace GameEngine.Core.Camera
         private void Recalculate()
         {
             View = Matrix4x4.CreateLookAt(position, position + direction, Vector3.UnitY);
-            Projection = Matrix4x4.CreatePerspectiveFieldOfView(FieldOfView, AspectRatio, NearClip, FarClip);
+            Projection = Matrix4x4.CreatePerspectiveFieldOfView(FieldOfView * DEG_2_RAD, AspectRatio, NearClip, FarClip);
            
         }
     }
