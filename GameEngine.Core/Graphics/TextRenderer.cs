@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using SharpText.Core;
 using SharpText.Veldrid;
@@ -22,6 +23,8 @@ namespace GameEngine.Core.Graphics
         {
             this.engine = engine;
             textRenderers = new List<TextRendererInfo>();
+
+            engine.Window.Resized += (object sender, EventArgs e) => OnResize();
         }
 
         public void DrawText(string text, Vector2 coords, RgbaFloat color, string fontPath, float sizeInPixels)
@@ -32,26 +35,26 @@ namespace GameEngine.Core.Graphics
 
         public void Draw()
         {
-            foreach (var renderer in textRenderers)
+            for (var i = 0; i < textRenderers.Count; i++)
             {
-                renderer.TextRenderer.Draw();
+                textRenderers[i].TextRenderer.Draw();
             }
         }
 
         public void Update()
         {
-            foreach (var renderer in textRenderers)
+            for (var i = 0; i < textRenderers.Count; i++)
             {
-                renderer.TextRenderer.Update();
+                textRenderers[i].TextRenderer.Update();
             }
         }
 
         private ITextRenderer GetTextRenderer(string fontPath, float sizeInPixels)
         {
-            foreach (var renderer in textRenderers)
+            for (var i = 0; i < textRenderers.Count; i++)
             {
-                if (renderer.FontPath == fontPath && renderer.FontSize == sizeInPixels)
-                    return renderer.TextRenderer;
+                if (textRenderers[i].FontPath == fontPath && textRenderers[i].FontSize == sizeInPixels)
+                    return textRenderers[i].TextRenderer;
             }
 
             var font = new Font(fontPath, sizeInPixels);
@@ -64,6 +67,14 @@ namespace GameEngine.Core.Graphics
             });
 
             return textRenderer;
+        }
+
+        private void OnResize()
+        {
+            for (var i = 0; i < textRenderers.Count; i++)
+            {
+                textRenderers[i].TextRenderer.ResizeToSwapchain();
+            }
         }
     }
 }
