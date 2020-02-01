@@ -56,7 +56,8 @@ namespace GameEngine.Game
             Renderer.LightDirection = Vector3.Normalize(new Vector3(1, -1, 1));
 
             texture = Engine.ContentManager.Load<Texture2D>("Textures", "Ground");
-            var material = new Material(Engine, ShaderCode.VertexCode, ShaderCode.FragmentCode, texture);
+            var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
+            var material = new Material(Engine, shader, texture);
 
             world = new BlockWorld(Engine, this, "World", material);
             AddEntity(world);
@@ -384,7 +385,8 @@ namespace GameEngine.Game
             box.AddComponent(physicsBox);
             physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;
 
-            var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(Engine, new Material(Engine, ShaderCode.VertexCode, ShaderCode.FragmentCode, texture));
+            var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
+            var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(Engine, new Material(Engine, shader, texture));
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
             var mesh = new Mesh<VertexPositionNormalMaterial>(vertices, indices);

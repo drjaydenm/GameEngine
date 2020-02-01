@@ -1,0 +1,8 @@
+﻿{
+    "Contents": [
+        {
+            "Key": "Voxel",
+            "Path": "Shaders/Voxel.shader"
+        }
+    ]
+}

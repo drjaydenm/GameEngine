@@ -32,8 +32,10 @@ namespace GameEngine.Core.Content
 
         public void AddDefaultImportersAndProcessors()
         {
+            AddImporter(new ShaderImporter());
             AddImporter(new Texture2DImporter());
 
+            AddProcessor(new ShaderProcessor(engine));
             AddProcessor(new Texture2DProcessor(engine));
         }
 
@@ -79,11 +81,7 @@ namespace GameEngine.Core.Content
             if (importer == null)
                 throw new Exception("Cannot find an importer for this extension");
 
-            IContentRaw contentRaw;
-            using (var fs = new FileStream(contentPath, FileMode.Open, FileAccess.Read))
-            {
-                contentRaw = importer.Import(fs);
-            }
+            var contentRaw = importer.Import(contentPath);
 
             var processor = GetProcessor(contentRaw.GetType());
             if (processor == null)

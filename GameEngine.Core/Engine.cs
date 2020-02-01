@@ -62,11 +62,12 @@ namespace GameEngine.Core
 
             CommandList = GraphicsDevice.ResourceFactory.CreateCommandList();
 
-            DebugGraphics = new DebugGraphics(this);
-            TextRenderer = new TextRenderer(this);
             Jobs = new JobQueues();
             ContentManager = new ContentManager(this, Path.Combine(baseDirectory, "Content"));
             ContentManager.AddDefaultImportersAndProcessors();
+
+            DebugGraphics = new DebugGraphics(this);
+            TextRenderer = new TextRenderer(this);
         }
 
         public void Update()

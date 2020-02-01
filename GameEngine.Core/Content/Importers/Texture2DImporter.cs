@@ -9,16 +9,20 @@ namespace GameEngine.Core.Content.Importers
     {
         public string[] FileExtensions => new[] { ".jpg", ".jpeg" };
 
-        public Texture2DRaw Import(Stream stream)
+        public Texture2DRaw Import(string filePath)
         {
-            var image = Image.Load<Rgba32>(stream);
+            Image<Rgba32> image;
+            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                image = Image.Load<Rgba32>(fs);
+            }
 
             return new Texture2DRaw(image);
         }
 
-        IContentRaw IContentImporter.Import(Stream stream)
+        IContentRaw IContentImporter.Import(string filePath)
         {
-            return Import(stream);
+            return Import(filePath);
         }
     }
 }

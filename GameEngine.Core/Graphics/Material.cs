@@ -9,8 +9,7 @@ namespace GameEngine.Core.Graphics
     public class Material
     {
         private readonly Engine engine;
-        private readonly string vertexShader;
-        private readonly string fragmentShader;
+        private readonly Shader shader;
 
         private bool mustSetup = true;
         private Shader[] shaders;
@@ -31,11 +30,10 @@ namespace GameEngine.Core.Graphics
         };
         private Texture2D texture;
 
-        public Material(Engine engine, string vertexShader, string fragmentShader, Texture2D texture)
+        public Material(Engine engine, Shader shader, Texture2D texture)
         {
             this.engine = engine;
-            this.vertexShader = vertexShader;
-            this.fragmentShader = fragmentShader;
+            this.shader = shader;
             this.texture = texture;
         }
 
@@ -54,17 +52,6 @@ namespace GameEngine.Core.Graphics
         private void Setup(Renderer renderer, VertexLayoutDescription vertexLayout)
         {
             var factory = engine.GraphicsDevice.ResourceFactory;
-
-            var vertexShaderDesc = new ShaderDescription(
-                ShaderStages.Vertex,
-                Encoding.UTF8.GetBytes(vertexShader),
-                "main");
-            var fragmentShaderDesc = new ShaderDescription(
-                ShaderStages.Fragment,
-                Encoding.UTF8.GetBytes(fragmentShader),
-                "main");
-
-            shaders = factory.CreateFromSpirv(vertexShaderDesc, fragmentShaderDesc);
 
             materialBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<MaterialInfo>(), BufferUsage.UniformBuffer));
             // TODO these should be passed in
@@ -131,7 +118,7 @@ namespace GameEngine.Core.Graphics
             pipelineDescription.ResourceLayouts = new ResourceLayout[] { transformLayout, sceneLayout, materialLayout, textureLayout };
             pipelineDescription.ShaderSet = new ShaderSetDescription(
                 vertexLayouts: new VertexLayoutDescription[] { vertexLayout },
-                shaders: shaders);
+                shaders: shader.Shaders);
             pipelineDescription.Outputs = engine.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
 
             pipeline = factory.CreateGraphicsPipeline(pipelineDescription);
