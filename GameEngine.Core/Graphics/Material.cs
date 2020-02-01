@@ -17,6 +17,7 @@ namespace GameEngine.Core.Graphics
         private ResourceSet transformSet;
         private ResourceSet sceneSet;
         private ResourceSet materialSet;
+        private ResourceSet textureSet;
         private Pipeline pipeline;
         private DeviceBuffer materialBuffer;
         private DeviceBuffer materialColorBuffer;
@@ -28,12 +29,14 @@ namespace GameEngine.Core.Graphics
             new RgbaFloat(0.4f, 0.243f, 0.106f, 1),
             RgbaFloat.LightGrey,
         };
+        private Texture2D texture;
 
-        public Material(Engine engine, string vertexShader, string fragmentShader)
+        public Material(Engine engine, string vertexShader, string fragmentShader, Texture2D texture)
         {
             this.engine = engine;
             this.vertexShader = vertexShader;
             this.fragmentShader = fragmentShader;
+            this.texture = texture;
         }
 
         public void Bind(CommandList commandList, Renderer renderer, VertexLayoutDescription vertexLayout)
@@ -45,6 +48,7 @@ namespace GameEngine.Core.Graphics
             commandList.SetGraphicsResourceSet(0, transformSet);
             commandList.SetGraphicsResourceSet(1, sceneSet);
             commandList.SetGraphicsResourceSet(2, materialSet);
+            commandList.SetGraphicsResourceSet(3, textureSet);
         }
 
         private void Setup(Renderer renderer, VertexLayoutDescription vertexLayout)
@@ -86,6 +90,11 @@ namespace GameEngine.Core.Graphics
                     new ResourceLayoutElementDescription("MaterialBuffer", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("MaterialColorBuffer", ResourceKind.UniformBuffer, ShaderStages.Fragment)));
 
+            var textureLayout = factory.CreateResourceLayout(
+                new ResourceLayoutDescription(
+                    new ResourceLayoutElementDescription("Texture", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                    new ResourceLayoutElementDescription("TextureSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
+
             transformSet = factory.CreateResourceSet(new ResourceSetDescription(
                 transformLayout,
                 renderer.ViewProjBuffer,
@@ -101,6 +110,11 @@ namespace GameEngine.Core.Graphics
                 materialBuffer,
                 materialColorBuffer));
 
+            textureSet = factory.CreateResourceSet(new ResourceSetDescription(
+                textureLayout,
+                texture.Texture,
+                engine.GraphicsDevice.LinearSampler));
+
             var pipelineDescription = new GraphicsPipelineDescription();
             pipelineDescription.BlendState = BlendStateDescription.SingleOverrideBlend;
             pipelineDescription.DepthStencilState = new DepthStencilStateDescription(
@@ -114,7 +128,7 @@ namespace GameEngine.Core.Graphics
                 depthClipEnabled: true,
                 scissorTestEnabled: false);
             pipelineDescription.PrimitiveTopology = PrimitiveTopology.TriangleList;
-            pipelineDescription.ResourceLayouts = new ResourceLayout[] { transformLayout, sceneLayout, materialLayout };
+            pipelineDescription.ResourceLayouts = new ResourceLayout[] { transformLayout, sceneLayout, materialLayout, textureLayout };
             pipelineDescription.ShaderSet = new ShaderSetDescription(
                 vertexLayouts: new VertexLayoutDescription[] { vertexLayout },
                 shaders: shaders);

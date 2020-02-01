@@ -3,6 +3,10 @@
         {
             "Key": "SolarPanel",
             "Path": "Textures/SolarPanel03_col.jpg"
+        },
+        {
+            "Key": "Ground",
+            "Path": "Textures/Ground22_col.jpg"
         }
     ]
 }

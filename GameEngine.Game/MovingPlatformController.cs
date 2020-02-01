@@ -27,7 +27,8 @@ namespace GameEngine.Game
         {
             this.entity = entity;
 
-            material = new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode);
+            var texture = engine.ContentManager.Load<Texture2D>("Textures", "SolarPanel");
+            material = new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode, texture);
             renderable = new BasicRenderable<VertexPositionNormalMaterial>(engine, material);
 
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();

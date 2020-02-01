@@ -72,6 +72,8 @@ layout(set = 2, binding = 1) uniform MaterialColorBuffer
 {
     vec4[4] MaterialColors;
 };
+layout(set = 3, binding = 0) uniform texture2D Texture;
+layout(set = 3, binding = 1) uniform sampler TextureSampler;
 
 layout(location = 0) in vec3 fsin_WorldPosition;
 layout(location = 1) in vec3 fsin_Normal;
@@ -99,15 +101,16 @@ vec3 roundVec3(vec3 val, int prec)
 void main()
 {
     vec3 surfaceToLight = -LightDirection;
-    vec4 diffuseColor = MaterialColors[fsin_MaterialId];
     vec3 cameraToFragment = CameraPosition - fsin_WorldPosition;
     vec3 viewDirection = normalize(cameraToFragment);
+
+    vec4 diffuseColor = MaterialColors[fsin_MaterialId];
+    diffuseColor *= texture(sampler2D(Texture, TextureSampler), fsin_WorldPosition.xy);
 
     vec4 ambient = AmbientLight * diffuseColor;
 
     float diffuseCoefficient = max(dot(fsin_Normal, surfaceToLight), 0.0);
     vec4 diffuse = diffuseCoefficient * diffuseColor * LightColor * LightIntensity;
-    diffuse += (random(roundVec3(fsin_WorldPosition, 2)) - 0.5) * 0.25f;
 
     float specularCoefficient = 0.0;
     if (diffuseCoefficient > 0.0)
