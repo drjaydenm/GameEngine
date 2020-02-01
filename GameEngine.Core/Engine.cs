@@ -65,7 +65,8 @@ namespace GameEngine.Core
             DebugGraphics = new DebugGraphics(this);
             TextRenderer = new TextRenderer(this);
             Jobs = new JobQueues();
-            ContentManager = new ContentManager(Path.Combine(baseDirectory, "Content"));
+            ContentManager = new ContentManager(this, Path.Combine(baseDirectory, "Content"));
+            ContentManager.AddDefaultImportersAndProcessors();
         }
 
         public void Update()

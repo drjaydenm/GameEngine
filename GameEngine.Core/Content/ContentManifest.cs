@@ -15,7 +15,8 @@ namespace GameEngine.Core.Content
                     if (contents[i].Key == contentKey)
                         return contents[i].Path;
                 }
-                return null;
+
+                throw new KeyNotFoundException("Cannot find content key");
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using GameEngine.Core;
+using GameEngine.Core;
 using GameEngine.Core.Graphics;
 
 namespace GameEngine.Game
@@ -15,6 +15,7 @@ namespace GameEngine.Game
             //Engine.Window.Size = Engine.Window.ScreenSize - (Engine.Window.Position * 2);
 
             Engine.ContentManager.LoadManifests("Textures");
+            var texture = Engine.ContentManager.Load<Texture2D>("Textures", "SolarPanel");
 
             LoadingScene = new LoadingScene();
             LoadingScene.Initialize(Engine, this, new Renderer(Engine, LoadingScene), null);
