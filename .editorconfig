@@ -16,6 +16,12 @@ indent_size = 4
 insert_final_newline = true
 charset = utf-8-bom
 
+# Data files
+[*.{json,xml}]
+indent_size = 4
+insert_final_newline = true
+charset = utf-8-bom
+
 ###############################
 # .NET Coding Conventions     #
 ###############################

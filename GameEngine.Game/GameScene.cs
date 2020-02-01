@@ -37,6 +37,7 @@ namespace GameEngine.Game
         private bool playerSpawned;
         private bool debugCamera = true;
         private Entity[] movingPlatforms;
+        private Texture2D texture;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
         private const int CHUNK_GENERATE_PER_FRAME = 20;
@@ -54,7 +55,11 @@ namespace GameEngine.Game
 
             Renderer.LightDirection = Vector3.Normalize(new Vector3(1, -1, 1));
 
-            world = new BlockWorld(Engine, this, "World");
+            texture = Engine.ContentManager.Load<Texture2D>("Textures", "Ground");
+            var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
+            var material = new Material(Engine, shader, texture);
+
+            world = new BlockWorld(Engine, this, "World", material);
             AddEntity(world);
             worldGenerator = new BlockWorldGenerator(Engine, world);
 
@@ -154,7 +159,7 @@ namespace GameEngine.Game
 
             foreach (var box in boxes)
             {
-                var renderComponent = box.GetComponentsOfType<BasicRenderable<VertexPositionNormalMaterial>>().First();
+                var renderComponent = box.GetComponentsOfType<BasicRenderable<VertexPositionNormalTexCoordMaterial>>().First();
                 renderComponent.SetWorldTransform(Matrix4x4.CreateFromQuaternion(box.Transform.Rotation) * Matrix4x4.CreateScale(0.5f) * Matrix4x4.CreateTranslation(box.Transform.Position));
             }
 
@@ -380,11 +385,12 @@ namespace GameEngine.Game
             box.AddComponent(physicsBox);
             physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;
 
-            var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(Engine, new Material(Engine, ShaderCode.VertexCode, ShaderCode.FragmentCode));
-            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
+            var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
+            var boxRenderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(Engine, new Material(Engine, shader, texture));
+            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalTexCoordMaterial(v, Vector3.UnitY, Vector2.UnitX, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
-            var mesh = new Mesh<VertexPositionNormalMaterial>(vertices, indices);
-            boxRenderable.SetMesh(VertexPositionNormalMaterial.VertexLayoutDescription, mesh);
+            var mesh = new Mesh<VertexPositionNormalTexCoordMaterial>(vertices, indices);
+            boxRenderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);
             box.AddComponent(boxRenderable);
 
             AddEntity(box);

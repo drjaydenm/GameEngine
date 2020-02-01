@@ -27,16 +27,16 @@ namespace GameEngine.Core.World
         private const int CHUNKS_UPDATE_PER_FRAME = 50;
         private const int CHUNKS_REMOVE_PER_FRAME = 50;
 
-        public BlockWorld(Engine engine, Scene scene, string name) : base(scene, name)
+        public BlockWorld(Engine engine, Scene scene, string name, Material material) : base(scene, name)
         {
             this.engine = engine;
+            this.material = material;
 
             chunks = new Dictionary<Coord3, LoadedChunk>();
             chunksToUpdate = new PriorityQueue<Coord3>();
             chunksToUpdateSet = new HashSet<Coord3>();
             chunksToRemove = new Queue<Coord3>();
             chunksToRemoveSet = new HashSet<Coord3>();
-            material = new Material(engine, ShaderCode.VertexCode, ShaderCode.FragmentCode);
             blockPool = ArrayPool<Block>.Shared;
             meshGenerator = new ChunkMeshGenerator();
         }

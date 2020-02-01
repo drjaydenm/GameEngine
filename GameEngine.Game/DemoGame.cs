@@ -1,4 +1,4 @@
-﻿using GameEngine.Core;
+using GameEngine.Core;
 using GameEngine.Core.Graphics;
 
 namespace GameEngine.Game
@@ -13,6 +13,8 @@ namespace GameEngine.Game
 
             Engine.Window.Title = "DemoGame";
             //Engine.Window.Size = Engine.Window.ScreenSize - (Engine.Window.Position * 2);
+
+            Engine.ContentManager.LoadManifests("Textures", "Shaders");
 
             LoadingScene = new LoadingScene();
             LoadingScene.Initialize(Engine, this, new Renderer(Engine, LoadingScene), null);

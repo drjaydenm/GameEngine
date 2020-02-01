@@ -10,7 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Fonts\OpenSans-Regular.woff">
+    <None Update="Content\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Fonts\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
