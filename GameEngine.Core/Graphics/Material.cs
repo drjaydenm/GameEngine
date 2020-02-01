@@ -12,7 +12,6 @@ namespace GameEngine.Core.Graphics
         private readonly Shader shader;
 
         private bool mustSetup = true;
-        private Shader[] shaders;
         private ResourceSet transformSet;
         private ResourceSet sceneSet;
         private ResourceSet materialSet;

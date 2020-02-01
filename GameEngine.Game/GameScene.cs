@@ -159,7 +159,7 @@ namespace GameEngine.Game
 
             foreach (var box in boxes)
             {
-                var renderComponent = box.GetComponentsOfType<BasicRenderable<VertexPositionNormalMaterial>>().First();
+                var renderComponent = box.GetComponentsOfType<BasicRenderable<VertexPositionNormalTexCoordMaterial>>().First();
                 renderComponent.SetWorldTransform(Matrix4x4.CreateFromQuaternion(box.Transform.Rotation) * Matrix4x4.CreateScale(0.5f) * Matrix4x4.CreateTranslation(box.Transform.Position));
             }
 
@@ -386,11 +386,11 @@ namespace GameEngine.Game
             physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;
 
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
-            var boxRenderable = new BasicRenderable<VertexPositionNormalMaterial>(Engine, new Material(Engine, shader, texture));
-            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
+            var boxRenderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(Engine, new Material(Engine, shader, texture));
+            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalTexCoordMaterial(v, Vector3.UnitY, Vector2.UnitX, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
-            var mesh = new Mesh<VertexPositionNormalMaterial>(vertices, indices);
-            boxRenderable.SetMesh(VertexPositionNormalMaterial.VertexLayoutDescription, mesh);
+            var mesh = new Mesh<VertexPositionNormalTexCoordMaterial>(vertices, indices);
+            boxRenderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);
             box.AddComponent(boxRenderable);
 
             AddEntity(box);

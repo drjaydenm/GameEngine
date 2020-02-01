@@ -10,11 +10,13 @@ layout(set = 0, binding = 1) uniform WorldBuffer
 };
 layout(location = 0) in vec3 Position;
 layout(location = 1) in vec3 Normal;
-layout(location = 2) in uint MaterialId;
+layout(location = 2) in vec2 TexCoord;
+layout(location = 3) in uint MaterialId;
 
 layout(location = 0) out vec3 fsin_WorldPosition;
 layout(location = 1) out vec3 fsin_Normal;
-layout(location = 2) flat out uint fsin_MaterialId;
+layout(location = 2) out vec2 fsin_TexCoord;
+layout(location = 3) flat out uint fsin_MaterialId;
 
 void main()
 {
@@ -23,5 +25,6 @@ void main()
     
     fsin_WorldPosition = worldPos.xyz / worldPos.w;
     fsin_Normal = vec3(World * vec4(Normal, 0));
+    fsin_TexCoord = TexCoord;
     fsin_MaterialId = MaterialId;
 }

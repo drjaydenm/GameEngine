@@ -43,7 +43,8 @@ layout(set = 3, binding = 1) uniform sampler TextureSampler;
 
 layout(location = 0) in vec3 fsin_WorldPosition;
 layout(location = 1) in vec3 fsin_Normal;
-layout(location = 2) flat in uint fsin_MaterialId;
+layout(location = 2) in vec2 fsin_TexCoord;
+layout(location = 3) flat in uint fsin_MaterialId;
 
 layout(location = 0) out vec4 fsout_Color;
 
@@ -71,7 +72,7 @@ void main()
     vec3 viewDirection = normalize(cameraToFragment);
 
     vec4 diffuseColor = MaterialColors[fsin_MaterialId];
-    diffuseColor *= texture(sampler2D(Texture, TextureSampler), fsin_WorldPosition.xy);
+    diffuseColor *= texture(sampler2D(Texture, TextureSampler), fsin_TexCoord);
 
     vec4 ambient = AmbientLight * diffuseColor;
 

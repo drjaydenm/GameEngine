@@ -9,14 +9,14 @@ namespace GameEngine.Core.World
     public class ChunkRenderable : IRenderable, IDisposable
     {
         public Material Material { get; private set; }
-        public VertexLayoutDescription LayoutDescription => VertexPositionNormalMaterial.VertexLayoutDescription;
+        public VertexLayoutDescription LayoutDescription => VertexPositionNormalTexCoordMaterial.VertexLayoutDescription;
         public DeviceBuffer VertexBuffer { get; private set; }
         public DeviceBuffer IndexBuffer { get; private set; }
         public Matrix4x4 WorldTransform { get; private set; }
 
         private readonly Engine engine;
         private readonly ChunkMeshGenerator meshGenerator;
-        private VertexPositionNormalMaterial[] vertices;
+        private VertexPositionNormalTexCoordMaterial[] vertices;
         private uint vertexCount;
         private uint[] indices;
         private uint indexCount;
@@ -34,7 +34,7 @@ namespace GameEngine.Core.World
             WorldTransform = Matrix4x4.CreateTranslation(chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f));
         }
 
-        public void UpdateChunk(VertexPositionNormalMaterial[] vertices, uint vertexCount, uint[] indices, uint indexCount)
+        public void UpdateChunk(VertexPositionNormalTexCoordMaterial[] vertices, uint vertexCount, uint[] indices, uint indexCount)
         {
             this.vertices = vertices;
             this.vertexCount = vertexCount;
@@ -74,14 +74,14 @@ namespace GameEngine.Core.World
             if (vertexCount <= 0)
                 return;
 
-            var vertexBytes = (uint)(VertexPositionNormalMaterial.SizeInBytes * vertexCount);
+            var vertexBytes = (uint)(VertexPositionNormalTexCoordMaterial.SizeInBytes * vertexCount);
             var indexBytes = (uint)(sizeof(uint) * indexCount);
             VertexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
                 new BufferDescription(vertexBytes, BufferUsage.VertexBuffer));
             IndexBuffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(
                 new BufferDescription(indexBytes, BufferUsage.IndexBuffer));
 
-            fixed (VertexPositionNormalMaterial* pVertices = vertices)
+            fixed (VertexPositionNormalTexCoordMaterial* pVertices = vertices)
             fixed(uint* pIndices = indices)
             {
                 commandList.UpdateBuffer(VertexBuffer, 0, new IntPtr(pVertices), vertexBytes);

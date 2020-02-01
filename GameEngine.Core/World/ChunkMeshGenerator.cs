@@ -8,17 +8,17 @@ namespace GameEngine.Core.World
 {
     public class ChunkMeshGenerator
     {
-        private ArrayPool<VertexPositionNormalMaterial> vertexPool;
+        private ArrayPool<VertexPositionNormalTexCoordMaterial> vertexPool;
         private ArrayPool<uint> indexPool;
 
         public ChunkMeshGenerator()
         {
             var numBlocksPerChunk = Chunk.CHUNK_X_SIZE * Chunk.CHUNK_Y_SIZE * Chunk.CHUNK_Z_SIZE;
-            vertexPool = ArrayPool<VertexPositionNormalMaterial>.Create(4 * 6 * numBlocksPerChunk, 10);
+            vertexPool = ArrayPool<VertexPositionNormalTexCoordMaterial>.Create(4 * 6 * numBlocksPerChunk, 10);
             indexPool = ArrayPool<uint>.Create(6 * 6 * numBlocksPerChunk, 10);
         }
 
-        public void GenerateMesh(Chunk chunk, BlockWorld world, out VertexPositionNormalMaterial[] outVertices, out uint vertexCount, out uint[] outIndices, out uint indexCount)
+        public void GenerateMesh(Chunk chunk, BlockWorld world, out VertexPositionNormalTexCoordMaterial[] outVertices, out uint vertexCount, out uint[] outIndices, out uint indexCount)
         {
             vertexCount = 0;
             indexCount = 0;
@@ -68,10 +68,10 @@ namespace GameEngine.Core.World
                             if (vertexCount + 4 > vertices.Length)
                                 ResizeVertexArray(ref vertices);
 
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitY, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitY, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitY, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitY, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitY, Vector2.Zero, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitY, Vector2.UnitX, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitY, Vector2.One, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitY, Vector2.UnitY, blockType);
 
                             AddFaceIndices(ref indices, ref indexCount, vertexCount - 4);
                         }
@@ -82,10 +82,10 @@ namespace GameEngine.Core.World
                             if (vertexCount + 4 > vertices.Length)
                                 ResizeVertexArray(ref vertices);
 
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitY, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitY, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitY, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitY, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitY, Vector2.Zero, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitY, Vector2.UnitX, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitY, Vector2.One, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitY, Vector2.UnitY, blockType);
 
                             AddFaceIndices(ref indices, ref indexCount, vertexCount - 4);
                         }
@@ -96,10 +96,10 @@ namespace GameEngine.Core.World
                             if (vertexCount + 4 > vertices.Length)
                                 ResizeVertexArray(ref vertices);
 
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitX, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, -Vector3.UnitX, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitX, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitX, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitX, Vector2.Zero, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, -Vector3.UnitX, Vector2.UnitX, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, -Vector3.UnitX, Vector2.One, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitX, Vector2.UnitY, blockType);
 
                             AddFaceIndices(ref indices, ref indexCount, vertexCount - 4);
                         }
@@ -110,10 +110,10 @@ namespace GameEngine.Core.World
                             if (vertexCount + 4 > vertices.Length)
                                 ResizeVertexArray(ref vertices);
 
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitX, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitX, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, Vector3.UnitX, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitX, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitX, Vector2.Zero, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, Vector3.UnitX, Vector2.UnitX, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, Vector3.UnitX, Vector2.One, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitX, Vector2.UnitY, blockType);
 
                             AddFaceIndices(ref indices, ref indexCount, vertexCount - 4);
                         }
@@ -124,10 +124,10 @@ namespace GameEngine.Core.World
                             if (vertexCount + 4 > vertices.Length)
                                 ResizeVertexArray(ref vertices);
 
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, Vector2.Zero, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, +0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, Vector2.UnitX, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, Vector2.One, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, -0.5f, -0.5f) + blockOffset, -Vector3.UnitZ, Vector2.UnitY, blockType);
 
                             AddFaceIndices(ref indices, ref indexCount, vertexCount - 4);
                         }
@@ -138,10 +138,10 @@ namespace GameEngine.Core.World
                             if (vertexCount + 4 > vertices.Length)
                                 ResizeVertexArray(ref vertices);
 
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitZ, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitZ, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitZ, blockType);
-                            vertices[vertexCount++] = new VertexPositionNormalMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitZ, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitZ, Vector2.Zero, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, +0.5f, +0.5f) + blockOffset, Vector3.UnitZ, Vector2.UnitX, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(+0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitZ, Vector2.One, blockType);
+                            vertices[vertexCount++] = new VertexPositionNormalTexCoordMaterial(new Vector3(-0.5f, -0.5f, +0.5f) + blockOffset, Vector3.UnitZ, Vector2.UnitY, blockType);
 
                             AddFaceIndices(ref indices, ref indexCount, vertexCount - 4);
                         }
@@ -161,7 +161,7 @@ namespace GameEngine.Core.World
             outIndices = indices;
         }
 
-        public void FreeBuffers(VertexPositionNormalMaterial[] vertices, uint[] indices)
+        public void FreeBuffers(VertexPositionNormalTexCoordMaterial[] vertices, uint[] indices)
         {
             vertexPool.Return(vertices);
             indexPool.Return(indices);
@@ -182,7 +182,7 @@ namespace GameEngine.Core.World
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ResizeVertexArray(ref VertexPositionNormalMaterial[] vertices)
+        private void ResizeVertexArray(ref VertexPositionNormalTexCoordMaterial[] vertices)
         {
             var newArray = vertexPool.Rent(vertices.Length * 2);
             Array.Copy(vertices, newArray, vertices.Length);

@@ -14,7 +14,7 @@ namespace GameEngine.Game
 
         private readonly Engine engine;
         private Entity entity;
-        private BasicRenderable<VertexPositionNormalMaterial> renderable;
+        private BasicRenderable<VertexPositionNormalTexCoordMaterial> renderable;
         private Material material;
         private PhysicsBoxComponent physicsBox;
 
@@ -30,12 +30,12 @@ namespace GameEngine.Game
             var texture = engine.ContentManager.Load<Texture2D>("Textures", "SolarPanel");
             var shader = engine.ContentManager.Load<Shader>("Shaders", "Voxel");
             material = new Material(engine, shader, texture);
-            renderable = new BasicRenderable<VertexPositionNormalMaterial>(engine, material);
+            renderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(engine, material);
 
-            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalMaterial(v, Vector3.UnitY, 1)).ToArray();
+            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalTexCoordMaterial(v, Vector3.UnitY, Vector2.UnitX, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
-            var mesh = new Mesh<VertexPositionNormalMaterial>(vertices, indices);
-            renderable.SetMesh(VertexPositionNormalMaterial.VertexLayoutDescription, mesh);
+            var mesh = new Mesh<VertexPositionNormalTexCoordMaterial>(vertices, indices);
+            renderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);
 
             entity.AddComponent(renderable);
 
