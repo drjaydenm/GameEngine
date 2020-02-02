@@ -1,8 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using Veldrid;
-using Veldrid.SPIRV;
 
 namespace GameEngine.Core.Graphics
 {
@@ -18,18 +16,10 @@ namespace GameEngine.Core.Graphics
         private ResourceSet textureSet;
         private Pipeline pipeline;
         private DeviceBuffer materialBuffer;
-        private DeviceBuffer materialColorBuffer;
         private MaterialInfo materialInfo;
-        // TODO things like this shouldn't be in here and should be passed in somehow
-        private RgbaFloat[] materialColors = {
-            RgbaFloat.White,
-            new RgbaFloat(0.184f, 0.588f, 0.051f, 1),
-            new RgbaFloat(0.4f, 0.243f, 0.106f, 1),
-            RgbaFloat.LightGrey,
-        };
-        private Texture2D texture;
+        private Texture texture;
 
-        public Material(Engine engine, Shader shader, Texture2D texture)
+        public Material(Engine engine, Shader shader, Texture texture)
         {
             this.engine = engine;
             this.shader = shader;
@@ -58,9 +48,6 @@ namespace GameEngine.Core.Graphics
             materialInfo.Shininess = 100;
             engine.GraphicsDevice.UpdateBuffer(materialBuffer, 0, materialInfo);
 
-            materialColorBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<RgbaFloat>() * (uint)materialColors.Length, BufferUsage.UniformBuffer));
-            engine.GraphicsDevice.UpdateBuffer(materialColorBuffer, 0, materialColors);
-
             var transformLayout = factory.CreateResourceLayout(
                 new ResourceLayoutDescription(
                     new ResourceLayoutElementDescription("ViewProjBuffer", ResourceKind.UniformBuffer, ShaderStages.Vertex),
@@ -73,8 +60,7 @@ namespace GameEngine.Core.Graphics
 
             var materialLayout = factory.CreateResourceLayout(
                 new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("MaterialBuffer", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("MaterialColorBuffer", ResourceKind.UniformBuffer, ShaderStages.Fragment)));
+                    new ResourceLayoutElementDescription("MaterialBuffer", ResourceKind.UniformBuffer, ShaderStages.Fragment)));
 
             var textureLayout = factory.CreateResourceLayout(
                 new ResourceLayoutDescription(
@@ -93,12 +79,11 @@ namespace GameEngine.Core.Graphics
 
             materialSet = factory.CreateResourceSet(new ResourceSetDescription(
                 materialLayout,
-                materialBuffer,
-                materialColorBuffer));
+                materialBuffer));
 
             textureSet = factory.CreateResourceSet(new ResourceSetDescription(
                 textureLayout,
-                texture.Texture,
+                texture.NativeTexture,
                 engine.GraphicsDevice.LinearSampler));
 
             var pipelineDescription = new GraphicsPipelineDescription();

@@ -2,9 +2,9 @@
 {
     public enum BlockType
     {
-        None = 0,
-        Grass = 1,
-        Dirt = 2,
-        Stone = 3
+        Grass = 0,
+        Dirt = 1,
+        Stone = 2,
+        None = 255
     }
 }

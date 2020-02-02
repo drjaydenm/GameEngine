@@ -34,11 +34,7 @@ layout(set = 2, binding = 0) uniform MaterialBuffer
     float _padding14;
     float _padding15;
 };
-layout(set = 2, binding = 1) uniform MaterialColorBuffer
-{
-    vec4[4] MaterialColors;
-};
-layout(set = 3, binding = 0) uniform texture2D Texture;
+layout(set = 3, binding = 0) uniform texture2DArray Texture;
 layout(set = 3, binding = 1) uniform sampler TextureSampler;
 
 layout(location = 0) in vec3 fsin_WorldPosition;
@@ -48,31 +44,13 @@ layout(location = 3) flat in uint fsin_MaterialId;
 
 layout(location = 0) out vec4 fsout_Color;
 
-float random(vec3 st)
-{
-    return fract(sin(dot(st.xyz, vec3(12.9898, 78.233, 65.2431))) * 43758.5453123);
-}
-
-vec3 roundVec3(vec3 val, int prec)
-{
-    int multiplier = 10 ^ prec;
-    vec3 roundedVal = val * multiplier;
-
-    roundedVal.x = round(roundedVal.x);
-    roundedVal.y = round(roundedVal.y);
-    roundedVal.z = round(roundedVal.z);
-
-    return roundedVal / multiplier;
-}
-
 void main()
 {
     vec3 surfaceToLight = -LightDirection;
     vec3 cameraToFragment = CameraPosition - fsin_WorldPosition;
     vec3 viewDirection = normalize(cameraToFragment);
 
-    vec4 diffuseColor = MaterialColors[fsin_MaterialId];
-    diffuseColor *= texture(sampler2D(Texture, TextureSampler), fsin_TexCoord);
+    vec4 diffuseColor = texture(sampler2DArray(Texture, TextureSampler), vec3(fsin_TexCoord, fsin_MaterialId));
 
     vec4 ambient = AmbientLight * diffuseColor;
 

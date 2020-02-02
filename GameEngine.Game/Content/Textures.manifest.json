@@ -7,6 +7,10 @@
         {
             "Key": "Ground",
             "Path": "Textures/Ground22_col.jpg"
+        },
+        {
+            "Key": "Voxels",
+            "Path": "Textures/Voxel.texarray.json"
         }
     ]
 }

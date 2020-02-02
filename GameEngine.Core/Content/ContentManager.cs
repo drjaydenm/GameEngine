@@ -34,9 +34,11 @@ namespace GameEngine.Core.Content
         {
             AddImporter(new ShaderImporter());
             AddImporter(new Texture2DImporter());
+            AddImporter(new TextureArrayImporter());
 
             AddProcessor(new ShaderProcessor(engine));
             AddProcessor(new Texture2DProcessor(engine));
+            AddProcessor(new TextureArrayProcessor(engine));
         }
 
         public void AddImporter(IContentImporter importer)
@@ -76,27 +78,27 @@ namespace GameEngine.Core.Content
             if (string.IsNullOrEmpty(contentPath))
                 throw new Exception("Cannot find content by key");
 
-            var extension = Path.GetExtension(contentPath);
-            var importer = GetImporter(extension);
+            var importer = GetImporter(manifest[contentKey]);
             if (importer == null)
                 throw new Exception("Cannot find an importer for this extension");
 
             var contentRaw = importer.Import(contentPath);
 
-            var processor = GetProcessor(contentRaw.GetType());
+            var rawType = contentRaw.GetType();
+            var processor = GetProcessor(rawType, typeof(T));
             if (processor == null)
-                throw new Exception("Cannot find a processor for this extension");
+                throw new Exception("Cannot find a processor for " + rawType.Name + " -> " + typeof(T).Name);
 
             return (T)processor.Process(contentRaw);
         }
 
-        private IContentImporter GetImporter(string extension)
+        private IContentImporter GetImporter(string filePath)
         {
             for (var i = 0; i < importers.Count; i++)
             {
                 for (var j = 0; j < importers[i].FileExtensions.Length; j++)
                 {
-                    if (importers[i].FileExtensions[j] == extension)
+                    if (filePath.EndsWith(importers[i].FileExtensions[j]))
                         return importers[i];
                 }
             }
@@ -104,7 +106,7 @@ namespace GameEngine.Core.Content
             return null;
         }
 
-        private IContentProcessor GetProcessor(Type rawType)
+        private IContentProcessor GetProcessor(Type rawType, Type outType)
         {
             for (var i = 0; i < processors.Count; i++)
             {
@@ -119,7 +121,8 @@ namespace GameEngine.Core.Content
                     if (interfaces[j].GetGenericTypeDefinition() != typeof(IContentProcessor<,>))
                         continue;
 
-                    if (interfaces[j].GenericTypeArguments[0] == rawType)
+                    if (interfaces[j].GenericTypeArguments[0] == rawType
+                        && interfaces[j].GenericTypeArguments[1] == outType)
                         return processors[i];
                 }
             }
