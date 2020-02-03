@@ -84,9 +84,9 @@ namespace GameEngine.Core.Graphics
 
             // TODO move these all to public variables
             lightingInfo.LightDirection = LightDirection;
-            lightingInfo.LightColor = new RgbaFloat(0.95f, 0.94f, 0.7f, 1);
+            lightingInfo.LightColor = new RgbaFloat(0.5f, 0.5f, 0.5f, 1);
             lightingInfo.LightIntensity = 2;
-            lightingInfo.AmbientLight = new RgbaFloat(0.2f, 0.2f, 0.2f, 1);
+            lightingInfo.AmbientLight = new RgbaFloat(0.4f, 0.4f, 0.4f, 1);
             lightingInfo.FogColor = RgbaFloat.CornflowerBlue;
             lightingInfo.FogStartDistance = 60;
             lightingInfo.FogEndDistance = 150;

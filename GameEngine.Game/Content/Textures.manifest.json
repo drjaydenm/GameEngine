@@ -1,12 +1,12 @@
 {
     "Contents": [
         {
-            "Key": "SolarPanel",
-            "Path": "Textures/SolarPanel03_col.jpg"
+            "Key": "Dirt",
+            "Path": "Textures/Dirt.jpg"
         },
         {
-            "Key": "Ground",
-            "Path": "Textures/Ground22_col.jpg"
+            "Key": "Grass",
+            "Path": "Textures/Grass.jpg"
         },
         {
             "Key": "Voxels",

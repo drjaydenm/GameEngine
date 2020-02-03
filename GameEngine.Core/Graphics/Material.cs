@@ -84,7 +84,7 @@ namespace GameEngine.Core.Graphics
             textureSet = factory.CreateResourceSet(new ResourceSetDescription(
                 textureLayout,
                 texture.NativeTexture,
-                engine.GraphicsDevice.LinearSampler));
+                engine.GraphicsDevice.PointSampler));
 
             var pipelineDescription = new GraphicsPipelineDescription();
             pipelineDescription.BlendState = BlendStateDescription.SingleOverrideBlend;
