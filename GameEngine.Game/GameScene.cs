@@ -208,7 +208,7 @@ namespace GameEngine.Game
             }
             if (Engine.InputManager.Mouse.WasButtonPressed(MouseButtons.Right) && lookingAtBlock != null)
             {
-                var normalAsCoord = NormalToCoord(rayHit.Normal);
+                var normalAsCoord = Coord3.FromNormalVector(rayHit.Normal);
                 var coordOfBlockToAdd = lookingAtBlockCoord + normalAsCoord;
                 var chunkOfBlockToAdd = lookingAtChunk;
                 if (coordOfBlockToAdd.X == -1 || coordOfBlockToAdd.X == Chunk.CHUNK_X_SIZE
@@ -397,24 +397,6 @@ namespace GameEngine.Game
             AddEntity(box);
 
             return box;
-        }
-
-        private Coord3 NormalToCoord(Vector3 normal)
-        {
-            if (normal.X > 0 && normal.X > normal.Y && normal.X > normal.Z)
-                return Coord3.UnitX;
-            else if (normal.X <= 0 && normal.X < normal.Y && normal.X < normal.Z)
-                return -Coord3.UnitX;
-            else if (normal.Y > 0 && normal.Y > normal.X && normal.Y > normal.Z)
-                return Coord3.UnitY;
-            else if (normal.Y <= 0 && normal.Y < normal.X && normal.Y < normal.Z)
-                return -Coord3.UnitY;
-            else if (normal.Z > 0 && normal.Z > normal.X && normal.Z > normal.Y)
-                return Coord3.UnitZ;
-            else if (normal.Z <= 0 && normal.Z < normal.X && normal.Z < normal.Y)
-                return -Coord3.UnitZ;
-            else
-                return Coord3.UnitX;
         }
 
         private void BlowUpVoxels(Vector3 explosionOrigin, int radius)

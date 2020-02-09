@@ -139,5 +139,23 @@ namespace GameEngine.Core
         {
             return Subtract(val1, val2);
         }
+
+        public static Coord3 FromNormalVector(Vector3 normal)
+        {
+            if (normal.X > 0 && normal.X > normal.Y && normal.X > normal.Z)
+                return UnitX;
+            else if (normal.X <= 0 && normal.X < normal.Y && normal.X < normal.Z)
+                return -UnitX;
+            else if (normal.Y > 0 && normal.Y > normal.X && normal.Y > normal.Z)
+                return UnitY;
+            else if (normal.Y <= 0 && normal.Y < normal.X && normal.Y < normal.Z)
+                return -UnitY;
+            else if (normal.Z > 0 && normal.Z > normal.X && normal.Z > normal.Y)
+                return UnitZ;
+            else if (normal.Z <= 0 && normal.Z < normal.X && normal.Z < normal.Y)
+                return -UnitZ;
+            else
+                return UnitX;
+        }
     }
 }
