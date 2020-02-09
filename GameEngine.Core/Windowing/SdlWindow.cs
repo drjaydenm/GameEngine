@@ -4,6 +4,7 @@ using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using GameEngine.Core.Input;
+using System.Runtime.InteropServices;
 
 namespace GameEngine.Core.Windowing
 {
@@ -50,20 +51,30 @@ namespace GameEngine.Core.Windowing
 
         private Sdl2Window window;
         private Game game;
+        private GraphicsBackend backend;
+
+        public SdlWindow(Game game, GraphicsBackend backend)
+        {
+            this.game = game;
+            this.backend = backend;
+
+            Init();
+        }
 
         public SdlWindow(Game game)
         {
             this.game = game;
 
-            window = CreateWindow();
-            window.Closing += () =>
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                Closing?.Invoke(null, EventArgs.Empty);
-            };
-            window.Resized += () =>
+                backend = GraphicsBackend.Direct3D11;
+            }
+            else
             {
-                Resized?.Invoke(null, EventArgs.Empty);
-            };
+                backend = GraphicsBackend.OpenGL;
+            }
+
+            Init();
         }
 
         public void Exit()
@@ -98,12 +109,25 @@ namespace GameEngine.Core.Windowing
                 preferDepthRangeZeroToOne: true,
                 preferStandardClipSpaceYDirection: true
                 );
-            return VeldridStartup.CreateGraphicsDevice(window, options);
+            return VeldridStartup.CreateGraphicsDevice(window, options, backend);
         }
 
         public IInputManager CreateInputManager()
         {
             return new VeldridInputManager(this);
+        }
+
+        private void Init()
+        {
+            window = CreateWindow();
+            window.Closing += () =>
+            {
+                Closing?.Invoke(null, EventArgs.Empty);
+            };
+            window.Resized += () =>
+            {
+                Resized?.Invoke(null, EventArgs.Empty);
+            };
         }
 
         private unsafe Sdl2Window CreateWindow()
