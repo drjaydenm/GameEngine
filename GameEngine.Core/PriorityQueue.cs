@@ -90,6 +90,16 @@ namespace GameEngine.Core
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Clear()
+        {
+            for (var i = 0; i < numNodes; i++)
+            {
+                nodes[i].Item = default;
+            }
+            numNodes = 0;
+        }
+
         public IEnumerator<T> GetEnumerator()
         {
             for (var i = 0; i < numNodes; i++)

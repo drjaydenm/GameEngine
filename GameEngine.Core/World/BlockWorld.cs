@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using GameEngine.Core.Entities;
 using GameEngine.Core.Graphics;
@@ -140,6 +141,29 @@ namespace GameEngine.Core.World
             QueueCoordForUpdate(chunk.Coordinate);
 
             QueueSurroundingChunksForUpdate(chunk.Coordinate);
+        }
+
+        public void RemoveAllChunks()
+        {
+            chunksToUpdate.Clear();
+            chunksToUpdateSet.Clear();
+            chunksToRemove.Clear();
+            chunksToRemoveSet.Clear();
+
+            foreach (var chunk in chunks.Values.ToList())
+            {
+                if (chunk.Renderable != null)
+                {
+                    RemoveComponent(chunk.Renderable);
+                    chunk.Renderable.Dispose();
+                }
+                if (chunk.Physics != null)
+                {
+                    RemoveComponent(chunk.Physics);
+                }
+                chunk.Chunk.Dispose();
+                chunks.Remove(chunk.Chunk.Coordinate);
+            }
         }
 
         public Chunk FindChunkByOffset(Chunk chunk, Coord3 offset)
