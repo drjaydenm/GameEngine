@@ -30,8 +30,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
             //No reason to recalculate gravity * dt for every body; just cache it ahead of time.
             gravityDt = Gravity * dt;
             //Since this doesn't use per-body damping, we can precalculate everything.
-            linearDampingDt = (float)Math.Pow(MathHelper.Clamp(1 - LinearDamping, 0, 1), dt);
-            angularDampingDt = (float)Math.Pow(MathHelper.Clamp(1 - AngularDamping, 0, 1), dt);
+            linearDampingDt = (float)Math.Pow(BepuUtilities.MathHelper.Clamp(1 - LinearDamping, 0, 1), dt);
+            angularDampingDt = (float)Math.Pow(BepuUtilities.MathHelper.Clamp(1 - AngularDamping, 0, 1), dt);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
