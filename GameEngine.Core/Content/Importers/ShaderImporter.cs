@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using GameEngine.Core.Content.Raw;
+using Newtonsoft.Json;
 
 namespace GameEngine.Core.Content.Importers
 {
@@ -11,12 +12,16 @@ namespace GameEngine.Core.Content.Importers
         {
             var vertexPath = Path.ChangeExtension(filePath, "vert");
             var fragmentPath = Path.ChangeExtension(filePath, "frag");
+            var configPath = Path.ChangeExtension(filePath, "shaderconfig.json");
 
             ShaderRaw shader;
             using (var fsVert = new StreamReader(vertexPath))
             using (var fsFrag = new StreamReader(fragmentPath))
+            using (var fsConfig = new StreamReader(configPath))
             {
-                shader = new ShaderRaw(fsVert.ReadToEnd(), fsFrag.ReadToEnd());
+                var config = JsonConvert.DeserializeObject<ShaderConfigRaw>(fsConfig.ReadToEnd());
+                
+                shader = new ShaderRaw(fsVert.ReadToEnd(), fsFrag.ReadToEnd(), config);
             }
 
             return shader;
