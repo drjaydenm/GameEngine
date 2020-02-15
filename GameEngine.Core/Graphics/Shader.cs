@@ -11,10 +11,12 @@ namespace GameEngine.Core.Graphics
     {
         internal Veldrid.Shader[] Shaders { get; }
         internal VertexElementDescription[] VertexElements { get; }
+        internal ShaderConfig Config { get; }
 
-        internal Shader(Veldrid.Shader[] shaders, SpirvReflection reflection)
+        internal Shader(Veldrid.Shader[] shaders, SpirvReflection reflection, ShaderConfig config)
         {
             Shaders = shaders;
+            Config = config;
 
             if (reflection != null)
             {

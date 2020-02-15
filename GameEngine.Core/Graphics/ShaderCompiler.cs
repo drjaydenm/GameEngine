@@ -10,7 +10,7 @@ namespace GameEngine.Core.Graphics
     /// </summary>
     public static class ShaderCompiler
     {
-        public static Shader CompileShader(Engine engine, string vertexShaderCode, string fragmentShaderCode)
+        public static Shader CompileShader(Engine engine, string vertexShaderCode, string fragmentShaderCode, ShaderConfig config)
         {
             var vertexShaderDescription = new ShaderDescription(
                 ShaderStages.Vertex,
@@ -33,7 +33,7 @@ namespace GameEngine.Core.Graphics
                 {
                     factory.CreateShader(ref vertexShaderDescription),
                     factory.CreateShader(ref fragmentShaderDescription)
-                }, null);
+                }, null, config);
             }
 
             var options = new CrossCompileOptions();
@@ -62,7 +62,7 @@ namespace GameEngine.Core.Graphics
                 fragmentBytes,
                 fragmentEntryPoint));
 
-            return new Shader(new[] { vertexShader, fragmentShader }, compilationResult.Reflection);
+            return new Shader(new[] { vertexShader, fragmentShader }, compilationResult.Reflection, config);
         }
 
         private static unsafe byte[] EnsureSpirv(ShaderDescription description)
