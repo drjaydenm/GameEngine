@@ -269,7 +269,7 @@ namespace GameEngine.Game
                 controller.MovementDirection = Vector3.UnitX * (float)Math.Sin(Engine.GameTimeTotal.TotalSeconds / 2f) * 4f;
             }
 
-            var font = "Fonts/OpenSans-Regular.woff";
+            var font = "Content/Fonts/OpenSans-Regular.woff";
             var fontSize = 15;
             var fontColor = RgbaFloat.White;
             var yAccumulated = 0;
