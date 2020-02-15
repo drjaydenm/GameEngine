@@ -28,39 +28,44 @@ namespace GameEngine.Core.Content.Processors
 
         private ShaderConfig ConfigRawToConfig(ShaderConfigRaw configRaw)
         {
-            var vertexParams = new Dictionary<string, ShaderConfigStageParameter>();
+            var configParams = new Dictionary<string, ShaderConfigParameter>();
             foreach (var kvp in configRaw.Stages.Vertex.Parameters)
             {
-                vertexParams.Add(kvp.Key, new ShaderConfigStageParameter(kvp.Value.Set, kvp.Value.Binding, kvp.Value.Offset, ParamTypeRawToParamType(kvp.Value.Type)));
+                if (configParams.ContainsKey(kvp.Key))
+                    throw new Exception("Cannot have duplicate shader config parameter names: " + kvp.Key);
+
+                configParams.Add(kvp.Key, new ShaderConfigParameter(kvp.Value.Set, kvp.Value.Binding, kvp.Value.Offset, ParamTypeRawToParamType(kvp.Value.Type), ShaderConfigParameterStage.Vertex));
             }
 
-            var fragmentParams = new Dictionary<string, ShaderConfigStageParameter>();
             foreach (var kvp in configRaw.Stages.Fragment.Parameters)
             {
-                fragmentParams.Add(kvp.Key, new ShaderConfigStageParameter(kvp.Value.Set, kvp.Value.Binding, kvp.Value.Offset, ParamTypeRawToParamType(kvp.Value.Type)));
+                if (configParams.ContainsKey(kvp.Key))
+                    throw new Exception("Cannot have duplicate shader config parameter names: " + kvp.Key);
+
+                configParams.Add(kvp.Key, new ShaderConfigParameter(kvp.Value.Set, kvp.Value.Binding, kvp.Value.Offset, ParamTypeRawToParamType(kvp.Value.Type), ShaderConfigParameterStage.Fragment));
             }
 
-            return new ShaderConfig(new ShaderConfigStage(vertexParams), new ShaderConfigStage(fragmentParams));
+            return new ShaderConfig(configParams);
         }
 
-        private ShaderConfigStageParameterType ParamTypeRawToParamType(ShaderConfigStageParameterTypeRaw rawType)
+        private ShaderConfigParameterType ParamTypeRawToParamType(ShaderConfigStageParameterTypeRaw rawType)
         {
             switch (rawType)
             {
                 case ShaderConfigStageParameterTypeRaw.Matrix4x4:
-                    return ShaderConfigStageParameterType.Matrix4x4;
+                    return ShaderConfigParameterType.Matrix4x4;
                 case ShaderConfigStageParameterTypeRaw.Float1:
-                    return ShaderConfigStageParameterType.Float1;
+                    return ShaderConfigParameterType.Float1;
                 case ShaderConfigStageParameterTypeRaw.Float2:
-                    return ShaderConfigStageParameterType.Float2;
+                    return ShaderConfigParameterType.Float2;
                 case ShaderConfigStageParameterTypeRaw.Float3:
-                    return ShaderConfigStageParameterType.Float3;
+                    return ShaderConfigParameterType.Float3;
                 case ShaderConfigStageParameterTypeRaw.Float4:
-                    return ShaderConfigStageParameterType.Float4;
+                    return ShaderConfigParameterType.Float4;
                 case ShaderConfigStageParameterTypeRaw.Texture:
-                    return ShaderConfigStageParameterType.Texture;
+                    return ShaderConfigParameterType.Texture;
                 case ShaderConfigStageParameterTypeRaw.Sampler:
-                    return ShaderConfigStageParameterType.Sampler;
+                    return ShaderConfigParameterType.Sampler;
                 default:
                     throw new Exception("Unsupported shader config parameter type");
             }

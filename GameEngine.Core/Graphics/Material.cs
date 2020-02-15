@@ -29,9 +29,8 @@ namespace GameEngine.Core.Graphics
             resourceSets = new Dictionary<int, ResourceSet>();
             parameterValues = new Dictionary<string, object>();
 
-            InitBuffersResourceSets(shader.Config.Stages.Vertex);
-            InitBuffersResourceSets(shader.Config.Stages.Fragment);
-
+            SetDefaultParameterValues();
+            InitBuffersResourceSets();
             CreateBuffersResourceSets();
         }
 
@@ -40,12 +39,13 @@ namespace GameEngine.Core.Graphics
             if (!(value is float) && !(value is Vector2) && !(value is Vector3) && !(value is Vector4) && !(value is Matrix4x4))
                 return;
 
-            if (!shader.Config.Stages.Vertex.Parameters.TryGetValue(name, out var param)
-                && !shader.Config.Stages.Fragment.Parameters.TryGetValue(name, out param))
+            if (!shader.Config.Parameters.TryGetValue(name, out var param))
                 return;
 
             if (!IsValueType(param.Type))
                 return;
+
+            parameterValues[name] = value;
 
             var buffer = buffers[(param.Set, param.Binding)];
             engine.GraphicsDevice.UpdateBuffer(buffer, (uint)param.Offset, value);
@@ -53,17 +53,18 @@ namespace GameEngine.Core.Graphics
 
         public void SetTexture(string name, Texture value)
         {
-            if (!shader.Config.Stages.Vertex.Parameters.TryGetValue(name, out var param)
-                && !shader.Config.Stages.Fragment.Parameters.TryGetValue(name, out param))
+            if (!shader.Config.Parameters.TryGetValue(name, out var param))
                 return;
 
-            if (param.Type != ShaderConfigStageParameterType.Texture)
+            if (param.Type != ShaderConfigParameterType.Texture)
                 return;
+
+            parameterValues[name] = value;
 
             var resourceSet = resourceSets[param.Set];
             resourceSet.Dispose();
 
-            // TODO create a new resource set
+            CreateResourceSet(param.Set);
         }
 
         internal void Bind(CommandList commandList, Renderer renderer, VertexLayoutDescription vertexLayout)
@@ -80,51 +81,7 @@ namespace GameEngine.Core.Graphics
 
         private void Setup(Renderer renderer, VertexLayoutDescription vertexLayout)
         {
-            /*var factory = engine.GraphicsDevice.ResourceFactory;
-
-            materialBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<MaterialInfo>(), BufferUsage.UniformBuffer));
-            // TODO these should be passed in
-            materialInfo.SpecularColor = new RgbaFloat(0.3f, 0.3f, 0.3f, 1);
-            materialInfo.Shininess = 100;
-            engine.GraphicsDevice.UpdateBuffer(materialBuffer, 0, materialInfo);
-
-            var transformLayout = factory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("ViewProjBuffer", ResourceKind.UniformBuffer, ShaderStages.Vertex),
-                    new ResourceLayoutElementDescription("WorldBuffer", ResourceKind.UniformBuffer, ShaderStages.Vertex)));
-
-            var sceneLayout = factory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("CameraBuffer", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("LightingBuffer", ResourceKind.UniformBuffer, ShaderStages.Fragment)));
-
-            var materialLayout = factory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("MaterialBuffer", ResourceKind.UniformBuffer, ShaderStages.Fragment)));
-
-            var textureLayout = factory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("Texture", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
-
-            transformSet = factory.CreateResourceSet(new ResourceSetDescription(
-                transformLayout,
-                renderer.ViewProjBuffer,
-                renderer.WorldBuffer));
-
-            sceneSet = factory.CreateResourceSet(new ResourceSetDescription(
-                sceneLayout,
-                renderer.CameraBuffer,
-                renderer.LightingBuffer));
-
-            materialSet = factory.CreateResourceSet(new ResourceSetDescription(
-                materialLayout,
-                materialBuffer));
-
-            textureSet = factory.CreateResourceSet(new ResourceSetDescription(
-                textureLayout,
-                texture.NativeTexture,
-                engine.GraphicsDevice.PointSampler));
+            var factory = engine.GraphicsDevice.ResourceFactory;
 
             var pipelineDescription = new GraphicsPipelineDescription();
             pipelineDescription.BlendState = BlendStateDescription.SingleOverrideBlend;
@@ -139,7 +96,7 @@ namespace GameEngine.Core.Graphics
                 depthClipEnabled: true,
                 scissorTestEnabled: false);
             pipelineDescription.PrimitiveTopology = PrimitiveTopology.TriangleList;
-            pipelineDescription.ResourceLayouts = new ResourceLayout[] { transformLayout, sceneLayout, materialLayout, textureLayout };
+            pipelineDescription.ResourceLayouts = resourceLayouts.Values.ToArray();
             pipelineDescription.ShaderSet = new ShaderSetDescription(
                 vertexLayouts: new VertexLayoutDescription[] { vertexLayout },
                 shaders: shader.Shaders);
@@ -147,13 +104,47 @@ namespace GameEngine.Core.Graphics
 
             pipeline = factory.CreateGraphicsPipeline(pipelineDescription);
 
-            mustSetup = false;*/
+            mustSetup = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InitBuffersResourceSets(ShaderConfigStage stage)
+        private void SetDefaultParameterValues()
         {
-            foreach (var kvp in stage.Parameters)
+            foreach (var kvp in shader.Config.Parameters)
+            {
+                switch (kvp.Value.Type)
+                {
+                    case ShaderConfigParameterType.Float1:
+                        parameterValues.Add(kvp.Key, 0);
+                        break;
+                    case ShaderConfigParameterType.Float2:
+                        parameterValues.Add(kvp.Key, Vector2.Zero);
+                        break;
+                    case ShaderConfigParameterType.Float3:
+                        parameterValues.Add(kvp.Key, Vector3.Zero);
+                        break;
+                    case ShaderConfigParameterType.Float4:
+                        parameterValues.Add(kvp.Key, Vector4.Zero);
+                        break;
+                    case ShaderConfigParameterType.Matrix4x4:
+                        parameterValues.Add(kvp.Key, Matrix4x4.Identity);
+                        break;
+                    case ShaderConfigParameterType.Sampler:
+                        parameterValues.Add(kvp.Key, engine.GraphicsDevice.LinearSampler);
+                        break;
+                    case ShaderConfigParameterType.Texture:
+                        parameterValues.Add(kvp.Key, engine.DebugGraphics.MissingTexture);
+                        break;
+                    default:
+                        throw new Exception("Unknown shader config parameter type");
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void InitBuffersResourceSets()
+        {
+            foreach (var kvp in shader.Config.Parameters)
             {
                 var setBindingIndex = (kvp.Value.Set, kvp.Value.Binding);
                 if (!buffers.ContainsKey(setBindingIndex) && IsValueType(kvp.Value.Type))
@@ -177,21 +168,12 @@ namespace GameEngine.Core.Graphics
             {
                 uint bufferSize = 0;
 
-                foreach (var kvp2 in shader.Config.Stages.Vertex.Parameters)
+                foreach (var kvp2 in shader.Config.Parameters)
                 {
                     if (setBindingIndex.Item1 == kvp2.Value.Set && setBindingIndex.Item2 == kvp2.Value.Binding)
                     {
                         // Default to 16 bytes as smaller elements need to be padded up anyway
-                        bufferSize += (kvp2.Value.Type == ShaderConfigStageParameterType.Matrix4x4 ? 64U : 16U);
-                    }
-                }
-
-                foreach (var kvp2 in shader.Config.Stages.Fragment.Parameters)
-                {
-                    if (setBindingIndex.Item1 == kvp2.Value.Set && setBindingIndex.Item2 == kvp2.Value.Binding)
-                    {
-                        // Default to 16 bytes as smaller elements need to be padded up anyway
-                        bufferSize += (kvp2.Value.Type == ShaderConfigStageParameterType.Matrix4x4 ? 64U : 16U);
+                        bufferSize += (kvp2.Value.Type == ShaderConfigParameterType.Matrix4x4 ? 64U : 16U);
                     }
                 }
 
@@ -205,17 +187,7 @@ namespace GameEngine.Core.Graphics
             {
                 var layoutElements = new Dictionary<int, ResourceLayoutElementDescription>();
 
-                foreach (var kvp2 in shader.Config.Stages.Vertex.Parameters)
-                {
-                    if (setIndex == kvp2.Value.Set && !layoutElements.ContainsKey(kvp2.Value.Binding))
-                    {
-                        var resourceType = ShaderParamTypeToResourceKind(kvp2.Value.Type);
-                        layoutElements.Add(kvp2.Value.Binding,
-                            new ResourceLayoutElementDescription($"VertLayout_{kvp2.Value.Set}_{kvp2.Value.Binding}", resourceType, ShaderStages.Vertex));
-                    }
-                }
-
-                foreach (var kvp2 in shader.Config.Stages.Fragment.Parameters)
+                foreach (var kvp2 in shader.Config.Parameters)
                 {
                     if (setIndex == kvp2.Value.Set && !layoutElements.ContainsKey(kvp2.Value.Binding))
                     {
@@ -234,82 +206,66 @@ namespace GameEngine.Core.Graphics
             // Create the resource sets
             foreach (var setIndex in resourceSets.Keys.ToList())
             {
-                var resources = new Dictionary<int, BindableResource>();
-
-                foreach (var kvp2 in shader.Config.Stages.Vertex.Parameters)
-                {
-                    if (setIndex == kvp2.Value.Set && !resources.ContainsKey(kvp2.Value.Binding))
-                    {
-                        if (IsValueType(kvp2.Value.Type))
-                        {
-                            resources.Add(kvp2.Value.Binding, buffers[(setIndex, kvp2.Value.Binding)]);
-                        }
-                        else
-                        {
-                            if (kvp2.Value.Type == ShaderConfigStageParameterType.Sampler)
-                            {
-                                resources.Add(kvp2.Value.Binding, engine.GraphicsDevice.LinearSampler);
-                            }
-                            else if (kvp2.Value.Type == ShaderConfigStageParameterType.Texture)
-                            {
-                                resources.Add(kvp2.Value.Binding, engine.DebugGraphics.MissingTexture.NativeTexture);
-                            }
-                        }
-                    }
-                }
-
-                foreach (var kvp2 in shader.Config.Stages.Fragment.Parameters)
-                {
-                    if (setIndex == kvp2.Value.Set && !resources.ContainsKey(kvp2.Value.Binding))
-                    {
-                        if (IsValueType(kvp2.Value.Type))
-                        {
-                            resources.Add(kvp2.Value.Binding, buffers[(setIndex, kvp2.Value.Binding)]);
-                        }
-                        else
-                        {
-                            if (kvp2.Value.Type == ShaderConfigStageParameterType.Sampler)
-                            {
-                                resources.Add(kvp2.Value.Binding, engine.GraphicsDevice.LinearSampler);
-                            }
-                            else if (kvp2.Value.Type == ShaderConfigStageParameterType.Texture)
-                            {
-                                resources.Add(kvp2.Value.Binding, engine.DebugGraphics.MissingTexture.NativeTexture);
-                            }
-                        }
-                    }
-                }
-
-                var resourceSet = engine.GraphicsDevice.ResourceFactory.CreateResourceSet(
-                    new ResourceSetDescription(resourceLayouts[setIndex], resources.Values.ToArray()));
-
-                resourceSets[setIndex] = resourceSet;
+                CreateResourceSet(setIndex);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsValueType(ShaderConfigStageParameterType type)
+        private void CreateResourceSet(int setIndex)
         {
-            return type == ShaderConfigStageParameterType.Float1
-                || type == ShaderConfigStageParameterType.Float2
-                || type == ShaderConfigStageParameterType.Float3
-                || type == ShaderConfigStageParameterType.Float4
-                || type == ShaderConfigStageParameterType.Matrix4x4;
+            var resources = new Dictionary<int, BindableResource>();
+
+            foreach (var kvp2 in shader.Config.Parameters)
+            {
+                if (setIndex == kvp2.Value.Set && !resources.ContainsKey(kvp2.Value.Binding))
+                {
+                    if (IsValueType(kvp2.Value.Type))
+                    {
+                        resources.Add(kvp2.Value.Binding, buffers[(setIndex, kvp2.Value.Binding)]);
+                    }
+                    else
+                    {
+                        if (kvp2.Value.Type == ShaderConfigParameterType.Sampler)
+                        {
+                            resources.Add(kvp2.Value.Binding, (Sampler)parameterValues[kvp2.Key]);
+                        }
+                        else if (kvp2.Value.Type == ShaderConfigParameterType.Texture)
+                        {
+                            resources.Add(kvp2.Value.Binding, ((Texture)parameterValues[kvp2.Key]).NativeTexture);
+                        }
+                    }
+                }
+            }
+
+            var resourceSet = engine.GraphicsDevice.ResourceFactory.CreateResourceSet(
+                new ResourceSetDescription(resourceLayouts[setIndex], resources.Values.ToArray()));
+
+            resourceSets[setIndex] = resourceSet;
         }
 
-        private ResourceKind ShaderParamTypeToResourceKind(ShaderConfigStageParameterType type)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsValueType(ShaderConfigParameterType type)
+        {
+            return type == ShaderConfigParameterType.Float1
+                || type == ShaderConfigParameterType.Float2
+                || type == ShaderConfigParameterType.Float3
+                || type == ShaderConfigParameterType.Float4
+                || type == ShaderConfigParameterType.Matrix4x4;
+        }
+
+        private ResourceKind ShaderParamTypeToResourceKind(ShaderConfigParameterType type)
         {
             switch (type)
             {
-                case ShaderConfigStageParameterType.Float1:
-                case ShaderConfigStageParameterType.Float2:
-                case ShaderConfigStageParameterType.Float3:
-                case ShaderConfigStageParameterType.Float4:
-                case ShaderConfigStageParameterType.Matrix4x4:
+                case ShaderConfigParameterType.Float1:
+                case ShaderConfigParameterType.Float2:
+                case ShaderConfigParameterType.Float3:
+                case ShaderConfigParameterType.Float4:
+                case ShaderConfigParameterType.Matrix4x4:
                     return ResourceKind.UniformBuffer;
-                case ShaderConfigStageParameterType.Texture:
+                case ShaderConfigParameterType.Texture:
                     return ResourceKind.TextureReadOnly;
-                case ShaderConfigStageParameterType.Sampler:
+                case ShaderConfigParameterType.Sampler:
                     return ResourceKind.Sampler;
                 default:
                     throw new Exception("Unknown shader config param type");
