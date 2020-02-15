@@ -6,6 +6,8 @@ namespace GameEngine.Core.Graphics
 {
     public class DebugGraphics
     {
+        public Texture MissingTexture { get; }
+
         private readonly Engine engine;
         private readonly CommandList commandList;
         private readonly Pipeline pipeline;
@@ -65,6 +67,9 @@ namespace GameEngine.Core.Graphics
             cubeVertexBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<VertexPositionColor>() * 24, BufferUsage.VertexBuffer));
 
             SetupCubeVertexBuffer();
+
+            var texture = factory.CreateTexture(new TextureDescription(2, 2, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled, Veldrid.TextureType.Texture2D));
+            MissingTexture = new Texture(texture);
         }
 
         public void DrawLine(Vector3 start, Vector3 end, RgbaFloat color, Matrix4x4 transform)

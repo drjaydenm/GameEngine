@@ -1,5 +1,8 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using Veldrid;
 
 namespace GameEngine.Core.Graphics
@@ -9,38 +12,75 @@ namespace GameEngine.Core.Graphics
         private readonly Engine engine;
         private readonly Shader shader;
 
+        private Dictionary<(int, int), DeviceBuffer> buffers;
+        private Dictionary<int, ResourceLayout> resourceLayouts;
+        private Dictionary<int, ResourceSet> resourceSets;
+        private Dictionary<string, object> parameterValues;
         private bool mustSetup = true;
-        private ResourceSet transformSet;
-        private ResourceSet sceneSet;
-        private ResourceSet materialSet;
-        private ResourceSet textureSet;
         private Pipeline pipeline;
-        private DeviceBuffer materialBuffer;
-        private MaterialInfo materialInfo;
-        private Texture texture;
 
-        public Material(Engine engine, Shader shader, Texture texture)
+        public Material(Engine engine, Shader shader, Texture t)
         {
             this.engine = engine;
             this.shader = shader;
-            this.texture = texture;
+
+            buffers = new Dictionary<(int, int), DeviceBuffer>();
+            resourceLayouts = new Dictionary<int, ResourceLayout>();
+            resourceSets = new Dictionary<int, ResourceSet>();
+            parameterValues = new Dictionary<string, object>();
+
+            InitBuffersResourceSets(shader.Config.Stages.Vertex);
+            InitBuffersResourceSets(shader.Config.Stages.Fragment);
+
+            CreateBuffersResourceSets();
         }
 
-        public void Bind(CommandList commandList, Renderer renderer, VertexLayoutDescription vertexLayout)
+        public void SetValue<T>(string name, T value) where T : struct
+        {
+            if (!(value is float) && !(value is Vector2) && !(value is Vector3) && !(value is Vector4) && !(value is Matrix4x4))
+                return;
+
+            if (!shader.Config.Stages.Vertex.Parameters.TryGetValue(name, out var param)
+                && !shader.Config.Stages.Fragment.Parameters.TryGetValue(name, out param))
+                return;
+
+            if (!IsValueType(param.Type))
+                return;
+
+            var buffer = buffers[(param.Set, param.Binding)];
+            engine.GraphicsDevice.UpdateBuffer(buffer, (uint)param.Offset, value);
+        }
+
+        public void SetTexture(string name, Texture value)
+        {
+            if (!shader.Config.Stages.Vertex.Parameters.TryGetValue(name, out var param)
+                && !shader.Config.Stages.Fragment.Parameters.TryGetValue(name, out param))
+                return;
+
+            if (param.Type != ShaderConfigStageParameterType.Texture)
+                return;
+
+            var resourceSet = resourceSets[param.Set];
+            resourceSet.Dispose();
+
+            // TODO create a new resource set
+        }
+
+        internal void Bind(CommandList commandList, Renderer renderer, VertexLayoutDescription vertexLayout)
         {
             if (mustSetup)
                 Setup(renderer, vertexLayout);
 
             commandList.SetPipeline(pipeline);
-            commandList.SetGraphicsResourceSet(0, transformSet);
-            commandList.SetGraphicsResourceSet(1, sceneSet);
-            commandList.SetGraphicsResourceSet(2, materialSet);
-            commandList.SetGraphicsResourceSet(3, textureSet);
+            foreach (var kvp in resourceSets)
+            {
+                commandList.SetGraphicsResourceSet((uint)kvp.Key, kvp.Value);
+            }
         }
 
         private void Setup(Renderer renderer, VertexLayoutDescription vertexLayout)
         {
-            var factory = engine.GraphicsDevice.ResourceFactory;
+            /*var factory = engine.GraphicsDevice.ResourceFactory;
 
             materialBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<MaterialInfo>(), BufferUsage.UniformBuffer));
             // TODO these should be passed in
@@ -107,17 +147,173 @@ namespace GameEngine.Core.Graphics
 
             pipeline = factory.CreateGraphicsPipeline(pipelineDescription);
 
-            mustSetup = false;
+            mustSetup = false;*/
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        struct MaterialInfo
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void InitBuffersResourceSets(ShaderConfigStage stage)
         {
-            public RgbaFloat SpecularColor;
-            public float Shininess;
-            private float _padding1;
-            private float _padding2;
-            private float _padding3;
+            foreach (var kvp in stage.Parameters)
+            {
+                var setBindingIndex = (kvp.Value.Set, kvp.Value.Binding);
+                if (!buffers.ContainsKey(setBindingIndex) && IsValueType(kvp.Value.Type))
+                {
+                    buffers.Add(setBindingIndex, null);
+                }
+
+                if (!resourceLayouts.ContainsKey(kvp.Value.Set))
+                    resourceLayouts.Add(kvp.Value.Set, null);
+
+                if (!resourceSets.ContainsKey(kvp.Value.Set))
+                    resourceSets.Add(kvp.Value.Set, null);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void CreateBuffersResourceSets()
+        {
+            // Create the buffers
+            foreach (var setBindingIndex in buffers.Keys.ToList())
+            {
+                uint bufferSize = 0;
+
+                foreach (var kvp2 in shader.Config.Stages.Vertex.Parameters)
+                {
+                    if (setBindingIndex.Item1 == kvp2.Value.Set && setBindingIndex.Item2 == kvp2.Value.Binding)
+                    {
+                        // Default to 16 bytes as smaller elements need to be padded up anyway
+                        bufferSize += (kvp2.Value.Type == ShaderConfigStageParameterType.Matrix4x4 ? 64U : 16U);
+                    }
+                }
+
+                foreach (var kvp2 in shader.Config.Stages.Fragment.Parameters)
+                {
+                    if (setBindingIndex.Item1 == kvp2.Value.Set && setBindingIndex.Item2 == kvp2.Value.Binding)
+                    {
+                        // Default to 16 bytes as smaller elements need to be padded up anyway
+                        bufferSize += (kvp2.Value.Type == ShaderConfigStageParameterType.Matrix4x4 ? 64U : 16U);
+                    }
+                }
+
+                var buffer = engine.GraphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(bufferSize, BufferUsage.UniformBuffer));
+
+                buffers[setBindingIndex] = buffer;
+            }
+
+            // Create the resource layouts
+            foreach (var setIndex in resourceLayouts.Keys.ToList())
+            {
+                var layoutElements = new Dictionary<int, ResourceLayoutElementDescription>();
+
+                foreach (var kvp2 in shader.Config.Stages.Vertex.Parameters)
+                {
+                    if (setIndex == kvp2.Value.Set && !layoutElements.ContainsKey(kvp2.Value.Binding))
+                    {
+                        var resourceType = ShaderParamTypeToResourceKind(kvp2.Value.Type);
+                        layoutElements.Add(kvp2.Value.Binding,
+                            new ResourceLayoutElementDescription($"VertLayout_{kvp2.Value.Set}_{kvp2.Value.Binding}", resourceType, ShaderStages.Vertex));
+                    }
+                }
+
+                foreach (var kvp2 in shader.Config.Stages.Fragment.Parameters)
+                {
+                    if (setIndex == kvp2.Value.Set && !layoutElements.ContainsKey(kvp2.Value.Binding))
+                    {
+                        var resourceType = ShaderParamTypeToResourceKind(kvp2.Value.Type);
+                        layoutElements.Add(kvp2.Value.Binding,
+                            new ResourceLayoutElementDescription($"FragLayout_{kvp2.Value.Set}_{kvp2.Value.Binding}", resourceType, ShaderStages.Fragment));
+                    }
+                }
+
+                var layoutDesc = new ResourceLayoutDescription(layoutElements.Values.ToArray());
+                var resourceLayout = engine.GraphicsDevice.ResourceFactory.CreateResourceLayout(layoutDesc);
+
+                resourceLayouts[setIndex] = resourceLayout;
+            }
+
+            // Create the resource sets
+            foreach (var setIndex in resourceSets.Keys.ToList())
+            {
+                var resources = new Dictionary<int, BindableResource>();
+
+                foreach (var kvp2 in shader.Config.Stages.Vertex.Parameters)
+                {
+                    if (setIndex == kvp2.Value.Set && !resources.ContainsKey(kvp2.Value.Binding))
+                    {
+                        if (IsValueType(kvp2.Value.Type))
+                        {
+                            resources.Add(kvp2.Value.Binding, buffers[(setIndex, kvp2.Value.Binding)]);
+                        }
+                        else
+                        {
+                            if (kvp2.Value.Type == ShaderConfigStageParameterType.Sampler)
+                            {
+                                resources.Add(kvp2.Value.Binding, engine.GraphicsDevice.LinearSampler);
+                            }
+                            else if (kvp2.Value.Type == ShaderConfigStageParameterType.Texture)
+                            {
+                                resources.Add(kvp2.Value.Binding, engine.DebugGraphics.MissingTexture.NativeTexture);
+                            }
+                        }
+                    }
+                }
+
+                foreach (var kvp2 in shader.Config.Stages.Fragment.Parameters)
+                {
+                    if (setIndex == kvp2.Value.Set && !resources.ContainsKey(kvp2.Value.Binding))
+                    {
+                        if (IsValueType(kvp2.Value.Type))
+                        {
+                            resources.Add(kvp2.Value.Binding, buffers[(setIndex, kvp2.Value.Binding)]);
+                        }
+                        else
+                        {
+                            if (kvp2.Value.Type == ShaderConfigStageParameterType.Sampler)
+                            {
+                                resources.Add(kvp2.Value.Binding, engine.GraphicsDevice.LinearSampler);
+                            }
+                            else if (kvp2.Value.Type == ShaderConfigStageParameterType.Texture)
+                            {
+                                resources.Add(kvp2.Value.Binding, engine.DebugGraphics.MissingTexture.NativeTexture);
+                            }
+                        }
+                    }
+                }
+
+                var resourceSet = engine.GraphicsDevice.ResourceFactory.CreateResourceSet(
+                    new ResourceSetDescription(resourceLayouts[setIndex], resources.Values.ToArray()));
+
+                resourceSets[setIndex] = resourceSet;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsValueType(ShaderConfigStageParameterType type)
+        {
+            return type == ShaderConfigStageParameterType.Float1
+                || type == ShaderConfigStageParameterType.Float2
+                || type == ShaderConfigStageParameterType.Float3
+                || type == ShaderConfigStageParameterType.Float4
+                || type == ShaderConfigStageParameterType.Matrix4x4;
+        }
+
+        private ResourceKind ShaderParamTypeToResourceKind(ShaderConfigStageParameterType type)
+        {
+            switch (type)
+            {
+                case ShaderConfigStageParameterType.Float1:
+                case ShaderConfigStageParameterType.Float2:
+                case ShaderConfigStageParameterType.Float3:
+                case ShaderConfigStageParameterType.Float4:
+                case ShaderConfigStageParameterType.Matrix4x4:
+                    return ResourceKind.UniformBuffer;
+                case ShaderConfigStageParameterType.Texture:
+                    return ResourceKind.TextureReadOnly;
+                case ShaderConfigStageParameterType.Sampler:
+                    return ResourceKind.Sampler;
+                default:
+                    throw new Exception("Unknown shader config param type");
+            }
         }
     }
 }
