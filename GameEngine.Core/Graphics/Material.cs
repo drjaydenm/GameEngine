@@ -16,10 +16,11 @@ namespace GameEngine.Core.Graphics
         private Dictionary<int, ResourceLayout> resourceLayouts;
         private Dictionary<int, ResourceSet> resourceSets;
         private Dictionary<string, object> parameterValues;
+        private Queue<string> dirtyParameters;
         private bool mustSetup = true;
         private Pipeline pipeline;
 
-        public Material(Engine engine, Shader shader, Texture t)
+        public Material(Engine engine, Shader shader)
         {
             this.engine = engine;
             this.shader = shader;
@@ -28,35 +29,52 @@ namespace GameEngine.Core.Graphics
             resourceLayouts = new Dictionary<int, ResourceLayout>();
             resourceSets = new Dictionary<int, ResourceSet>();
             parameterValues = new Dictionary<string, object>();
+            dirtyParameters = new Queue<string>();
 
             SetDefaultParameterValues();
             InitBuffersResourceSets();
             CreateBuffersResourceSets();
         }
 
-        public void SetValue<T>(string name, T value) where T : struct
+        public void SetFloat(string name, float value)
         {
-            if (!(value is float) && !(value is Vector2) && !(value is Vector3) && !(value is Vector4) && !(value is Matrix4x4))
-                return;
-
             if (!shader.Config.Parameters.TryGetValue(name, out var param))
-                return;
+                throw new Exception("Cannot find parameter in shader: " + name);
 
-            if (!IsValueType(param.Type))
+            if (param.Type != ShaderConfigParameterType.Float1)
+                throw new Exception("The specified parameter is not a float type: " + name);
+
+            if ((float)parameterValues[name] == value)
                 return;
 
             parameterValues[name] = value;
+            dirtyParameters.Enqueue(name);
+        }
 
-            var buffer = buffers[(param.Set, param.Binding)];
-            engine.GraphicsDevice.UpdateBuffer(buffer, (uint)param.Offset, value);
+        public void SetMatrix(string name, Matrix4x4 value)
+        {
+            if (!shader.Config.Parameters.TryGetValue(name, out var param))
+                throw new Exception("Cannot find parameter in shader: " + name);
+
+            if (param.Type != ShaderConfigParameterType.Matrix4x4)
+                throw new Exception("The specified parameter is not a matrix type: " + name);
+
+            if ((Matrix4x4)parameterValues[name] == value)
+                return;
+
+            parameterValues[name] = value;
+            dirtyParameters.Enqueue(name);
         }
 
         public void SetTexture(string name, Texture value)
         {
             if (!shader.Config.Parameters.TryGetValue(name, out var param))
-                return;
+                throw new Exception("Cannot find parameter in shader: " + name);
 
             if (param.Type != ShaderConfigParameterType.Texture)
+                throw new Exception("The specified parameter is not a texture type: " + name);
+
+            if ((Texture)parameterValues[name] == value)
                 return;
 
             parameterValues[name] = value;
@@ -67,10 +85,67 @@ namespace GameEngine.Core.Graphics
             CreateResourceSet(param.Set);
         }
 
-        internal void Bind(CommandList commandList, Renderer renderer, VertexLayoutDescription vertexLayout)
+        public void SetVector(string name, Vector2 value)
+        {
+            if (!shader.Config.Parameters.TryGetValue(name, out var param))
+                throw new Exception("Cannot find parameter in shader: " + name);
+
+            if (param.Type != ShaderConfigParameterType.Float2)
+                throw new Exception("The specified parameter is not a Vector2 type: " + name);
+
+            SetVector(name, param, new Vector4(value, 0, 0));
+        }
+
+        public void SetVector(string name, Vector3 value)
+        {
+            if (!shader.Config.Parameters.TryGetValue(name, out var param))
+                throw new Exception("Cannot find parameter in shader: " + name);
+
+            if (param.Type != ShaderConfigParameterType.Float3)
+                throw new Exception("The specified parameter is not a Vector3 type: " + name);
+
+            SetVector(name, param, new Vector4(value, 0));
+        }
+
+        public void SetVector(string name, Vector4 value)
+        {
+            if (!shader.Config.Parameters.TryGetValue(name, out var param))
+                throw new Exception("Cannot find parameter in shader: " + name);
+
+            if (param.Type != ShaderConfigParameterType.Float4)
+                throw new Exception("The specified parameter is not a Vector4 type: " + name);
+
+            SetVector(name, param, value);
+        }
+
+        internal void Bind(CommandList commandList, VertexLayoutDescription vertexLayout)
         {
             if (mustSetup)
-                Setup(renderer, vertexLayout);
+                Setup(vertexLayout);
+
+            while (dirtyParameters.Count > 0)
+            {
+                var paramKey = dirtyParameters.Dequeue();
+                var param = shader.Config.Parameters[paramKey];
+                var buffer = buffers[(param.Set, param.Binding)];
+
+                switch (param.Type)
+                {
+                    case ShaderConfigParameterType.Float1:
+                        commandList.UpdateBuffer(buffer, (uint)param.Offset, (float)parameterValues[paramKey]);
+                        break;
+                    case ShaderConfigParameterType.Float2:
+                    case ShaderConfigParameterType.Float3:
+                    case ShaderConfigParameterType.Float4:
+                        commandList.UpdateBuffer(buffer, (uint)param.Offset, (Vector4)parameterValues[paramKey]);
+                        break;
+                    case ShaderConfigParameterType.Matrix4x4:
+                        commandList.UpdateBuffer(buffer, (uint)param.Offset, (Matrix4x4)parameterValues[paramKey]);
+                        break;
+                    default:
+                        throw new Exception("Unhandled shader config parameter type");
+                }
+            }
 
             commandList.SetPipeline(pipeline);
             foreach (var kvp in resourceSets)
@@ -79,7 +154,7 @@ namespace GameEngine.Core.Graphics
             }
         }
 
-        private void Setup(Renderer renderer, VertexLayoutDescription vertexLayout)
+        private void Setup(VertexLayoutDescription vertexLayout)
         {
             var factory = engine.GraphicsDevice.ResourceFactory;
 
@@ -115,14 +190,10 @@ namespace GameEngine.Core.Graphics
                 switch (kvp.Value.Type)
                 {
                     case ShaderConfigParameterType.Float1:
-                        parameterValues.Add(kvp.Key, 0);
+                        parameterValues.Add(kvp.Key, 0f);
                         break;
                     case ShaderConfigParameterType.Float2:
-                        parameterValues.Add(kvp.Key, Vector2.Zero);
-                        break;
                     case ShaderConfigParameterType.Float3:
-                        parameterValues.Add(kvp.Key, Vector3.Zero);
-                        break;
                     case ShaderConfigParameterType.Float4:
                         parameterValues.Add(kvp.Key, Vector4.Zero);
                         break;
@@ -193,7 +264,8 @@ namespace GameEngine.Core.Graphics
                     {
                         var resourceType = ShaderParamTypeToResourceKind(kvp2.Value.Type);
                         layoutElements.Add(kvp2.Value.Binding,
-                            new ResourceLayoutElementDescription($"FragLayout_{kvp2.Value.Set}_{kvp2.Value.Binding}", resourceType, ShaderStages.Fragment));
+                            new ResourceLayoutElementDescription($"FragLayout_{kvp2.Value.Set}_{kvp2.Value.Binding}", resourceType,
+                                kvp2.Value.Stage == ShaderConfigParameterStage.Vertex ? ShaderStages.Vertex : ShaderStages.Fragment));
                     }
                 }
 
@@ -244,6 +316,16 @@ namespace GameEngine.Core.Graphics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SetVector(string name, ShaderConfigParameter param, Vector4 value)
+        {
+            if ((Vector4)parameterValues[name] == value)
+                return;
+
+            parameterValues[name] = value;
+            dirtyParameters.Enqueue(name);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsValueType(ShaderConfigParameterType type)
         {
             return type == ShaderConfigParameterType.Float1
@@ -253,6 +335,7 @@ namespace GameEngine.Core.Graphics
                 || type == ShaderConfigParameterType.Matrix4x4;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ResourceKind ShaderParamTypeToResourceKind(ShaderConfigParameterType type)
         {
             switch (type)

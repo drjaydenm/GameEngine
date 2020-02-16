@@ -36,22 +36,25 @@ namespace GameEngine.Core.Graphics
 
                     renderable.UpdateBuffers(commandList);
 
-                    renderable.Material.SetValue("World", renderable.WorldTransform);
-                    renderable.Material.SetValue("View", camera.View);
-                    renderable.Material.SetValue("Projection", camera.Projection);
+                    renderable.Material.SetMatrix("World", renderable.WorldTransform);
+                    renderable.Material.SetMatrix("View", camera.View);
+                    renderable.Material.SetMatrix("Projection", camera.Projection);
 
-                    renderable.Material.SetValue("LightDirection", LightDirection);
-                    renderable.Material.SetValue("LightColor", new Vector4(0.5f, 0.5f, 0.5f, 1));
-                    renderable.Material.SetValue("LightIntensity", 2);
-                    renderable.Material.SetValue("AmbientLight", new Vector4(0.4f, 0.4f, 0.4f, 1));
-                    renderable.Material.SetValue("FogColor", RgbaFloat.CornflowerBlue);
-                    renderable.Material.SetValue("FogStartDistance", 60);
-                    renderable.Material.SetValue("FogEndDistance", 150);
+                    renderable.Material.SetVector("LightDirection", LightDirection);
+                    renderable.Material.SetVector("LightColor", new Vector4(0.5f, 0.5f, 0.5f, 1));
+                    renderable.Material.SetFloat("LightIntensity", 2);
+                    renderable.Material.SetVector("AmbientLight", new Vector4(0.4f, 0.4f, 0.4f, 1));
+                    renderable.Material.SetVector("FogColor", RgbaFloat.CornflowerBlue.ToVector4());
+                    renderable.Material.SetFloat("FogStartDistance", 60);
+                    renderable.Material.SetFloat("FogEndDistance", 150);
 
-                    renderable.Material.SetValue("CameraDirection", camera.ViewDirection);
-                    renderable.Material.SetValue("CameraPosition", camera.Position);
+                    renderable.Material.SetVector("SpecularColor", new Vector4(0.3f, 0.3f, 0.3f, 1));
+                    renderable.Material.SetFloat("Shininess", 25);
 
-                    renderable.Material.Bind(commandList, this, renderable.LayoutDescription);
+                    renderable.Material.SetVector("CameraDirection", camera.ViewDirection);
+                    renderable.Material.SetVector("CameraPosition", camera.Position);
+
+                    renderable.Material.Bind(commandList, renderable.LayoutDescription);
 
                     commandList.SetVertexBuffer(0, renderable.VertexBuffer);
                     commandList.SetIndexBuffer(renderable.IndexBuffer, IndexFormat.UInt32);

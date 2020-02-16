@@ -29,7 +29,8 @@ namespace GameEngine.Game
 
             var texture = engine.ContentManager.Load<Texture>("Textures", "Dirt");
             var shader = engine.ContentManager.Load<Shader>("Shaders", "Voxel");
-            material = new Material(engine, shader, texture);
+            material = new Material(engine, shader);
+            material.SetTexture("Texture", texture);
             renderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(engine, material);
 
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalTexCoordMaterial(v, Vector3.UnitY, Vector2.UnitX, 1)).ToArray();
