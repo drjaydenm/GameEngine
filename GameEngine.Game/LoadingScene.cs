@@ -28,7 +28,7 @@ namespace GameEngine.Game
                 Game.Exit();
             }
 
-            var font = "Fonts/OpenSans-Regular.woff";
+            var font = "Content/Fonts/OpenSans-Regular.woff";
             var fontColor = RgbaFloat.White;
             Engine.TextRenderer.DrawText($"FPS: {Engine.PerformanceCounters.FramesPerSecond} / UPS: {Engine.PerformanceCounters.UpdatesPerSecond}", new Vector2(5, 5), fontColor, font, 15);
 

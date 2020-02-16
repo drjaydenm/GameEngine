@@ -1,14 +1,31 @@
 ﻿using GameEngine.Core.Content;
+using Veldrid;
+using Veldrid.SPIRV;
 
 namespace GameEngine.Core.Graphics
 {
+    /// <summary>
+    /// Contains data for a Shader. Use the <c>ShaderCompiler</c> to create an instance
+    /// </summary>
     public class Shader : IContent
     {
-        public Veldrid.Shader[] Shaders { get; }
+        internal Veldrid.Shader[] Shaders { get; }
+        internal VertexElementDescription[] VertexElements { get; }
+        internal ShaderConfig Config { get; }
 
-        public Shader(Veldrid.Shader[] shaders)
+        internal Shader(Veldrid.Shader[] shaders, SpirvReflection reflection, ShaderConfig config)
         {
             Shaders = shaders;
+            Config = config;
+
+            if (reflection != null)
+            {
+                VertexElements = reflection.VertexElements;
+            }
+            else
+            {
+                VertexElements = new VertexElementDescription[0];
+            }
         }
 
         public void Dispose()

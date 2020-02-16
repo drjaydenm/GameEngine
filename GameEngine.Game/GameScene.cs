@@ -58,7 +58,8 @@ namespace GameEngine.Game
 
             texture = Engine.ContentManager.Load<Texture>("Textures", "Voxels");
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
-            var material = new Material(Engine, shader, texture);
+            var material = new Material(Engine, shader);
+            material.SetTexture("Texture", texture);
 
             world = new BlockWorld(Engine, this, "World", material);
             AddEntity(world);
@@ -269,7 +270,7 @@ namespace GameEngine.Game
                 controller.MovementDirection = Vector3.UnitX * (float)Math.Sin(Engine.GameTimeTotal.TotalSeconds / 2f) * 4f;
             }
 
-            var font = "Fonts/OpenSans-Regular.woff";
+            var font = "Content/Fonts/OpenSans-Regular.woff";
             var fontSize = 15;
             var fontColor = RgbaFloat.White;
             var yAccumulated = 0;
@@ -387,7 +388,9 @@ namespace GameEngine.Game
             physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;
 
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
-            var boxRenderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(Engine, new Material(Engine, shader, texture));
+            var material = new Material(Engine, shader);
+            material.SetTexture("Texture", texture);
+            var boxRenderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(Engine, material);
             var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalTexCoordMaterial(v, Vector3.UnitY, Vector2.UnitX, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
             var mesh = new Mesh<VertexPositionNormalTexCoordMaterial>(vertices, indices);

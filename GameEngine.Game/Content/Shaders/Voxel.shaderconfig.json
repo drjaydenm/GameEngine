@@ -1,0 +1,108 @@
+﻿{
+    "Stages": {
+        "Vertex": {
+            "Parameters": {
+                "View": {
+                    "Set": 0,
+                    "Binding": 0,
+                    "Offset": 0,
+                    "Type": "Matrix4x4"
+                },
+                "Projection": {
+                    "Set": 0,
+                    "Binding": 0,
+                    "Offset": 64,
+                    "Type": "Matrix4x4"
+                },
+                "World": {
+                    "Set": 0,
+                    "Binding": 1,
+                    "Offset": 0,
+                    "Type": "Matrix4x4"
+                }
+            }
+        },
+        "Fragment": {
+            "Parameters": {
+                "CameraDirection": {
+                    "Set": 1,
+                    "Binding": 0,
+                    "Offset": 0,
+                    "Type": "Float3"
+                },
+                "CameraPosition": {
+                    "Set": 1,
+                    "Binding": 0,
+                    "Offset": 16,
+                    "Type": "Float3"
+                },
+                "LightDirection": {
+                    "Set": 1,
+                    "Binding": 1,
+                    "Offset": 0,
+                    "Type": "Float3"
+                },
+                "LightColor": {
+                    "Set": 1,
+                    "Binding": 1,
+                    "Offset": 16,
+                    "Type": "Float4"
+                },
+                "LightIntensity": {
+                    "Set": 1,
+                    "Binding": 1,
+                    "Offset": 32,
+                    "Type": "Float1"
+                },
+                "AmbientLight": {
+                    "Set": 1,
+                    "Binding": 1,
+                    "Offset": 48,
+                    "Type": "Float4"
+                },
+                "FogColor": {
+                    "Set": 1,
+                    "Binding": 1,
+                    "Offset": 64,
+                    "Type": "Float4"
+                },
+                "FogStartDistance": {
+                    "Set": 1,
+                    "Binding": 1,
+                    "Offset": 80,
+                    "Type": "Float1"
+                },
+                "FogEndDistance": {
+                    "Set": 1,
+                    "Binding": 1,
+                    "Offset": 96,
+                    "Type": "Float1"
+                },
+                "SpecularColor": {
+                    "Set": 2,
+                    "Binding": 0,
+                    "Offset": 0,
+                    "Type": "Float4"
+                },
+                "Shininess": {
+                    "Set": 2,
+                    "Binding": 0,
+                    "Offset": 16,
+                    "Type": "Float1"
+                },
+                "Texture": {
+                    "Set": 3,
+                    "Binding": 0,
+                    "Offset": 0,
+                    "Type": "Texture"
+                },
+                "TextureSampler": {
+                    "Set": 3,
+                    "Binding": 1,
+                    "Offset": 0,
+                    "Type": "Sampler"
+                }
+            }
+        }
+    }
+}
