@@ -25,6 +25,7 @@ namespace GameEngine.Core.Graphics
         public void Draw()
         {
             var camera = scene.ActiveCamera;
+            Material lastMaterial = null;
 
             for (var i = 0; i < scene.Entities.Count; i++)
             {
@@ -37,22 +38,26 @@ namespace GameEngine.Core.Graphics
                     renderable.UpdateBuffers(commandList);
 
                     renderable.Material.SetMatrix("World", renderable.WorldTransform);
-                    renderable.Material.SetMatrix("View", camera.View);
-                    renderable.Material.SetMatrix("Projection", camera.Projection);
 
-                    renderable.Material.SetVector("LightDirection", LightDirection);
-                    renderable.Material.SetVector("LightColor", new Vector4(0.5f, 0.5f, 0.5f, 1));
-                    renderable.Material.SetFloat("LightIntensity", 2);
-                    renderable.Material.SetVector("AmbientLight", new Vector4(0.4f, 0.4f, 0.4f, 1));
-                    renderable.Material.SetVector("FogColor", RgbaFloat.CornflowerBlue.ToVector4());
-                    renderable.Material.SetFloat("FogStartDistance", 60);
-                    renderable.Material.SetFloat("FogEndDistance", 150);
+                    if (lastMaterial != renderable.Material)
+                    {
+                        renderable.Material.SetMatrix("View", camera.View);
+                        renderable.Material.SetMatrix("Projection", camera.Projection);
 
-                    renderable.Material.SetVector("SpecularColor", new Vector4(0.3f, 0.3f, 0.3f, 1));
-                    renderable.Material.SetFloat("Shininess", 25);
+                        renderable.Material.SetVector("LightDirection", LightDirection);
+                        renderable.Material.SetVector("LightColor", new Vector4(0.5f, 0.5f, 0.5f, 1));
+                        renderable.Material.SetFloat("LightIntensity", 2);
+                        renderable.Material.SetVector("AmbientLight", new Vector4(0.4f, 0.4f, 0.4f, 1));
+                        renderable.Material.SetVector("FogColor", RgbaFloat.CornflowerBlue.ToVector4());
+                        renderable.Material.SetFloat("FogStartDistance", 60);
+                        renderable.Material.SetFloat("FogEndDistance", 150);
 
-                    renderable.Material.SetVector("CameraDirection", camera.ViewDirection);
-                    renderable.Material.SetVector("CameraPosition", camera.Position);
+                        renderable.Material.SetVector("SpecularColor", new Vector4(0.3f, 0.3f, 0.3f, 1));
+                        renderable.Material.SetFloat("Shininess", 25);
+
+                        renderable.Material.SetVector("CameraDirection", camera.ViewDirection);
+                        renderable.Material.SetVector("CameraPosition", camera.Position);
+                    }
 
                     renderable.Material.Bind(commandList, renderable.LayoutDescription);
 
@@ -65,6 +70,8 @@ namespace GameEngine.Core.Graphics
                         indexStart: 0,
                         vertexOffset: 0,
                         instanceStart: 0);
+
+                    lastMaterial = renderable.Material;
                 }
             }
         }

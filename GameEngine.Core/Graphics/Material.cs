@@ -38,10 +38,7 @@ namespace GameEngine.Core.Graphics
 
         public void SetFloat(string name, float value)
         {
-            if (!shader.Config.Parameters.TryGetValue(name, out var param))
-                throw new Exception("Cannot find parameter in shader: " + name);
-
-            if (param.Type != ShaderConfigParameterType.Float1)
+            if (shader.Config.Parameters[name].Type != ShaderConfigParameterType.Float1)
                 throw new Exception("The specified parameter is not a float type: " + name);
 
             if ((float)parameterValues[name] == value)
@@ -53,10 +50,7 @@ namespace GameEngine.Core.Graphics
 
         public void SetMatrix(string name, Matrix4x4 value)
         {
-            if (!shader.Config.Parameters.TryGetValue(name, out var param))
-                throw new Exception("Cannot find parameter in shader: " + name);
-
-            if (param.Type != ShaderConfigParameterType.Matrix4x4)
+            if (shader.Config.Parameters[name].Type != ShaderConfigParameterType.Matrix4x4)
                 throw new Exception("The specified parameter is not a matrix type: " + name);
 
             if ((Matrix4x4)parameterValues[name] == value)
@@ -87,35 +81,26 @@ namespace GameEngine.Core.Graphics
 
         public void SetVector(string name, Vector2 value)
         {
-            if (!shader.Config.Parameters.TryGetValue(name, out var param))
-                throw new Exception("Cannot find parameter in shader: " + name);
-
-            if (param.Type != ShaderConfigParameterType.Float2)
+            if (shader.Config.Parameters[name].Type != ShaderConfigParameterType.Float2)
                 throw new Exception("The specified parameter is not a Vector2 type: " + name);
 
-            SetVector(name, param, new Vector4(value, 0, 0));
+            SetVectorImpl(name, new Vector4(value, 0, 0));
         }
 
         public void SetVector(string name, Vector3 value)
         {
-            if (!shader.Config.Parameters.TryGetValue(name, out var param))
-                throw new Exception("Cannot find parameter in shader: " + name);
-
-            if (param.Type != ShaderConfigParameterType.Float3)
+            if (shader.Config.Parameters[name].Type != ShaderConfigParameterType.Float3)
                 throw new Exception("The specified parameter is not a Vector3 type: " + name);
 
-            SetVector(name, param, new Vector4(value, 0));
+            SetVectorImpl(name, new Vector4(value, 0));
         }
 
         public void SetVector(string name, Vector4 value)
         {
-            if (!shader.Config.Parameters.TryGetValue(name, out var param))
-                throw new Exception("Cannot find parameter in shader: " + name);
-
-            if (param.Type != ShaderConfigParameterType.Float4)
+            if (shader.Config.Parameters[name].Type != ShaderConfigParameterType.Float4)
                 throw new Exception("The specified parameter is not a Vector4 type: " + name);
 
-            SetVector(name, param, value);
+            SetVectorImpl(name, value);
         }
 
         internal void Bind(CommandList commandList, VertexLayoutDescription vertexLayout)
@@ -316,7 +301,7 @@ namespace GameEngine.Core.Graphics
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetVector(string name, ShaderConfigParameter param, Vector4 value)
+        private void SetVectorImpl(string name, Vector4 value)
         {
             if ((Vector4)parameterValues[name] == value)
                 return;
