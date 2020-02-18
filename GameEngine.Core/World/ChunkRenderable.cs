@@ -13,6 +13,7 @@ namespace GameEngine.Core.World
         public DeviceBuffer VertexBuffer { get; private set; }
         public DeviceBuffer IndexBuffer { get; private set; }
         public Matrix4x4 WorldTransform { get; private set; }
+        public PrimitiveType PrimitiveType => PrimitiveType.TriangleList;
 
         private readonly Engine engine;
         private readonly ChunkMeshGenerator meshGenerator;

@@ -59,7 +59,7 @@ namespace GameEngine.Core.Graphics
                         renderable.Material.SetVector("CameraPosition", camera.Position);
                     }
 
-                    renderable.Material.Bind(commandList, renderable.LayoutDescription);
+                    renderable.Material.Bind(commandList, renderable);
 
                     commandList.SetVertexBuffer(0, renderable.VertexBuffer);
                     commandList.SetIndexBuffer(renderable.IndexBuffer, IndexFormat.UInt32);

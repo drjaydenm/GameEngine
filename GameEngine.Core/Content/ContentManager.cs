@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using GameEngine.Core.Content.Importers;
 using GameEngine.Core.Content.Processors;
-using GameEngine.Core.Content.Raw;
 using Newtonsoft.Json;
 
 namespace GameEngine.Core.Content
@@ -32,10 +31,12 @@ namespace GameEngine.Core.Content
 
         public void AddDefaultImportersAndProcessors()
         {
+            AddImporter(new MeshImporter());
             AddImporter(new ShaderImporter());
             AddImporter(new Texture2DImporter());
             AddImporter(new TextureArrayImporter());
 
+            AddProcessor(new MeshProcessor());
             AddProcessor(new ShaderProcessor(engine));
             AddProcessor(new Texture2DProcessor(engine));
             AddProcessor(new TextureArrayProcessor(engine));

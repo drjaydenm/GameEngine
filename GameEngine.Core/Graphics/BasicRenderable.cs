@@ -12,6 +12,7 @@ namespace GameEngine.Core.Graphics
         public DeviceBuffer VertexBuffer { get; private set; }
         public DeviceBuffer IndexBuffer { get; private set; }
         public Matrix4x4 WorldTransform { get; private set; }
+        public PrimitiveType PrimitiveType => mesh.PrimitiveType;
 
         private readonly Engine engine;
         private Mesh<T> mesh;

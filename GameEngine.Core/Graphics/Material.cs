@@ -103,10 +103,10 @@ namespace GameEngine.Core.Graphics
             SetVectorImpl(name, value);
         }
 
-        internal void Bind(CommandList commandList, VertexLayoutDescription vertexLayout)
+        internal void Bind(CommandList commandList, IRenderable renderable)
         {
             if (mustSetup)
-                Setup(vertexLayout);
+                Setup(renderable);
 
             while (dirtyParameters.Count > 0)
             {
@@ -139,7 +139,7 @@ namespace GameEngine.Core.Graphics
             }
         }
 
-        private void Setup(VertexLayoutDescription vertexLayout)
+        private void Setup(IRenderable renderable)
         {
             var factory = engine.GraphicsDevice.ResourceFactory;
 
@@ -155,16 +155,34 @@ namespace GameEngine.Core.Graphics
                 frontFace: FrontFace.Clockwise,
                 depthClipEnabled: true,
                 scissorTestEnabled: false);
-            pipelineDescription.PrimitiveTopology = PrimitiveTopology.TriangleList;
+            pipelineDescription.PrimitiveTopology = PrimitiveTypeToTopology(renderable.PrimitiveType);
             pipelineDescription.ResourceLayouts = resourceLayouts.Values.ToArray();
             pipelineDescription.ShaderSet = new ShaderSetDescription(
-                vertexLayouts: new VertexLayoutDescription[] { vertexLayout },
+                vertexLayouts: new VertexLayoutDescription[] { renderable.LayoutDescription },
                 shaders: shader.Shaders);
             pipelineDescription.Outputs = engine.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
 
             pipeline = factory.CreateGraphicsPipeline(pipelineDescription);
 
             mustSetup = false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private PrimitiveTopology PrimitiveTypeToTopology(PrimitiveType type)
+        {
+            switch (type)
+            {
+                case PrimitiveType.TriangleList:
+                    return PrimitiveTopology.TriangleList;
+                case PrimitiveType.TriangleStrip:
+                    return PrimitiveTopology.TriangleStrip;
+                case PrimitiveType.LineList:
+                    return PrimitiveTopology.LineList;
+                case PrimitiveType.LineStrip:
+                    return PrimitiveTopology.LineStrip;
+                default:
+                    throw new Exception("Unknown primitive type");
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
