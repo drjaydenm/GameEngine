@@ -162,7 +162,8 @@ namespace GameEngine.Game
             foreach (var box in boxes)
             {
                 var renderComponent = box.GetComponentsOfType<BasicRenderable<VertexPositionNormalTexCoordMaterial>>().First();
-                renderComponent.SetWorldTransform(Matrix4x4.CreateFromQuaternion(box.Transform.Rotation) * Matrix4x4.CreateScale(0.5f) * Matrix4x4.CreateTranslation(box.Transform.Position));
+                renderComponent.SetWorldTransform(Matrix4x4.CreateFromQuaternion(box.Transform.Rotation * Quaternion.CreateFromAxisAngle(Vector3.UnitX, (float)Math.PI / 2f))
+                    * Matrix4x4.CreateScale(0.1f) * Matrix4x4.CreateTranslation(box.Transform.Position));
             }
 
             // Check which block we are looking at
@@ -380,9 +381,9 @@ namespace GameEngine.Game
             var box = new Entity(this, "Box");
             box.Transform.Position = ActiveCamera.Position + (ActiveCamera.ViewDirection * 1.5f);
 
-            var physicsBox = new PhysicsCapsuleComponent(0.5f, 1, PhysicsInteractivity.Dynamic)
+            var physicsBox = new PhysicsCapsuleComponent(1f, 0.5f, PhysicsInteractivity.Dynamic)
             {
-                Mass = 1
+                Mass = 20
             };
             box.AddComponent(physicsBox);
             physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;

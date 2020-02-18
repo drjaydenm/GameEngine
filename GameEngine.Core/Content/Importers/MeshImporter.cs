@@ -11,7 +11,11 @@ namespace GameEngine.Core.Content.Importers
         public MeshRaw Import(string filePath)
         {
             var context = new AssimpContext();
-            var scene = context.ImportFile(filePath);
+            var scene = context.ImportFile(filePath,
+                PostProcessSteps.GenerateNormals | PostProcessSteps.GenerateUVCoords
+                | PostProcessSteps.CalculateTangentSpace | PostProcessSteps.JoinIdenticalVertices
+                | PostProcessSteps.Triangulate | PostProcessSteps.FlipWindingOrder
+                | PostProcessSteps.FixInFacingNormals);
 
             var meshRaw = new MeshRaw();
 
