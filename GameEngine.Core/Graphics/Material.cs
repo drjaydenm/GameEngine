@@ -265,10 +265,11 @@ namespace GameEngine.Core.Graphics
                 {
                     if (setIndex == kvp2.Value.Set && !layoutElements.ContainsKey(kvp2.Value.Binding))
                     {
+                        var resourceLayoutName = GetResourceLayoutName(kvp2.Value.Set, kvp2.Value.Binding, kvp2.Value.Stage);
                         var resourceType = ShaderParamTypeToResourceKind(kvp2.Value.Type);
+                        var shaderStage = kvp2.Value.Stage == ShaderConfigParameterStage.Vertex ? ShaderStages.Vertex : ShaderStages.Fragment;
                         layoutElements.Add(kvp2.Value.Binding,
-                            new ResourceLayoutElementDescription($"FragLayout_{kvp2.Value.Set}_{kvp2.Value.Binding}", resourceType,
-                                kvp2.Value.Stage == ShaderConfigParameterStage.Vertex ? ShaderStages.Vertex : ShaderStages.Fragment));
+                            new ResourceLayoutElementDescription(resourceLayoutName, resourceType, shaderStage));
                     }
                 }
 
@@ -326,6 +327,17 @@ namespace GameEngine.Core.Graphics
 
             parameterValues[name] = value;
             dirtyParameters.Enqueue(name);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private string GetResourceLayoutName(int setIndex, int bindingIndex, ShaderConfigParameterStage stage)
+        {
+            if (shader.ResourceLayouts.Length > setIndex && shader.ResourceLayouts[setIndex].Elements.Length > bindingIndex)
+            {
+                return shader.ResourceLayouts[setIndex].Elements[bindingIndex].Name;
+            }
+
+            return $"{stage}Layout_{setIndex}_{bindingIndex}";
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
