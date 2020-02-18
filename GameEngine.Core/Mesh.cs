@@ -1,6 +1,9 @@
-﻿namespace GameEngine.Core
+﻿using GameEngine.Core.Content;
+using GameEngine.Core.Graphics;
+
+namespace GameEngine.Core
 {
-    public class Mesh<T>
+    public class Mesh<T> : IContent
     {
         public struct Triangle
         {
@@ -11,11 +14,13 @@
 
         public T[] Vertices;
         public uint[] Indices;
+        public PrimitiveType PrimitiveType;
 
-        public Mesh(T[] vertices, uint[] indices)
+        public Mesh(T[] vertices, uint[] indices, PrimitiveType primitiveType)
         {
             Vertices = vertices;
             Indices = indices;
+            PrimitiveType = primitiveType;
         }
 
         public Triangle[] TransformAsTriangles()
@@ -33,6 +38,10 @@
             }
 
             return triangles;
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

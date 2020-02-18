@@ -153,7 +153,7 @@ namespace GameEngine.Game
                 }
             }
 
-            if (Engine.InputManager.Mouse.ScrollDelta != 0)
+            if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.G))
             {
                 var box = ShootBox();
                 boxes.Add(box);
@@ -162,7 +162,8 @@ namespace GameEngine.Game
             foreach (var box in boxes)
             {
                 var renderComponent = box.GetComponentsOfType<BasicRenderable<VertexPositionNormalTexCoordMaterial>>().First();
-                renderComponent.SetWorldTransform(Matrix4x4.CreateFromQuaternion(box.Transform.Rotation) * Matrix4x4.CreateScale(0.5f) * Matrix4x4.CreateTranslation(box.Transform.Position));
+                renderComponent.SetWorldTransform(Matrix4x4.CreateFromQuaternion(box.Transform.Rotation * Quaternion.CreateFromAxisAngle(Vector3.UnitX, (float)Math.PI / 2f))
+                    * Matrix4x4.CreateScale(0.1f) * Matrix4x4.CreateTranslation(box.Transform.Position));
             }
 
             // Check which block we are looking at
@@ -380,9 +381,9 @@ namespace GameEngine.Game
             var box = new Entity(this, "Box");
             box.Transform.Position = ActiveCamera.Position + (ActiveCamera.ViewDirection * 1.5f);
 
-            var physicsBox = new PhysicsBoxComponent(new Vector3(0.5f), PhysicsInteractivity.Dynamic)
+            var physicsBox = new PhysicsCapsuleComponent(1f, 0.5f, PhysicsInteractivity.Dynamic)
             {
-                Mass = 1
+                Mass = 20
             };
             box.AddComponent(physicsBox);
             physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;
@@ -390,10 +391,10 @@ namespace GameEngine.Game
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
             var material = new Material(Engine, shader);
             material.SetTexture("Texture", texture);
+
             var boxRenderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(Engine, material);
-            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalTexCoordMaterial(v, Vector3.UnitY, Vector2.UnitX, 1)).ToArray();
-            var indices = ShapeBuilder.BuildCubeIndicies();
-            var mesh = new Mesh<VertexPositionNormalTexCoordMaterial>(vertices, indices);
+            var mesh = Engine.ContentManager.Load<Mesh<VertexPositionNormalTexCoordMaterial>>("Meshes", "Gears");
+
             boxRenderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);
             box.AddComponent(boxRenderable);
 

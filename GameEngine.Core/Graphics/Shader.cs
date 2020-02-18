@@ -11,6 +11,7 @@ namespace GameEngine.Core.Graphics
     {
         internal Veldrid.Shader[] Shaders { get; }
         internal VertexElementDescription[] VertexElements { get; }
+        internal ResourceLayoutDescription[] ResourceLayouts { get; }
         internal ShaderConfig Config { get; }
 
         internal Shader(Veldrid.Shader[] shaders, SpirvReflection reflection, ShaderConfig config)
@@ -21,10 +22,12 @@ namespace GameEngine.Core.Graphics
             if (reflection != null)
             {
                 VertexElements = reflection.VertexElements;
+                ResourceLayouts = reflection.ResourceLayouts;
             }
             else
             {
                 VertexElements = new VertexElementDescription[0];
+                ResourceLayouts = new ResourceLayoutDescription[0];
             }
         }
 
