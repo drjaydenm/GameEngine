@@ -72,10 +72,13 @@ namespace GameEngine.Core
 
             Draw();
 
-            while (accumulatedTime + (frameTimeStopwatch.Elapsed - currentTime) < Engine.GameTimeTargetElapsed
+            var jobsThisTick = 0;
+            while ((accumulatedTime + (frameTimeStopwatch.Elapsed - currentTime) < Engine.GameTimeTargetElapsed
+                    || jobsThisTick < 5)
                 && Engine.Jobs.WhenIdle.JobCount > 0)
             {
                 Engine.Jobs.WhenIdle.ExecuteSingleJob();
+                jobsThisTick++;
             }
 
             Engine.WaitForVsync();

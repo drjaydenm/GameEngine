@@ -33,7 +33,7 @@ namespace GameEngine.Game
             material.SetTexture("Texture", texture);
             renderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(engine, material);
 
-            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalTexCoordMaterial(v, Vector3.UnitY, Vector2.UnitX, 1)).ToArray();
+            var vertices = ShapeBuilder.BuildCubeVertices().Select(v => new VertexPositionNormalTexCoordMaterial(v.Position, v.Normal, v.TexCoord, 1)).ToArray();
             var indices = ShapeBuilder.BuildCubeIndicies();
             var mesh = new Mesh<VertexPositionNormalTexCoordMaterial>(vertices, indices, PrimitiveType.TriangleList);
             renderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);

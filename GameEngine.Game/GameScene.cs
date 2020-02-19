@@ -272,6 +272,7 @@ namespace GameEngine.Game
             Engine.TextRenderer.DrawText($"FPS: {Engine.PerformanceCounters.FramesPerSecond} / UPS: {Engine.PerformanceCounters.UpdatesPerSecond}", new Vector2(5, yAccumulated += lineSpacing), fontColor, font, fontSize);
             Engine.TextRenderer.DrawText($"Pos: {playerEntity.Transform.Position}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
             Engine.TextRenderer.DrawText($"Chunks: {ChunkCount} / Gen: {ChunkGenerationQueuedCount} / Upd: {ChunkUpdateQueuedCount}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
+            Engine.TextRenderer.DrawText($"Job Queue Background: {Engine.Jobs.Background.JobCount} / Idle: {Engine.Jobs.WhenIdle.JobCount}", new Vector2(5, yAccumulated += lineSpacing + fontSize), fontColor, font, fontSize);
         }
 
         public override void Draw()
