@@ -6,39 +6,39 @@ namespace GameEngine.Core.Graphics
 {
     public static class ShapeBuilder
     {
-        public static Vector3[] BuildCubeVertices()
+        public static VertexPositionNormalTexCoord[] BuildCubeVertices()
         {
-            return new Vector3[] {
+            return new VertexPositionNormalTexCoord[] {
                 // Top
-                new Vector3(-0.5f, +0.5f, -0.5f),
-                new Vector3(+0.5f, +0.5f, -0.5f),
-                new Vector3(+0.5f, +0.5f, +0.5f),
-                new Vector3(-0.5f, +0.5f, +0.5f),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, +0.5f, -0.5f), Vector3.UnitY, Vector2.Zero),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, +0.5f, -0.5f), Vector3.UnitY, Vector2.UnitX),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, +0.5f, +0.5f), Vector3.UnitY, Vector2.One),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, +0.5f, +0.5f), Vector3.UnitY, Vector2.UnitY),
                 // Bottom
-                new Vector3(-0.5f, -0.5f, +0.5f),
-                new Vector3(+0.5f, -0.5f, +0.5f),
-                new Vector3(+0.5f, -0.5f, -0.5f),
-                new Vector3(-0.5f, -0.5f, -0.5f),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, -0.5f, +0.5f), -Vector3.UnitY, Vector2.Zero),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, -0.5f, +0.5f), -Vector3.UnitY, Vector2.UnitX),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, -0.5f, -0.5f), -Vector3.UnitY, Vector2.One),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, -0.5f, -0.5f), -Vector3.UnitY, Vector2.UnitY),
                 // Left
-                new Vector3(-0.5f, +0.5f, -0.5f),
-                new Vector3(-0.5f, +0.5f, +0.5f),
-                new Vector3(-0.5f, -0.5f, +0.5f),
-                new Vector3(-0.5f, -0.5f, -0.5f),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, +0.5f, -0.5f), -Vector3.UnitX, Vector2.Zero),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, +0.5f, +0.5f), -Vector3.UnitX, Vector2.UnitX),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, -0.5f, +0.5f), -Vector3.UnitX, Vector2.One),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, -0.5f, -0.5f), -Vector3.UnitX, Vector2.UnitY),
                 // Right
-                new Vector3(+0.5f, +0.5f, +0.5f),
-                new Vector3(+0.5f, +0.5f, -0.5f),
-                new Vector3(+0.5f, -0.5f, -0.5f),
-                new Vector3(+0.5f, -0.5f, +0.5f),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, +0.5f, +0.5f), Vector3.UnitX, Vector2.Zero),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, +0.5f, -0.5f), Vector3.UnitX, Vector2.UnitX),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, -0.5f, -0.5f), Vector3.UnitX, Vector2.One),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, -0.5f, +0.5f), Vector3.UnitX, Vector2.UnitY),
                 // Back
-                new Vector3(+0.5f, +0.5f, -0.5f),
-                new Vector3(-0.5f, +0.5f, -0.5f),
-                new Vector3(-0.5f, -0.5f, -0.5f),
-                new Vector3(+0.5f, -0.5f, -0.5f),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, +0.5f, -0.5f), -Vector3.UnitZ, Vector2.Zero),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, +0.5f, -0.5f), -Vector3.UnitZ, Vector2.UnitX),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, -0.5f, -0.5f), -Vector3.UnitZ, Vector2.One),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, -0.5f, -0.5f), -Vector3.UnitZ, Vector2.UnitY),
                 // Front
-                new Vector3(-0.5f, +0.5f, +0.5f),
-                new Vector3(+0.5f, +0.5f, +0.5f),
-                new Vector3(+0.5f, -0.5f, +0.5f),
-                new Vector3(-0.5f, -0.5f, +0.5f)
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, +0.5f, +0.5f), Vector3.UnitZ, Vector2.Zero),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, +0.5f, +0.5f), Vector3.UnitZ, Vector2.UnitX),
+                new VertexPositionNormalTexCoord(new Vector3(+0.5f, -0.5f, +0.5f), Vector3.UnitZ, Vector2.One),
+                new VertexPositionNormalTexCoord(new Vector3(-0.5f, -0.5f, +0.5f), Vector3.UnitZ, Vector2.UnitY),
             };
         }
 
@@ -56,11 +56,12 @@ namespace GameEngine.Core.Graphics
         }
 
         // Taken from https://github.com/caosdoar/spheres/blob/master/src/spheres.cpp
-        public static Vector3[] BuildSphereVertices(int divisions)
+        // Using the spherified cube algorithm
+        public static VertexPositionNormalTexCoord[] BuildSphereVertices(int divisions)
         {
             var step = 1.0f / divisions;
             var step3 = new Vector3(step);
-            var vertices = new List<Vector3>();
+            var vertices = new List<VertexPositionNormalTexCoord>();
 
             for (var face = 0; face < 6; ++face)
             {
@@ -81,7 +82,8 @@ namespace GameEngine.Core.Graphics
                             p.X * (float)Math.Sqrt(1.0f - 0.5f * (p2.Y + p2.Z) + p2.Y * p2.Z / 3.0f),
                             p.Y * (float)Math.Sqrt(1.0f - 0.5f * (p2.Z + p2.X) + p2.Z * p2.X / 3.0f),
                             p.Z * (float)Math.Sqrt(1.0f - 0.5f * (p2.X + p2.Y) + p2.X * p2.Y / 3.0f));
-                        vertices.Add(n);
+                        // TODO fix up UV coordinates
+                        vertices.Add(new VertexPositionNormalTexCoord(n, n, new Vector2(n.X, n.Y)));
                     }
                 }
             }
