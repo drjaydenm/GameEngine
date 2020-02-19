@@ -11,8 +11,8 @@ namespace GameEngine.Core.Graphics
         public VertexLayoutDescription LayoutDescription { get; private set; }
         public DeviceBuffer VertexBuffer { get; private set; }
         public DeviceBuffer IndexBuffer { get; private set; }
-        public Matrix4x4 WorldTransform { get; private set; }
         public PrimitiveType PrimitiveType => mesh.PrimitiveType;
+        public Vector3 PositionOffset { get; set; }
 
         private readonly Engine engine;
         private Mesh<T> mesh;
@@ -31,11 +31,6 @@ namespace GameEngine.Core.Graphics
 
             this.mesh = mesh;
             isDirty = true;
-        }
-
-        public void SetWorldTransform(Matrix4x4 world)
-        {
-            WorldTransform = world;
         }
 
         public void AttachedToEntity(Entity entity)

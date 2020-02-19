@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Veldrid;
 using GameEngine.Core.Graphics;
@@ -12,8 +12,8 @@ namespace GameEngine.Core.World
         public VertexLayoutDescription LayoutDescription => VertexPositionNormalTexCoordMaterial.VertexLayoutDescription;
         public DeviceBuffer VertexBuffer { get; private set; }
         public DeviceBuffer IndexBuffer { get; private set; }
-        public Matrix4x4 WorldTransform { get; private set; }
         public PrimitiveType PrimitiveType => PrimitiveType.TriangleList;
+        public Vector3 PositionOffset { get; private set; }
 
         private readonly Engine engine;
         private readonly ChunkMeshGenerator meshGenerator;
@@ -32,7 +32,7 @@ namespace GameEngine.Core.World
 
             // Offset block vertices by half a block, as the block vertices are all centered around 0,0,0 instead
             // of 0,0,0 being the bottom corner of the block vertices
-            WorldTransform = Matrix4x4.CreateTranslation(chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f));
+            PositionOffset = chunk.WorldPosition + (Chunk.CHUNK_SIZE * Chunk.CHUNK_BLOCK_RATIO * 0.5f);
         }
 
         public void UpdateChunk(VertexPositionNormalTexCoordMaterial[] vertices, uint vertexCount, uint[] indices, uint indexCount)

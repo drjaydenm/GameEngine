@@ -155,15 +155,8 @@ namespace GameEngine.Game
 
             if (Engine.InputManager.Keyboard.WasKeyPressed(Keys.G))
             {
-                var box = ShootBox();
+                var box = ShootObject();
                 boxes.Add(box);
-            }
-
-            foreach (var box in boxes)
-            {
-                var renderComponent = box.GetComponentsOfType<BasicRenderable<VertexPositionNormalTexCoordMaterial>>().First();
-                renderComponent.SetWorldTransform(Matrix4x4.CreateFromQuaternion(box.Transform.Rotation * Quaternion.CreateFromAxisAngle(Vector3.UnitX, (float)Math.PI / 2f))
-                    * Matrix4x4.CreateScale(0.1f) * Matrix4x4.CreateTranslation(box.Transform.Position));
             }
 
             // Check which block we are looking at
@@ -376,31 +369,33 @@ namespace GameEngine.Game
             }
         }
 
-        private Entity ShootBox()
+        private Entity ShootObject()
         {
-            var box = new Entity(this, "Box");
-            box.Transform.Position = ActiveCamera.Position + (ActiveCamera.ViewDirection * 1.5f);
+            var entity = new Entity(this, "Box");
+            entity.Transform.Position = ActiveCamera.Position + (ActiveCamera.ViewDirection * 1.5f);
+            entity.Transform.Scale = new Vector3(0.02f);
 
-            var physicsBox = new PhysicsCapsuleComponent(1f, 0.5f, PhysicsInteractivity.Dynamic)
+            var physicsComponent = new PhysicsCapsuleComponent(1f, 0.5f, PhysicsInteractivity.Dynamic)
             {
                 Mass = 20
             };
-            box.AddComponent(physicsBox);
-            physicsBox.LinearVelocity = ActiveCamera.ViewDirection * 20;
+            entity.AddComponent(physicsComponent);
+            physicsComponent.LinearVelocity = ActiveCamera.ViewDirection * 20;
+            entity.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitX, -(float)Math.PI / 2f) * Quaternion.CreateFromAxisAngle(Vector3.UnitZ, (float)Math.PI);
 
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
             var material = new Material(Engine, shader);
             material.SetTexture("Texture", texture);
 
-            var boxRenderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(Engine, material);
-            var mesh = Engine.ContentManager.Load<Mesh<VertexPositionNormalTexCoordMaterial>>("Meshes", "Gears");
+            var renderable = new BasicRenderable<VertexPositionNormalTexCoordMaterial>(Engine, material);
+            var mesh = Engine.ContentManager.Load<Mesh<VertexPositionNormalTexCoordMaterial>>("Meshes", "PigMan");
 
-            boxRenderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);
-            box.AddComponent(boxRenderable);
+            renderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);
+            entity.AddComponent(renderable);
 
-            AddEntity(box);
+            AddEntity(entity);
 
-            return box;
+            return entity;
         }
 
         private void BlowUpVoxels(Vector3 explosionOrigin, int radius)

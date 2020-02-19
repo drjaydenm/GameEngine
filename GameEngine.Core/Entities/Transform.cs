@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace GameEngine.Core.Entities
 {
@@ -7,46 +8,87 @@ namespace GameEngine.Core.Entities
     {
         public Vector3 Position
         {
-            get { return InternalPosition; }
+            get { return position; }
             set
             {
-                InternalPosition = value;
+                position = value;
                 var physicsComponent = entity.GetComponentsOfType<PhysicsComponent>().FirstOrDefault();
                 if (physicsComponent != null)
                 {
-                    physicsComponent.Body.Position = InternalPosition + physicsComponent.PositionOffset;
+                    physicsComponent.Body.Position = position + physicsComponent.PositionOffset;
                 }
+                UpdateMatrix();
             }
         }
 
         public Quaternion Rotation
         {
-            get { return InternalRotation; }
+            get { return rotation; }
             set
             {
-                InternalRotation = value;
+                rotation = value;
                 var physicsComponent = entity.GetComponentsOfType<PhysicsComponent>().FirstOrDefault();
                 if (physicsComponent != null)
                 {
-                    physicsComponent.Body.Rotation = InternalRotation;
+                    physicsComponent.Body.Rotation = rotation;
                 }
+                UpdateMatrix();
             }
         }
 
-        public Vector3 Scale { get; set; }
+        public Vector3 Scale
+        {
+            get { return scale; }
+            set
+            {
+                scale = value;
+                UpdateMatrix();
+            }
+        }
 
-        internal Vector3 InternalPosition { get; set; }
-        internal Quaternion InternalRotation { get; set; }
+        public Matrix4x4 TransformMatrix { get; private set; }
 
         private readonly Entity entity;
+        private Vector3 position;
+        private Quaternion rotation;
+        private Vector3 scale;
 
         public Transform(Entity entity)
         {
             this.entity = entity;
 
-            InternalPosition = Vector3.Zero;
-            InternalRotation = Quaternion.Identity;
-            Scale = Vector3.One;
+            position = Vector3.Zero;
+            rotation = Quaternion.Identity;
+            scale = Vector3.One;
+
+            UpdateMatrix();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void SetPositionDirect(Vector3 position)
+        {
+            this.position = position;
+            UpdateMatrix();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void SetRotationDirect(Quaternion rotation)
+        {
+            this.rotation = rotation;
+            UpdateMatrix();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void SetScaleDirect(Vector3 scale)
+        {
+            this.scale = scale;
+            UpdateMatrix();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void UpdateMatrix()
+        {
+            TransformMatrix = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateFromQuaternion(rotation) * Matrix4x4.CreateTranslation(position);
         }
     }
 }

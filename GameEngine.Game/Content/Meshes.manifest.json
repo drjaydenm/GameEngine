@@ -3,6 +3,10 @@
         {
             "Key": "Gears",
             "Path": "Meshes/gears.fbx"
+        },
+        {
+            "Key": "PigMan",
+            "Path": "Meshes/pigman.fbx"
         }
     ]
 }

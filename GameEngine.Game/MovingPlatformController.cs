@@ -39,6 +39,7 @@ namespace GameEngine.Game
             renderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);
 
             entity.AddComponent(renderable);
+            entity.Transform.Scale = new Vector3(PlatformSize.X, PlatformSize.Y, PlatformSize.Z);
 
             physicsBox = new PhysicsBoxComponent(new Vector3(PlatformSize.X, PlatformSize.Y, PlatformSize.Z), PhysicsInteractivity.Kinematic);
             entity.AddComponent(physicsBox);
@@ -56,8 +57,6 @@ namespace GameEngine.Game
         public void Update()
         {
             physicsBox.LinearVelocity = MovementDirection * MovementSpeed;
-
-            renderable.SetWorldTransform(Matrix4x4.CreateScale(PlatformSize.X, PlatformSize.Y, PlatformSize.Z) * Matrix4x4.CreateTranslation(entity.Transform.Position));
         }
     }
 }

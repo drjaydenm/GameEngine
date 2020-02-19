@@ -74,8 +74,8 @@ namespace GameEngine.Core.Entities
             if (body == null)
                 return;
 
-            Entity.Transform.InternalPosition = Body.Position - PositionOffset;
-            Entity.Transform.InternalRotation = Body.Rotation;
+            Entity.Transform.SetPositionDirect(Body.Position - PositionOffset);
+            Entity.Transform.SetRotationDirect(Body.Rotation);
         }
 
         public void ApplyImpulse(Vector3 impulse)

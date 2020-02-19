@@ -10,8 +10,8 @@ namespace GameEngine.Core.Graphics
         VertexLayoutDescription LayoutDescription { get; }
         DeviceBuffer VertexBuffer { get; }
         DeviceBuffer IndexBuffer { get; }
-        Matrix4x4 WorldTransform { get; }
         PrimitiveType PrimitiveType { get; }
+        Vector3 PositionOffset { get; }
 
         void UpdateBuffers(CommandList commandList);
     }

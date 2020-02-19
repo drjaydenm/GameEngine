@@ -37,7 +37,7 @@ namespace GameEngine.Core.Graphics
 
                     renderable.UpdateBuffers(commandList);
 
-                    renderable.Material.SetMatrix("World", renderable.WorldTransform);
+                    renderable.Material.SetMatrix("World", Matrix4x4.CreateTranslation(renderable.PositionOffset) * scene.Entities[i].Transform.TransformMatrix);
 
                     if (lastMaterial != renderable.Material)
                     {
