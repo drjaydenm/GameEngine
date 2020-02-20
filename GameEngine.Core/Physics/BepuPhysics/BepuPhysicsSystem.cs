@@ -154,8 +154,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
                     triangles[i] = new Triangle(meshTriangles[i].Vertex1, meshTriangles[i].Vertex2, meshTriangles[i].Vertex3);
                 }
 
-                var mesh = new BepuMesh(triangles, Vector3.One, bufferPool);
+                var mesh = new BepuMesh(triangles, meshComponent.MeshScale, bufferPool);
                 shapeIndex = simulation.Shapes.Add(mesh);
+
+                if (component.Interactivity == PhysicsInteractivity.Dynamic)
+                    mesh.ComputeClosedInertia(component.Mass, out inertia);
             }
 
             if (!isAsyncShape)

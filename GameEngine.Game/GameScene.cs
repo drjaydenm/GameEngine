@@ -376,14 +376,6 @@ namespace GameEngine.Game
             entity.Transform.Position = ActiveCamera.Position + (ActiveCamera.ViewDirection * 1.5f);
             entity.Transform.Scale = new Vector3(0.02f);
 
-            var physicsComponent = new PhysicsCapsuleComponent(1f, 0.5f, PhysicsInteractivity.Dynamic)
-            {
-                Mass = 20
-            };
-            entity.AddComponent(physicsComponent);
-            physicsComponent.LinearVelocity = ActiveCamera.ViewDirection * 20;
-            entity.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitX, -(float)Math.PI / 2f) * Quaternion.CreateFromAxisAngle(Vector3.UnitZ, (float)Math.PI);
-
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
             var material = new Material(Engine, shader);
             material.SetTexture("Texture", texture);
@@ -393,6 +385,16 @@ namespace GameEngine.Game
 
             renderable.SetMesh(VertexPositionNormalTexCoordMaterial.VertexLayoutDescription, mesh);
             entity.AddComponent(renderable);
+
+            //var physicsMesh = new Mesh<Vector3>(mesh.Vertices.Select(v => v.Position).ToArray(), mesh.Indices, mesh.PrimitiveType);
+            //var physicsComponent = new PhysicsMeshComponent(physicsMesh, entity.Transform.Scale, PhysicsInteractivity.Dynamic)
+            var physicsComponent = new PhysicsBoxComponent(new Vector3(3, 1, 4), PhysicsInteractivity.Dynamic)
+            {
+                Mass = 20
+            };
+            entity.AddComponent(physicsComponent);
+            physicsComponent.LinearVelocity = ActiveCamera.ViewDirection * 20;
+            entity.Transform.Rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitX, -(float)Math.PI / 2f) * Quaternion.CreateFromAxisAngle(Vector3.UnitZ, (float)Math.PI);
 
             AddEntity(entity);
 
