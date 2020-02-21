@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using GameEngine.Core.Content.Raw;
 using GameEngine.Core.Graphics;
@@ -18,10 +18,10 @@ namespace GameEngine.Core.Content.Importers
     {
         public string[] FileExtensions => new[] { "texarray.json" };
 
-        public TextureArrayRaw Import(string filePath)
+        public TextureArrayRaw Import(IContentLoader loader, string filePath)
         {
             TextureArrayRaw texArray;
-            using (var sr = new StreamReader(filePath))
+            using (var sr = new StreamReader(loader.OpenStream(filePath)))
             {
                 var asset = JsonConvert.DeserializeObject<TextureArrayAsset>(sr.ReadToEnd());
                 var textureType = (TextureType)Enum.Parse(typeof(TextureType), "Texture" + asset.Type + "Array");
@@ -53,9 +53,9 @@ namespace GameEngine.Core.Content.Importers
             return texArray;
         }
 
-        IContentRaw IContentImporter.Import(string filePath)
+        IContentRaw IContentImporter.Import(IContentLoader loader, string filePath)
         {
-            return Import(filePath);
+            return Import(loader, filePath);
         }
     }
 }

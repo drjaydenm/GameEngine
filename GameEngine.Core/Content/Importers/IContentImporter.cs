@@ -1,4 +1,5 @@
-﻿using GameEngine.Core.Content.Raw;
+﻿using System.IO;
+using GameEngine.Core.Content.Raw;
 
 namespace GameEngine.Core.Content.Importers
 {
@@ -6,11 +7,11 @@ namespace GameEngine.Core.Content.Importers
     {
         string[] FileExtensions { get; }
 
-        IContentRaw Import(string filePath);
+        IContentRaw Import(IContentLoader loader, string filePath);
     }
 
     public interface IContentImporter<TRaw> : IContentImporter where TRaw : IContentRaw
     {
-        new TRaw Import(string filePath);
+        new TRaw Import(IContentLoader loader, string filePath);
     }
 }

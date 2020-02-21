@@ -6,6 +6,7 @@ using Veldrid.StartupUtilities;
 using GameEngine.Core.Input;
 using System.Runtime.InteropServices;
 using GameEngine.Core.Input.Veldrid;
+using GameEngine.Core.Content;
 
 namespace GameEngine.Core.Windowing
 {
@@ -116,6 +117,11 @@ namespace GameEngine.Core.Windowing
         public IInputManager CreateInputManager()
         {
             return new VeldridInputManager(this);
+        }
+
+        public IContentLoader CreateContentLoader()
+        {
+            return new FileContentLoader();
         }
 
         private void Init()

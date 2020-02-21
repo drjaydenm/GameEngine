@@ -8,16 +8,16 @@ namespace GameEngine.Core.Content.Importers
     {
         public string[] FileExtensions => new[] { ".shader" };
 
-        public ShaderRaw Import(string filePath)
+        public ShaderRaw Import(IContentLoader loader, string filePath)
         {
             var vertexPath = Path.ChangeExtension(filePath, "vert");
             var fragmentPath = Path.ChangeExtension(filePath, "frag");
             var configPath = Path.ChangeExtension(filePath, "shaderconfig.json");
 
             ShaderRaw shader;
-            using (var fsVert = new StreamReader(vertexPath))
-            using (var fsFrag = new StreamReader(fragmentPath))
-            using (var fsConfig = new StreamReader(configPath))
+            using (var fsVert = new StreamReader(loader.OpenStream(vertexPath)))
+            using (var fsFrag = new StreamReader(loader.OpenStream(fragmentPath)))
+            using (var fsConfig = new StreamReader(loader.OpenStream(configPath)))
             {
                 var config = JsonConvert.DeserializeObject<ShaderConfigRaw>(fsConfig.ReadToEnd());
                 
@@ -27,9 +27,9 @@ namespace GameEngine.Core.Content.Importers
             return shader;
         }
 
-        IContentRaw IContentImporter.Import(string filePath)
+        IContentRaw IContentImporter.Import(IContentLoader loader, string filePath)
         {
-            return Import(filePath);
+            return Import(loader, filePath);
         }
     }
 }

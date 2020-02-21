@@ -15,14 +15,16 @@ namespace GameEngine.Core.Content
 
         private readonly Engine engine;
         private readonly string contentDirectory;
+        private readonly IContentLoader loader;
         private readonly List<IContentImporter> importers;
         private readonly Dictionary<string, IContentManifest> manifests;
         private readonly List<IContentProcessor> processors;
 
-        public ContentManager(Engine engine, string contentDirectory)
+        public ContentManager(Engine engine, string contentDirectory, IContentLoader loader)
         {
             this.engine = engine;
             this.contentDirectory = contentDirectory;
+            this.loader = loader;
 
             importers = new List<IContentImporter>();
             manifests = new Dictionary<string, IContentManifest>();
@@ -58,7 +60,8 @@ namespace GameEngine.Core.Content
         {
             for (var i = 0; i < manifestFiles.Length; i++)
             {
-                using (var sr = new StreamReader(Path.Combine(contentDirectory, manifestFiles[i] + ".manifest.json")))
+                var manifestPath = Path.Combine(contentDirectory, manifestFiles[i] + ".manifest.json");
+                using (var sr = new StreamReader(loader.OpenStream(manifestPath)))
                 {
                     var manifestFile = sr.ReadToEnd();
 
@@ -83,7 +86,7 @@ namespace GameEngine.Core.Content
             if (importer == null)
                 throw new Exception("Cannot find an importer for this extension");
 
-            var contentRaw = importer.Import(contentPath);
+            var contentRaw = importer.Import(loader, contentPath);
 
             var rawType = contentRaw.GetType();
             var processor = GetProcessor(rawType, typeof(T));

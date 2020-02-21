@@ -2,6 +2,7 @@
 using System.Numerics;
 using Veldrid;
 using GameEngine.Core.Input;
+using GameEngine.Core.Content;
 
 namespace GameEngine.Core.Windowing
 {
@@ -20,6 +21,7 @@ namespace GameEngine.Core.Windowing
 
         GraphicsDevice CreateGraphicsDevice();
         IInputManager CreateInputManager();
+        IContentLoader CreateContentLoader();
         void PumpMessages();
         void Exit();
     }

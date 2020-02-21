@@ -63,7 +63,8 @@ namespace GameEngine.Core
             CommandList = GraphicsDevice.ResourceFactory.CreateCommandList();
 
             Jobs = new JobQueues();
-            ContentManager = new ContentManager(this, Path.Combine(baseDirectory, "Content"));
+
+            ContentManager = new ContentManager(this, Path.Combine(baseDirectory, "Content"), Window.CreateContentLoader());
             ContentManager.AddDefaultImportersAndProcessors();
 
             DebugGraphics = new DebugGraphics(this);

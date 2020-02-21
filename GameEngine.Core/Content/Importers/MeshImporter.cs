@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Assimp;
 using GameEngine.Core.Content.Raw;
 
@@ -8,10 +8,12 @@ namespace GameEngine.Core.Content.Importers
     {
         public string[] FileExtensions => new[] { ".fbx" };
 
-        public MeshRaw Import(string filePath)
+        public MeshRaw Import(IContentLoader loader, string filePath)
         {
             var context = new AssimpContext();
-            var scene = context.ImportFile(filePath,
+
+            using var stream = loader.OpenStream(filePath);
+            var scene = context.ImportFileFromStream(stream,
                 PostProcessSteps.GenerateNormals | PostProcessSteps.GenerateUVCoords
                 | PostProcessSteps.CalculateTangentSpace | PostProcessSteps.JoinIdenticalVertices
                 | PostProcessSteps.Triangulate | PostProcessSteps.FlipWindingOrder
@@ -35,9 +37,9 @@ namespace GameEngine.Core.Content.Importers
             return meshRaw;
         }
 
-        IContentRaw IContentImporter.Import(string filePath)
+        IContentRaw IContentImporter.Import(IContentLoader loader, string filePath)
         {
-            return Import(filePath);
+            return Import(loader, filePath);
         }
 
         private Graphics.PrimitiveType AssimpPrimitiveTypeToEngine(PrimitiveType type)
