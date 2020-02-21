@@ -5,6 +5,7 @@ using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 using GameEngine.Core.Input;
 using System.Runtime.InteropServices;
+using GameEngine.Core.Input.Veldrid;
 
 namespace GameEngine.Core.Windowing
 {

@@ -1,6 +1,6 @@
 ﻿using GameEngine.Core.Windowing;
 
-namespace GameEngine.Core.Input
+namespace GameEngine.Core.Input.Veldrid
 {
     public class VeldridInputManager : IInputManager
     {

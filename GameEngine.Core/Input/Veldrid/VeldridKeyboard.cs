@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Veldrid;
 
-namespace GameEngine.Core.Input
+namespace GameEngine.Core.Input.Veldrid
 {
     public class VeldridKeyboard : IKeyboard
     {

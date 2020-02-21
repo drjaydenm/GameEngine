@@ -2,7 +2,7 @@
 using System.Numerics;
 using Veldrid;
 
-namespace GameEngine.Core.Input
+namespace GameEngine.Core.Input.Veldrid
 {
     public class VeldridMouse : IMouse
     {
