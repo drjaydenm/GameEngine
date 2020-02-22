@@ -47,6 +47,7 @@ namespace GameEngine.Core.Windowing
         }
         public float AspectRatio => (float)window.Width / window.Height;
         public bool Running => window.Exists;
+        public bool IsDriven => false;
 
         internal InputSnapshot InputSnapshot { get; private set; }
         internal Vector2 MousePosition { get; private set; }
@@ -99,6 +100,10 @@ namespace GameEngine.Core.Windowing
                 window.CursorVisible = true;
                 MousePosition = InputSnapshot.MousePosition;
             }
+        }
+
+        public void StartDrivenLoop(Action tick)
+        {
         }
 
         public GraphicsDevice CreateGraphicsDevice()

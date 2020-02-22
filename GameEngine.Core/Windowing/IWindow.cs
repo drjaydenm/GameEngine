@@ -18,11 +18,13 @@ namespace GameEngine.Core.Windowing
         float AspectRatio { get; }
         WindowState WindowState { get; set; }
         bool Running { get; }
+        bool IsDriven { get; }
 
         GraphicsDevice CreateGraphicsDevice();
         IInputManager CreateInputManager();
         IContentLoader CreateContentLoader();
         void PumpMessages();
+        void StartDrivenLoop(Action tick);
         void Exit();
     }
 }

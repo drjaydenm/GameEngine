@@ -24,9 +24,16 @@ namespace GameEngine.Core
 
         public void Run()
         {
-            while (Engine.Window.Running)
+            if (!Engine.Window.IsDriven)
             {
-                Tick();
+                while (Engine.Window.Running)
+                {
+                    Tick();
+                }
+            }
+            else
+            {
+                Engine.Window.StartDrivenLoop(Tick);
             }
         }
 
@@ -64,7 +71,9 @@ namespace GameEngine.Core
             {
                 Engine.GameTimeElapsed = Engine.GameTimeTargetElapsed;
 
-                Engine.Window.PumpMessages();
+                if (!Engine.Window.IsDriven)
+                    Engine.Window.PumpMessages();
+
                 Update();
 
                 accumulatedTime -= Engine.GameTimeTargetElapsed;
