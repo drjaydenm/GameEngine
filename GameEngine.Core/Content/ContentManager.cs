@@ -33,11 +33,13 @@ namespace GameEngine.Core.Content
 
         public void AddDefaultImportersAndProcessors()
         {
+            AddImporter(new AudioClipImporter());
             AddImporter(new MeshImporter());
             AddImporter(new ShaderImporter());
             AddImporter(new Texture2DImporter());
             AddImporter(new TextureArrayImporter());
 
+            AddProcessor(new AudioClipProcessor());
             AddProcessor(new MeshProcessor());
             AddProcessor(new ShaderProcessor(engine));
             AddProcessor(new Texture2DProcessor(engine));

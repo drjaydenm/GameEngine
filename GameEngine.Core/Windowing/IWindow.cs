@@ -3,6 +3,7 @@ using System.Numerics;
 using Veldrid;
 using GameEngine.Core.Input;
 using GameEngine.Core.Content;
+using GameEngine.Core.Audio;
 
 namespace GameEngine.Core.Windowing
 {
@@ -23,6 +24,7 @@ namespace GameEngine.Core.Windowing
         GraphicsDevice CreateGraphicsDevice();
         IInputManager CreateInputManager();
         IContentLoader CreateContentLoader();
+        IAudioSystem CreateAudioSystem();
         void PumpMessages();
         void StartDrivenLoop(Action tick);
         void Exit();

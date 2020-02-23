@@ -7,6 +7,7 @@ using GameEngine.Core.Windowing;
 using GameEngine.Core.Threading;
 using GameEngine.Core.Content;
 using System.IO;
+using GameEngine.Core.Audio;
 
 namespace GameEngine.Core
 {
@@ -24,6 +25,7 @@ namespace GameEngine.Core
         public TextRenderer TextRenderer { get; private set; }
         public JobQueues Jobs { get; private set; }
         public IContentManager ContentManager { get; private set; }
+        public IAudioSystem AudioSystem { get; private set; }
 
         internal CommandList CommandList { get; private set; }
 
@@ -59,6 +61,7 @@ namespace GameEngine.Core
 
             GraphicsDevice = Window.CreateGraphicsDevice();
             InputManager = Window.CreateInputManager();
+            AudioSystem = Window.CreateAudioSystem();
 
             CommandList = GraphicsDevice.ResourceFactory.CreateCommandList();
 

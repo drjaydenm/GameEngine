@@ -11,6 +11,7 @@ using GameEngine.Core.Input;
 using GameEngine.Core.World;
 using System.Collections.Concurrent;
 using Texture = GameEngine.Core.Graphics.Texture;
+using GameEngine.Core.Audio;
 
 namespace GameEngine.Game
 {
@@ -72,6 +73,12 @@ namespace GameEngine.Game
             playerEntity.AddComponent(camera);
             AddEntity(playerEntity);
             SetActiveCamera(camera);
+            playerEntity.AddComponent(new AudioListener(Engine));
+
+            var bgSource = new AudioSource(Engine);
+            bgSource.AudioClip = Engine.ContentManager.Load<AudioClip>("Audio", "Wind");
+            playerEntity.AddComponent(bgSource);
+            bgSource.Play();
 
             Engine.InputManager.Mouse.IsMouseLocked = true;
 

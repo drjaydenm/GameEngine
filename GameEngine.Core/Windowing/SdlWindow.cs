@@ -7,6 +7,8 @@ using GameEngine.Core.Input;
 using System.Runtime.InteropServices;
 using GameEngine.Core.Input.Veldrid;
 using GameEngine.Core.Content;
+using GameEngine.Core.Audio;
+using GameEngine.Core.Audio.OpenAL;
 
 namespace GameEngine.Core.Windowing
 {
@@ -127,6 +129,11 @@ namespace GameEngine.Core.Windowing
         public IContentLoader CreateContentLoader()
         {
             return new FileContentLoader();
+        }
+
+        public IAudioSystem CreateAudioSystem()
+        {
+            return new OpenALAudioSystem();
         }
 
         private void Init()

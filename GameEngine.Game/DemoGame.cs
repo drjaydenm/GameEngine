@@ -14,7 +14,7 @@ namespace GameEngine.Game
             Engine.Window.Title = "DemoGame";
             //Engine.Window.Size = Engine.Window.ScreenSize - (Engine.Window.Position * 2);
 
-            Engine.ContentManager.LoadManifests("Textures", "Shaders", "Meshes");
+            Engine.ContentManager.LoadManifests("Textures", "Shaders", "Meshes", "Audio");
 
             LoadingScene = new LoadingScene();
             LoadingScene.Initialize(Engine, this, new Renderer(Engine, LoadingScene), null);
