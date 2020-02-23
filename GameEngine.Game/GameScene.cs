@@ -56,6 +56,8 @@ namespace GameEngine.Game
             base.LoadScene();
 
             Renderer.LightDirection = Vector3.Normalize(new Vector3(1, -1, 1));
+            Renderer.FogStartDistance = 60;
+            Renderer.FogEndDistance = 150;
 
             texture = Engine.ContentManager.Load<Texture>("Textures", "Voxels");
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");

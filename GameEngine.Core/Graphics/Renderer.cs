@@ -1,15 +1,18 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {
     public class Renderer
     {
-        public DeviceBuffer ViewProjBuffer { get; private set; }
-        public DeviceBuffer WorldBuffer { get; private set; }
-        public DeviceBuffer CameraBuffer { get; private set; }
-        public DeviceBuffer LightingBuffer { get; private set; }
-        public Vector3 LightDirection { get; set; }
+        public Vector3 LightDirection { get; set; } = Vector3.Normalize(new Vector3(1, -1, 1));
+        public Vector4 LightColor { get; set; } = new Vector4(0.5f, 0.5f, 0.5f, 1);
+        public float LightIntensity { get; set; } = 2f;
+        public Vector4 AmbientLight { get; set; } = new Vector4(0.4f, 0.4f, 0.4f, 1);
+        public Vector4 FogColor { get; set; } = new Vector4(0.3921f, 0.5843f, 0.9294f, 1);
+        public float FogStartDistance = 200;
+        public float FogEndDistance = 400;
+        public Material SkyboxMaterial { get; set; }
 
         private readonly Engine engine;
         private readonly Scene scene;
@@ -45,13 +48,14 @@ namespace GameEngine.Core.Graphics
                         renderable.Material.SetMatrix("Projection", camera.Projection);
 
                         renderable.Material.SetVector("LightDirection", LightDirection);
-                        renderable.Material.SetVector("LightColor", new Vector4(0.5f, 0.5f, 0.5f, 1));
-                        renderable.Material.SetFloat("LightIntensity", 2);
-                        renderable.Material.SetVector("AmbientLight", new Vector4(0.4f, 0.4f, 0.4f, 1));
-                        renderable.Material.SetVector("FogColor", RgbaFloat.CornflowerBlue.ToVector4());
-                        renderable.Material.SetFloat("FogStartDistance", 60);
-                        renderable.Material.SetFloat("FogEndDistance", 150);
+                        renderable.Material.SetVector("LightColor", LightColor);
+                        renderable.Material.SetFloat("LightIntensity", LightIntensity);
+                        renderable.Material.SetVector("AmbientLight", AmbientLight);
+                        renderable.Material.SetVector("FogColor", FogColor);
+                        renderable.Material.SetFloat("FogStartDistance", FogStartDistance);
+                        renderable.Material.SetFloat("FogEndDistance", FogEndDistance);
 
+                        // TODO move to the material
                         renderable.Material.SetVector("SpecularColor", new Vector4(0.3f, 0.3f, 0.3f, 1));
                         renderable.Material.SetFloat("Shininess", 25);
 
