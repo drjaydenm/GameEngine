@@ -71,8 +71,8 @@ layout(location = 0) out vec4 fsout_Color;
 void main()
 {
     vec3 normal = normalize(fsin_TexCoord);
-    float NdotSun = clamp(dot(normal, -SunDirection), 0, 1);
-    float sunPower = pow(NdotSun, 50);
+    float NdotSun = clamp(dot(normal, -normalize(SunDirection)), 0, 1);
+    float sunPower = pow(NdotSun, 100);
 
     fsout_Color = SkyColor + (SunColor * sunPower);
 }
