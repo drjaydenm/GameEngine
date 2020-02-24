@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Numerics;
 using Veldrid;
 
@@ -9,7 +10,7 @@ namespace GameEngine.Core.Graphics
         public Vector4 LightColor { get; set; } = new Vector4(0.5f, 0.5f, 0.5f, 1);
         public float LightIntensity { get; set; } = 2f;
         public Vector4 AmbientLight { get; set; } = new Vector4(0.4f, 0.4f, 0.4f, 1);
-        public Vector4 FogColor { get; set; } = new Vector4(0.3921f, 0.5843f, 0.9294f, 1);
+        public Vector4 FogColor { get; set; } = RgbaFloat.CornflowerBlue.ToVector4();
         public float FogStartDistance = 200;
         public float FogEndDistance = 400;
         public Material SkyboxMaterial { get; set; }
@@ -17,12 +18,16 @@ namespace GameEngine.Core.Graphics
         private readonly Engine engine;
         private readonly Scene scene;
         private readonly CommandList commandList;
+        private DeviceBuffer skyboxVertices;
+        private DeviceBuffer skyboxIndices;
 
         public Renderer(Engine engine, Scene scene)
         {
             this.engine = engine;
             this.scene = scene;
             commandList = engine.CommandList;
+
+            SetupSkybox();
         }
 
         public void Draw()
@@ -63,7 +68,7 @@ namespace GameEngine.Core.Graphics
                         renderable.Material.SetVector("CameraPosition", camera.Position);
                     }
 
-                    renderable.Material.Bind(commandList, renderable);
+                    renderable.Material.Bind(commandList, renderable.PrimitiveType, renderable.LayoutDescription, FaceCullMode.Back);
 
                     commandList.SetVertexBuffer(0, renderable.VertexBuffer);
                     commandList.SetIndexBuffer(renderable.IndexBuffer, IndexFormat.UInt32);
@@ -78,6 +83,61 @@ namespace GameEngine.Core.Graphics
                     lastMaterial = renderable.Material;
                 }
             }
+
+            DrawSkybox();
+        }
+
+        private void SetupSkybox()
+        {
+            var vertices = ShapeBuilder.BuildCubeVertices();
+            var indices = ShapeBuilder.BuildCubeIndicies();
+            var factory = engine.GraphicsDevice.ResourceFactory;
+            skyboxVertices = factory.CreateBuffer(new BufferDescription(VertexPositionNormalTexCoord.SizeInBytes * (uint)vertices.Length, BufferUsage.VertexBuffer));
+            skyboxIndices = factory.CreateBuffer(new BufferDescription(sizeof(uint) * (uint)indices.Length, BufferUsage.IndexBuffer));
+            engine.GraphicsDevice.UpdateBuffer(skyboxVertices, 0, vertices);
+            engine.GraphicsDevice.UpdateBuffer(skyboxIndices, 0, indices);
+
+            var shaderConfig = new ShaderConfig(new Dictionary<string, ShaderConfigParameter>()
+            {
+                { "View", new ShaderConfigParameter(0, 0, 0, ShaderConfigParameterType.Matrix4x4, ShaderConfigParameterStage.Vertex) },
+                { "Projection", new ShaderConfigParameter(0, 0, 64, ShaderConfigParameterType.Matrix4x4, ShaderConfigParameterStage.Vertex) },
+                { "SkyColor", new ShaderConfigParameter(1, 0, 0, ShaderConfigParameterType.Float4, ShaderConfigParameterStage.Fragment) },
+                { "SunColor", new ShaderConfigParameter(1, 0, 16, ShaderConfigParameterType.Float4, ShaderConfigParameterStage.Fragment) },
+                { "SunDirection", new ShaderConfigParameter(1, 0, 32, ShaderConfigParameterType.Float3, ShaderConfigParameterStage.Fragment) }
+            });
+            var shader = ShaderCompiler.CompileShader(engine, ShaderCode.SkyboxVertexCode, ShaderCode.SkyboxFragmentCode, shaderConfig);
+            SkyboxMaterial = new Material(engine, shader);
+        }
+
+        private void DrawSkybox()
+        {
+            var camera = scene.ActiveCamera;
+
+            var skyboxView = camera.View;
+            skyboxView.M14 = 0;
+            skyboxView.M24 = 0;
+            skyboxView.M34 = 0;
+            skyboxView.M41 = 0;
+            skyboxView.M42 = 0;
+            skyboxView.M43 = 0;
+            skyboxView.M44 = 1;
+
+            SkyboxMaterial.SetMatrix("View", skyboxView);
+            SkyboxMaterial.SetMatrix("Projection", camera.Projection);
+            SkyboxMaterial.SetVector("SkyColor", RgbaFloat.CornflowerBlue.ToVector4());
+            SkyboxMaterial.SetVector("SunColor", RgbaFloat.Yellow.ToVector4());
+            SkyboxMaterial.SetVector("SunDirection", LightDirection);
+            SkyboxMaterial.Bind(commandList, PrimitiveType.TriangleList, VertexPositionNormalTexCoord.VertexLayoutDescription, FaceCullMode.None);
+
+            commandList.SetVertexBuffer(0, skyboxVertices);
+            commandList.SetIndexBuffer(skyboxIndices, IndexFormat.UInt32);
+
+            commandList.DrawIndexed(
+                indexCount: skyboxIndices.SizeInBytes / sizeof(uint),
+                instanceCount: 1,
+                indexStart: 0,
+                vertexOffset: 0,
+                instanceStart: 0);
         }
     }
 }

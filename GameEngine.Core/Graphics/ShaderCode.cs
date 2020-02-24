@@ -33,5 +33,49 @@ void main()
 {
     fsout_Color = fsin_Color;
 }";
+
+        public const string SkyboxVertexCode = @"
+#version 450
+layout(set = 0, binding = 0) uniform ViewProjBuffer
+{
+    mat4 View;
+    mat4 Projection;
+};
+layout(location = 0) in vec3 Position;
+layout(location = 1) in vec3 Normal;
+layout(location = 2) in vec2 TexCoord;
+
+layout(location = 0) out vec3 fsin_TexCoord;
+
+void main()
+{
+    vec4 pos = Projection * View * vec4(Position, 1.0);
+    gl_Position = pos.xyww;
+
+    fsin_TexCoord = Position;
+}";
+
+        public const string SkyboxFragmentCode = @"
+#version 450
+layout(set = 1, binding = 0) uniform SkyboxParameters
+{
+    vec4 SkyColor;
+    vec4 SunColor;
+    vec3 SunDirection;
+    float _padding1;
+};
+layout(location = 0) in vec3 fsin_TexCoord;
+
+layout(location = 0) out vec4 fsout_Color;
+
+void main()
+{
+    vec3 normal = normalize(fsin_TexCoord);
+    float NdotSun = clamp(dot(normal, -SunDirection), 0, 1);
+    float sunPower = pow(NdotSun, 50);
+
+    fsout_Color = SkyColor + (SunColor * sunPower);
+}
+";
     }
 }

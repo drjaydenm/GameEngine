@@ -103,10 +103,10 @@ namespace GameEngine.Core.Graphics
             SetVectorImpl(name, value);
         }
 
-        internal void Bind(CommandList commandList, IRenderable renderable)
+        internal void Bind(CommandList commandList, PrimitiveType primitiveType, VertexLayoutDescription layoutDescription, FaceCullMode cullMode)
         {
             if (mustSetup)
-                Setup(renderable);
+                Setup(primitiveType, layoutDescription, cullMode);
 
             while (dirtyParameters.Count > 0)
             {
@@ -139,7 +139,7 @@ namespace GameEngine.Core.Graphics
             }
         }
 
-        private void Setup(IRenderable renderable)
+        private void Setup(PrimitiveType primitiveType, VertexLayoutDescription layoutDescription, FaceCullMode cullMode)
         {
             var factory = engine.GraphicsDevice.ResourceFactory;
 
@@ -150,15 +150,15 @@ namespace GameEngine.Core.Graphics
                 depthWriteEnabled: true,
                 comparisonKind: ComparisonKind.LessEqual);
             pipelineDescription.RasterizerState = new RasterizerStateDescription(
-                cullMode: FaceCullMode.Back,
+                cullMode: cullMode,
                 fillMode: PolygonFillMode.Solid,
                 frontFace: FrontFace.Clockwise,
                 depthClipEnabled: true,
                 scissorTestEnabled: false);
-            pipelineDescription.PrimitiveTopology = PrimitiveTypeToTopology(renderable.PrimitiveType);
+            pipelineDescription.PrimitiveTopology = PrimitiveTypeToTopology(primitiveType);
             pipelineDescription.ResourceLayouts = resourceLayouts.Values.ToArray();
             pipelineDescription.ShaderSet = new ShaderSetDescription(
-                vertexLayouts: new VertexLayoutDescription[] { renderable.LayoutDescription },
+                vertexLayouts: new VertexLayoutDescription[] { layoutDescription },
                 shaders: shader.Shaders);
             pipelineDescription.Outputs = engine.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
 
