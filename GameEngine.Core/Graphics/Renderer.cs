@@ -103,16 +103,24 @@ namespace GameEngine.Core.Graphics
                 { "Projection", new ShaderConfigParameter(0, 0, 64, ShaderConfigParameterType.Matrix4x4, ShaderConfigParameterStage.Vertex) },
                 { "SkyColor", new ShaderConfigParameter(1, 0, 0, ShaderConfigParameterType.Float4, ShaderConfigParameterStage.Fragment) },
                 { "SunColor", new ShaderConfigParameter(1, 0, 16, ShaderConfigParameterType.Float4, ShaderConfigParameterStage.Fragment) },
-                { "SunDirection", new ShaderConfigParameter(1, 0, 32, ShaderConfigParameterType.Float3, ShaderConfigParameterStage.Fragment) }
+                { "HorizonColor", new ShaderConfigParameter(1, 0, 32, ShaderConfigParameterType.Float4, ShaderConfigParameterStage.Fragment) },
+                { "BottomColor", new ShaderConfigParameter(1, 0, 48, ShaderConfigParameterType.Float4, ShaderConfigParameterStage.Fragment) },
+                { "SunDirection", new ShaderConfigParameter(1, 0, 64, ShaderConfigParameterType.Float3, ShaderConfigParameterStage.Fragment) }
             });
             var shader = ShaderCompiler.CompileShader(engine, ShaderCode.SkyboxVertexCode, ShaderCode.SkyboxFragmentCode, shaderConfig);
             SkyboxMaterial = new Material(engine, shader);
+
+            SkyboxMaterial.SetVector("SkyColor", new Vector4(0.26f, 0.45f, 0.66f, 1));
+            SkyboxMaterial.SetVector("SunColor", new Vector4(1, 1, 0.9f, 1));
+            SkyboxMaterial.SetVector("HorizonColor", new Vector4(0.51f, 0.74f, 0.92f, 1));
+            SkyboxMaterial.SetVector("BottomColor", new Vector4(0.4f, 0.4f, 0.4f, 1));
         }
 
         private void DrawSkybox()
         {
             var camera = scene.ActiveCamera;
 
+            // Clear out translation from the view matrix to center the skybox around the camera
             var skyboxView = camera.View;
             skyboxView.M14 = 0;
             skyboxView.M24 = 0;
@@ -124,8 +132,6 @@ namespace GameEngine.Core.Graphics
 
             SkyboxMaterial.SetMatrix("View", skyboxView);
             SkyboxMaterial.SetMatrix("Projection", camera.Projection);
-            SkyboxMaterial.SetVector("SkyColor", RgbaFloat.CornflowerBlue.ToVector4());
-            SkyboxMaterial.SetVector("SunColor", RgbaFloat.Yellow.ToVector4());
             SkyboxMaterial.SetVector("SunDirection", LightDirection);
             SkyboxMaterial.Bind(commandList, PrimitiveType.TriangleList, VertexPositionNormalTexCoord.VertexLayoutDescription, FaceCullMode.None);
 

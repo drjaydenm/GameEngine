@@ -61,6 +61,8 @@ layout(set = 1, binding = 0) uniform SkyboxParameters
 {
     vec4 SkyColor;
     vec4 SunColor;
+    vec4 HorizonColor;
+    vec4 BottomColor;
     vec3 SunDirection;
     float _padding1;
 };
@@ -74,7 +76,12 @@ void main()
     float NdotSun = clamp(dot(normal, -normalize(SunDirection)), 0, 1);
     float sunPower = pow(NdotSun, 100);
 
-    fsout_Color = SkyColor + (SunColor * sunPower);
+    float NdotUp = clamp(dot(normal, vec3(0, 1, 0)), 0, 1);
+    float NdotDown = clamp(dot(normal, vec3(0, -1, 0)), 0, 1);
+    vec4 baseSkyColor = mix(SkyColor, HorizonColor, pow(1 - NdotUp, 2));
+    baseSkyColor = mix(BottomColor, baseSkyColor, pow(1 - NdotDown, 10));
+
+    fsout_Color = baseSkyColor + (SunColor * sunPower);
 }
 ";
     }
