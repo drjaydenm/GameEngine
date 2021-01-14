@@ -62,11 +62,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
                 if (component.Interactivity == PhysicsInteractivity.Static)
                 {
-                    StaticHandleToBody.Remove(body.StaticReference.Handle);
+                    StaticHandleToBody.Remove(body.StaticReference.Handle.Value);
                 }
                 else
                 {
-                    BodyHandleToBody.Remove(body.BodyReference.Handle);
+                    BodyHandleToBody.Remove(body.BodyReference.Handle.Value);
                 }
 
                 simulation.Shapes.RecursivelyRemoveAndDispose(body.ShapeIndex, bufferPool);
@@ -264,9 +264,9 @@ namespace GameEngine.Core.Physics.BepuPhysics
             {
                 BepuPhysicsBody body;
                 if (hitHandler.Collidable.Mobility == CollidableMobility.Static)
-                    body = StaticHandleToBody[hitHandler.Collidable.Handle];
+                    body = StaticHandleToBody[hitHandler.Collidable.RawHandleValue];
                 else
-                    body = BodyHandleToBody[hitHandler.Collidable.Handle];
+                    body = BodyHandleToBody[hitHandler.Collidable.RawHandleValue];
 
                 component = registeredComponents.Where(c => c.Value == body).FirstOrDefault().Key;
             }
@@ -284,8 +284,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
         private void AddPhysicsBody(PhysicsComponent component, ref BodyInertia inertia, ref TypedIndex shapeIndex)
         {
             BepuPhysicsBody body;
-            int bodyHandle = -1;
-            int staticHandle = -1;
+            BodyHandle? bodyHandle = null;
+            StaticHandle? staticHandle = null;
 
             if (component.FreezeRotation)
             {
@@ -313,21 +313,21 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 staticHandle = simulation.Statics.Add(staticDescription);
             }
 
-            body = new BepuPhysicsBody(simulation, bodyHandle != -1);
+            body = new BepuPhysicsBody(simulation, bodyHandle.HasValue);
             body.ShapeIndex = shapeIndex;
 
-            if (bodyHandle != -1)
-                body.BodyReference = new BodyReference(bodyHandle, simulation.Bodies);
-            else if (staticHandle != -1)
-                body.StaticReference = new StaticReference(staticHandle, simulation.Statics);
+            if (bodyHandle.HasValue)
+                body.BodyReference = new BodyReference(bodyHandle.Value, simulation.Bodies);
+            else if (staticHandle.HasValue)
+                body.StaticReference = new StaticReference(staticHandle.Value, simulation.Statics);
 
             component.Body = body;
             registeredComponents.Add(component, body);
 
             if (component.Interactivity == PhysicsInteractivity.Static)
-                StaticHandleToBody.Add(staticHandle, body);
+                StaticHandleToBody.Add(staticHandle.Value.Value, body);
             else
-                BodyHandleToBody.Add(bodyHandle, body);
+                BodyHandleToBody.Add(bodyHandle.Value.Value, body);
         }
 
         private CollidableReference BodyToCollidableReference(BepuPhysicsBody body)
@@ -335,14 +335,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
             if (body.IsBody)
                 return new CollidableReference(body.BodyReference.Kinematic ? CollidableMobility.Kinematic : CollidableMobility.Dynamic, body.BodyReference.Handle);
             else
-                return new CollidableReference(CollidableMobility.Static, body.StaticReference.Handle);
+                return new CollidableReference(body.StaticReference.Handle);
         }
 
         internal Tuple<CollidableMobility, int> BodyToCollidableKey(BepuPhysicsBody body)
         {
             return new Tuple<CollidableMobility, int>(
                 body.IsBody ? body.BodyReference.Kinematic ? CollidableMobility.Kinematic : CollidableMobility.Dynamic : CollidableMobility.Static,
-                body.IsBody ? body.BodyReference.Handle : body.StaticReference.Handle);
+                body.IsBody ? body.BodyReference.Handle.Value : body.StaticReference.Handle.Value);
         }
 
         private void BuildCompoundShape(PhysicsCompoundComponent compoundComponent, out BodyInertia inertia, out TypedIndex shapeIndex)

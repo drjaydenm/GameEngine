@@ -63,8 +63,8 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 return;
             }
 
-            var bodyA = GetBodyFromHandle(pair.A.Mobility, pair.A.Handle);
-            var bodyB = GetBodyFromHandle(pair.B.Mobility, pair.B.Handle);
+            var bodyA = GetBodyFromHandle(pair.A.Mobility, pair.A.RawHandleValue);
+            var bodyB = GetBodyFromHandle(pair.B.Mobility, pair.B.RawHandleValue);
 
             pairMaterial.FrictionCoefficient = bodyA.Friction * bodyB.Friction;
             pairMaterial.MaximumRecoveryVelocity = 2f;

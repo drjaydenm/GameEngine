@@ -28,18 +28,14 @@ namespace GameEngine.Core.Physics.BepuPhysics
         {
             get
             {
-                BepuUtilities.Quaternion o;
-
                 if (IsBody)
-                    o = BodyReference.Pose.Orientation;
+                    return BodyReference.Pose.Orientation;
                 else
-                    o = StaticReference.Pose.Orientation;
-
-                return new Quaternion(o.X, o.Y, o.Z, o.W);
+                    return StaticReference.Pose.Orientation;
             }
             set
             {
-                var o = new BepuUtilities.Quaternion(value.X, value.Y, value.Z, value.W);
+                var o = new Quaternion(value.X, value.Y, value.Z, value.W);
 
                 if (IsBody)
                     BodyReference.Pose.Orientation = o;
