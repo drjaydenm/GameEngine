@@ -32,7 +32,12 @@ namespace GameEngine.Core.Content.Processors
                 for (var level = 0; level < mipLevels; level++)
                 {
                     var image = images[layer];
-                    fixed (void* pin = &MemoryMarshal.GetReference(image.GetPixelSpan()))
+                    if (!image.TryGetSinglePixelSpan(out var pixelsSpan))
+                    {
+                        throw new Exception("Could not get pixel span for texture");
+                    }
+
+                    fixed (void* pin = &MemoryMarshal.GetReference(pixelsSpan))
                     {
                         Engine.GraphicsDevice.UpdateTexture(
                             tex,
