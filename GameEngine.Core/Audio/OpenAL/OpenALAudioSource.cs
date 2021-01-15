@@ -15,9 +15,19 @@ namespace GameEngine.Core.Audio.OpenAL
                 OpenAL.SourceQueueBuffer(sourceId, openALBuffer.BufferId);
             }
         }
+        public float Gain
+        {
+            get => gain;
+            set
+            {
+                gain = value;
+                OpenAL.Source(sourceId, OpenAL.ALSourcef.Gain, value);
+            }
+        }
 
         private int sourceId;
         private AudioClip audioClip;
+        private float gain;
 
         public OpenALAudioSource()
         {

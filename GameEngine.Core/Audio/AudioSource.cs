@@ -16,12 +16,24 @@ namespace GameEngine.Core.Audio
                     nativeSource.AudioClip = value;
             }
         }
-        private AudioClip audioClip;
+
+        public float Gain
+        {
+            get => gain;
+            set
+            {
+                gain = value;
+                if (nativeSource != null)
+                    nativeSource.Gain = value;
+            }
+        }
 
         private readonly Engine engine;
         private INativeAudioSource nativeSource;
         private Entity entity;
         private Vector3 position;
+        private AudioClip audioClip;
+        private float gain = 1f;
 
         public AudioSource(Engine engine)
         {
@@ -46,6 +58,7 @@ namespace GameEngine.Core.Audio
                 nativeSource = engine.AudioSystem.CreateNativeAudioSource();
 
             nativeSource.AudioClip = audioClip;
+            nativeSource.Gain = gain;
         }
 
         public void DetachedFromEntity()

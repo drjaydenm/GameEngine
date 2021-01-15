@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -77,6 +77,7 @@ namespace GameEngine.Game
 
             var bgSource = new AudioSource(Engine);
             bgSource.AudioClip = Engine.ContentManager.Load<AudioClip>("Audio", "Wind");
+            bgSource.Gain = 0.3f;
             playerEntity.AddComponent(bgSource);
             bgSource.Play();
 
