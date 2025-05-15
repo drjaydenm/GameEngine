@@ -35,7 +35,6 @@ using FN_DECIMAL = System.Double;
 using FN_DECIMAL = System.Single;
 #endif
 
-using System;
 using System.Runtime.CompilerServices;
 
 namespace GameEngine.Core

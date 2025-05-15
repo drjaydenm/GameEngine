@@ -4,9 +4,9 @@ namespace GameEngine.Core.Audio
 {
     public class AudioClip : IContent
     {
-        internal IAudioBuffer Buffer { get; }
+        internal INativeAudioBuffer Buffer { get; }
 
-        public AudioClip(IAudioBuffer buffer)
+        public AudioClip(INativeAudioBuffer buffer)
         {
             Buffer = buffer;
         }

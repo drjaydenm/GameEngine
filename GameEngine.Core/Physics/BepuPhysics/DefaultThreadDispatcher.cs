@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using BepuUtilities;
+﻿using BepuUtilities;
 using BepuUtilities.Memory;
 
 namespace GameEngine.Core.Physics.BepuPhysics

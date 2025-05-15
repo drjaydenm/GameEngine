@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using GameEngine.Core.Camera;
+﻿using GameEngine.Core.Camera;
 using GameEngine.Core.Entities;
 using GameEngine.Core.Graphics;
 using GameEngine.Core.Physics;

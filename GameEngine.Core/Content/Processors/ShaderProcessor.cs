@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using GameEngine.Core.Content.Raw;
+﻿using GameEngine.Core.Content.Raw;
 using GameEngine.Core.Graphics;
 
 namespace GameEngine.Core.Content.Processors

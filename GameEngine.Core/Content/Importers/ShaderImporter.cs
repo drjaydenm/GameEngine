@@ -1,12 +1,17 @@
-﻿using System.IO;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using GameEngine.Core.Content.Raw;
-using Newtonsoft.Json;
 
 namespace GameEngine.Core.Content.Importers
 {
     public class ShaderImporter : IContentImporter<ShaderRaw>
     {
         public string[] FileExtensions => new[] { ".shader" };
+
+        private readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            Converters = { new JsonStringEnumConverter() }
+        };
 
         public ShaderRaw Import(IContentLoader loader, string filePath)
         {
@@ -19,8 +24,8 @@ namespace GameEngine.Core.Content.Importers
             using (var fsFrag = new StreamReader(loader.OpenStream(fragmentPath)))
             using (var fsConfig = new StreamReader(loader.OpenStream(configPath)))
             {
-                var config = JsonConvert.DeserializeObject<ShaderConfigRaw>(fsConfig.ReadToEnd());
-                
+                var config = JsonSerializer.Deserialize<ShaderConfigRaw>(fsConfig.ReadToEnd(), _jsonOptions);
+
                 shader = new ShaderRaw(fsVert.ReadToEnd(), fsFrag.ReadToEnd(), config);
             }
 

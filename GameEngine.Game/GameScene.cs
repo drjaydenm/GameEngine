@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
+﻿using System.Numerics;
 using Veldrid;
 using GameEngine.Core;
 using GameEngine.Core.Camera;
@@ -181,7 +178,7 @@ namespace GameEngine.Game
                 lookingAtBlock = world.FindBlockByWorldPosition(adjustedPosition);
                 if (lookingAtBlock != null && lookingAtBlock.Value.IsActive)
                 {
-                    
+
                     lookingAtBlockCoord = world.ConvertWorldPositionToBlockCoordinate(adjustedPosition);
                 }
                 else
@@ -232,7 +229,7 @@ namespace GameEngine.Game
                 (float)Math.Sin(Engine.GameTimeTotal.TotalSeconds * lightRotateSpeed),
                 Renderer.LightDirection.Y,
                 (float)Math.Cos(Engine.GameTimeTotal.TotalSeconds * lightRotateSpeed));
-            
+
             currentChunk = world.FindChunkByWorldPosition(ActiveCamera.Position);
             if (currentChunk?.Coordinate != previousChunk?.Coordinate && currentChunk != null && shouldGenerateChunks)
             {

@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Veldrid;
+﻿using Veldrid;
 using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
 using GameEngine.Core.Windowing;
 using GameEngine.Core.Threading;
 using GameEngine.Core.Content;
-using System.IO;
 using GameEngine.Core.Audio;
 
 namespace GameEngine.Core

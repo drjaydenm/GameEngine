@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Text.Json;
 using GameEngine.Core.Content.Importers;
 using GameEngine.Core.Content.Processors;
-using Newtonsoft.Json;
 
 namespace GameEngine.Core.Content
 {
@@ -39,7 +36,7 @@ namespace GameEngine.Core.Content
             AddImporter(new Texture2DImporter());
             AddImporter(new TextureArrayImporter());
 
-            AddProcessor(new AudioClipProcessor());
+            AddProcessor(new AudioClipProcessor(engine));
             AddProcessor(new MeshProcessor());
             AddProcessor(new ShaderProcessor(engine));
             AddProcessor(new Texture2DProcessor(engine));
@@ -67,7 +64,7 @@ namespace GameEngine.Core.Content
                 {
                     var manifestFile = sr.ReadToEnd();
 
-                    var manifest = JsonConvert.DeserializeObject<ContentManifest>(manifestFile);
+                    var manifest = JsonSerializer.Deserialize<ContentManifest>(manifestFile);
                     var manifestKey = Path.GetFileName(manifestFiles[i]);
 
                     manifests.Add(manifestKey, manifest);

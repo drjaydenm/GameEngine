@@ -1,59 +1,55 @@
 ﻿using System.Numerics;
+using Silk.NET.OpenAL;
 
 namespace GameEngine.Core.Audio.OpenAL
 {
-    public class OpenALAudioSource : INativeAudioSource
+    public class OpenALAudioSource(AL al) : INativeAudioSource
     {
         public AudioClip AudioClip
         {
-            get => audioClip;
+            get => _audioClip;
             set
             {
-                audioClip = value;
+                _audioClip = value;
 
                 var openALBuffer = (OpenALAudioBuffer)AudioClip.Buffer;
-                OpenAL.SourceQueueBuffer(sourceId, openALBuffer.BufferId);
+                al.SourceQueueBuffers(_sourceId, [openALBuffer.BufferId]);
             }
         }
         public float Gain
         {
-            get => gain;
+            get => _gain;
             set
             {
-                gain = value;
-                OpenAL.Source(sourceId, OpenAL.ALSourcef.Gain, value);
+                _gain = value;
+                al.SetSourceProperty(_sourceId, SourceFloat.Gain, value);
             }
         }
 
-        private int sourceId;
-        private AudioClip audioClip;
-        private float gain;
-
-        public OpenALAudioSource()
-        {
-            var sources = new int[1];
-            OpenAL.GenSources(sources);
-            sourceId = sources[0];
-        }
+        private readonly uint _sourceId = al.GenSource();
+        private AudioClip _audioClip;
+        private float _gain;
 
         public void Play()
         {
-            OpenAL.SourcePlay(sourceId);
+            al.SourcePlay(_sourceId);
         }
 
         public void Stop()
         {
-            OpenAL.SourceStop(sourceId);
-        }
-
-        public void Dispose()
-        {
-            OpenAL.DeleteSource(sourceId);
+            al.SourceStop(_sourceId);
         }
 
         public void UpdatePosition(Vector3 position)
         {
-            OpenAL.Source(sourceId, OpenAL.ALSource3f.Position, position.X, position.Y, position.Z);
+            al.SetSourceProperty(_sourceId, SourceVector3.Position, position.X, position.Y, position.Z);
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+
+            al.DeleteSource(_sourceId);
         }
     }
 }

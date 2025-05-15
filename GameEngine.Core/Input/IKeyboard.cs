@@ -1,6 +1,4 @@
-﻿using Veldrid;
-
-namespace GameEngine.Core.Input
+﻿namespace GameEngine.Core.Input
 {
     public interface IKeyboard
     {

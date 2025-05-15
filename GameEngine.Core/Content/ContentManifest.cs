@@ -1,30 +1,22 @@
-﻿using System.Collections.Generic;
+﻿namespace GameEngine.Core.Content;
 
-namespace GameEngine.Core.Content
+public class ContentManifest : IContentManifest
 {
-    public class ContentManifest : IContentManifest
+    public IReadOnlyCollection<ContentManifestEntry> Contents { get; set; }
+
+    public string this[string contentKey]
     {
-        public IReadOnlyCollection<ContentManifestEntry> Contents => contents;
-
-        public string this[string contentKey]
+        get
         {
-            get
+            foreach (var entry in Contents)
             {
-                for (var i = 0; i < contents.Count; i++)
+                if (entry.Key == contentKey)
                 {
-                    if (contents[i].Key == contentKey)
-                        return contents[i].Path;
+                    return entry.Path;
                 }
-
-                throw new KeyNotFoundException("Cannot find content key " + contentKey);
             }
-        }
 
-        private List<ContentManifestEntry> contents;
-
-        public ContentManifest()
-        {
-            contents = new List<ContentManifestEntry>();
+            throw new KeyNotFoundException("Cannot find content key " + contentKey);
         }
     }
 }

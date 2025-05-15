@@ -2,8 +2,8 @@
 {
     public struct ContentManifestEntry
     {
-        public string Key;
-        public string Path;
+        public string Key { get; set; }
+        public string Path { get; set; }
 
         public override string ToString()
         {

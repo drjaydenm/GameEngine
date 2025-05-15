@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using GameEngine.Core.Windowing;
 
 namespace GameEngine.Game

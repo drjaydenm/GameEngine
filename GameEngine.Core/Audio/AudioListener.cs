@@ -1,5 +1,4 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 using GameEngine.Core.Entities;
 
 namespace GameEngine.Core.Audio

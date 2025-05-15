@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace GameEngine.Core.Content
+﻿namespace GameEngine.Core.Content
 {
     public interface IContentLoader
     {

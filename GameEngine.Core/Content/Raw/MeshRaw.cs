@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace GameEngine.Core.Content.Raw
+﻿namespace GameEngine.Core.Content.Raw
 {
     public class MeshRaw : IContentRaw
     {

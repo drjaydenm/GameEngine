@@ -1,8 +1,6 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using BepuPhysics;
-using BepuUtilities;
 
 namespace GameEngine.Core.Physics.BepuPhysics
 {

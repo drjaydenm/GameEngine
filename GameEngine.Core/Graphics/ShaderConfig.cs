@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace GameEngine.Core.Graphics
+﻿namespace GameEngine.Core.Graphics
 {
     public class ShaderConfig
     {

@@ -1,37 +1,60 @@
-﻿using System;
+﻿using Silk.NET.OpenAL;
+using Silk.NET.OpenAL.Extensions.Enumeration;
 
 namespace GameEngine.Core.Audio.OpenAL
 {
-    public class OpenALAudioSystem : IAudioSystem
+    public unsafe class OpenALAudioSystem : IAudioSystem
     {
-        private IntPtr device;
+        private readonly ALContext _alc;
+        private readonly AL _al;
+        private readonly Device* _device;
+        private readonly Context* _context;
 
         public OpenALAudioSystem()
         {
-            device = OpenAL.OpenDevice("");
-            if (device == null)
+            _alc = ALContext.GetApi();
+            _al = AL.GetApi();
+
+            if (_alc.TryGetExtension<Enumeration>(null, out var enumeration))
             {
-                throw new Exception("Could not open OpenAL device");
+                var devices = enumeration.GetStringList(GetEnumerationContextStringList.DeviceSpecifiers);
             }
 
-            var context = OpenAL.CreateContext(device, null);
-            OpenAL.MakeContextCurrent(context);
-            OpenAL.GetError();
+            _device = _alc.OpenDevice("");
+            if (_device == null)
+            {
+                throw new InvalidOperationException("Could not open OpenAL device");
+            }
+
+            _context = _alc.CreateContext(_device, null);
+            _alc.MakeContextCurrent(_context);
+
+            _al.GetError();
+        }
+
+        public INativeAudioBuffer CreateNativeAudioBuffer()
+        {
+            return new OpenALAudioBuffer(_al);
         }
 
         public INativeAudioListener CreateNativeAudioListener()
         {
-            return new OpenALAudioListener();
+            return new OpenALAudioListener(_al);
         }
 
         public INativeAudioSource CreateNativeAudioSource()
         {
-            return new OpenALAudioSource();
+            return new OpenALAudioSource(_al);
         }
 
         public void Dispose()
         {
-            OpenAL.DestroyContext(device);
+            GC.SuppressFinalize(this);
+
+            _alc.DestroyContext(_context);
+            _alc.CloseDevice(_device);
+            _al.Dispose();
+            _alc.Dispose();
         }
     }
 }

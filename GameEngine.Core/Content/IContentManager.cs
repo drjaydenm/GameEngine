@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using GameEngine.Core.Content.Importers;
+﻿using GameEngine.Core.Content.Importers;
 using GameEngine.Core.Content.Processors;
 
 namespace GameEngine.Core.Content

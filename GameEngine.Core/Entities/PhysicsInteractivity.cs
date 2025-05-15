@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameEngine.Core.Entities
+﻿namespace GameEngine.Core.Entities
 {
     [Flags]
     public enum PhysicsInteractivity

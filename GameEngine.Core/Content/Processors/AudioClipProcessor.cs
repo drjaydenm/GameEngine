@@ -1,14 +1,21 @@
 ﻿using GameEngine.Core.Audio;
-using GameEngine.Core.Audio.OpenAL;
 using GameEngine.Core.Content.Raw;
 
 namespace GameEngine.Core.Content.Processors
 {
     public class AudioClipProcessor : IContentProcessor<AudioClipRaw, AudioClip>
     {
+        private readonly Engine _engine;
+
+        public AudioClipProcessor(Engine engine)
+        {
+            this._engine = engine;
+        }
+
         public AudioClip Process(AudioClipRaw contentRaw)
         {
-            var buffer = new OpenALAudioBuffer(contentRaw.File);
+            var buffer = _engine.AudioSystem.CreateNativeAudioBuffer();
+            buffer.LoadAudioData(contentRaw.File);
 
             return new AudioClip(buffer);
         }

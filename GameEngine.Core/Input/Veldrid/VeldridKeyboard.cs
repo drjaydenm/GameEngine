@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Veldrid;
+﻿using Veldrid;
 
 namespace GameEngine.Core.Input.Veldrid
 {

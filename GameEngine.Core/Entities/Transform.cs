@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace GameEngine.Core.Entities

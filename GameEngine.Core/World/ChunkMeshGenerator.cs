@@ -1,5 +1,4 @@
-﻿using System;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using GameEngine.Core.Graphics;

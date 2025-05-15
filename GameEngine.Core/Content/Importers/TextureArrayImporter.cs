@@ -1,8 +1,6 @@
-using System;
-using System.IO;
+using System.Text.Json;
 using GameEngine.Core.Content.Raw;
 using GameEngine.Core.Graphics;
-using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -23,7 +21,7 @@ namespace GameEngine.Core.Content.Importers
             TextureArrayRaw texArray;
             using (var sr = new StreamReader(loader.OpenStream(filePath)))
             {
-                var asset = JsonConvert.DeserializeObject<TextureArrayAsset>(sr.ReadToEnd());
+                var asset = JsonSerializer.Deserialize<TextureArrayAsset>(sr.ReadToEnd());
                 var textureType = (TextureType)Enum.Parse(typeof(TextureType), "Texture" + asset.Type + "Array");
 
                 texArray = new TextureArrayRaw(textureType, asset.Paths.Length);

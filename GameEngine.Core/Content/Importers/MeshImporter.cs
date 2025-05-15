@@ -1,4 +1,3 @@
-using System;
 using Assimp;
 using GameEngine.Core.Content.Raw;
 

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,4 +12,5 @@
     <Exec Condition="'$(OS)' == 'Windows_NT'" Command="rmdir $(TargetDir)Content &amp; mklink /J $(TargetDir)Content $(ProjectDir)Content" />
     <Exec Condition="'$(OS)' != 'Windows_NT'" Command="rm -f $(TargetDir)Content &amp;&amp; ln -s $(ProjectDir)Content $(TargetDir)Content" />
   </Target>
+
 </Project>

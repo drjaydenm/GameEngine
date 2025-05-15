@@ -1,20 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="SharpText.Veldrid" Version="0.1.12" />
-    <PackageReference Include="Veldrid" Version="4.8.0" />
-    <PackageReference Include="Veldrid.SPIRV" Version="1.0.13" />
-    <PackageReference Include="Veldrid.StartupUtilities" Version="4.8.0" />
-    <PackageReference Include="BEPUphysics" Version="2.2.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
-    <PackageReference Include="AssimpNet" Version="4.1.0" />
-    <PackageReference Include="NativeLibraryLoader" Version="1.0.12" />
+    <PackageReference Include="SharpText.Veldrid"/>
+    <PackageReference Include="Silk.NET.OpenAL" />
+    <PackageReference Include="Silk.NET.OpenAL.Extensions.Enumeration" />
+    <PackageReference Include="Veldrid"/>
+    <PackageReference Include="Veldrid.SPIRV"/>
+    <PackageReference Include="Veldrid.StartupUtilities"/>
+    <PackageReference Include="BEPUphysics"/>
+    <PackageReference Include="SixLabors.ImageSharp"/>
+    <PackageReference Include="AssimpNet"/>
   </ItemGroup>
+
 </Project>

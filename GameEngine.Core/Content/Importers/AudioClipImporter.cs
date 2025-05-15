@@ -1,5 +1,4 @@
-﻿using System;
-using GameEngine.Core.Audio;
+﻿using GameEngine.Core.Audio;
 using GameEngine.Core.Content.Raw;
 
 namespace GameEngine.Core.Content.Importers

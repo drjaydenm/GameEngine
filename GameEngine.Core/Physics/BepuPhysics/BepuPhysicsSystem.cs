@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Numerics;
+﻿using System.Numerics;
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using BepuUtilities.Memory;
@@ -8,7 +6,6 @@ using Veldrid;
 using GameEngine.Core.Entities;
 using BepuMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities;
-using System.Collections.Generic;
 using GameEngine.Core.World;
 using System.Collections.Concurrent;
 

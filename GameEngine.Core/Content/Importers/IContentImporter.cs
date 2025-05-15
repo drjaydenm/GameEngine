@@ -1,5 +1,4 @@
-﻿using System.IO;
-using GameEngine.Core.Content.Raw;
+﻿using GameEngine.Core.Content.Raw;
 
 namespace GameEngine.Core.Content.Importers
 {

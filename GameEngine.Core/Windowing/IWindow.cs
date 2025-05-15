@@ -1,5 +1,4 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 using Veldrid;
 using GameEngine.Core.Input;
 using GameEngine.Core.Content;

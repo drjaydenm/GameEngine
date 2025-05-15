@@ -1,37 +1,46 @@
-﻿namespace GameEngine.Core.Audio.OpenAL
+﻿using Silk.NET.OpenAL;
+
+namespace GameEngine.Core.Audio.OpenAL
 {
-    public class OpenALAudioBuffer : IAudioBuffer
+    public unsafe class OpenALAudioBuffer(AL al) : INativeAudioBuffer
     {
-        internal int BufferId { get; }
+        internal uint BufferId { get; private set; }
 
-        public OpenALAudioBuffer(WaveFile file)
+        public void LoadAudioData(WaveFile file)
         {
-            OpenAL.GenBuffers(1, out int bufferId);
-            BufferId = bufferId;
+            BufferId = al.GenBuffer();
 
-            OpenAL.BufferData(BufferId, BufferAudioFormatToALFormat(file.Format),
-                file.Data, file.Data.Length, file.Frequency);
+            fixed (byte* pData = file.Data)
+            {
+                al.BufferData(BufferId, BufferAudioFormatToALFormat(file.Format),
+                    pData, file.Data.Length, file.Frequency);
+            }
         }
 
         public void Dispose()
         {
-            OpenAL.DeleteBuffers(BufferId);
+            GC.SuppressFinalize(this);
+
+            if (BufferId != 0)
+            {
+                al.DeleteBuffer(BufferId);
+            }
         }
 
-        private OpenAL.ALFormat BufferAudioFormatToALFormat(AudioBufferFormat format)
+        private static BufferFormat BufferAudioFormatToALFormat(AudioBufferFormat format)
         {
             switch (format)
             {
                 case AudioBufferFormat.Mono8:
-                    return OpenAL.ALFormat.Mono8;
+                    return BufferFormat.Mono8;
                 case AudioBufferFormat.Mono16:
-                    return OpenAL.ALFormat.Mono16;
+                    return BufferFormat.Mono16;
                 case AudioBufferFormat.Stereo8:
-                    return OpenAL.ALFormat.Stereo8;
+                    return BufferFormat.Stereo8;
                 case AudioBufferFormat.Stereo16:
-                    return OpenAL.ALFormat.Stereo16;
+                    return BufferFormat.Stereo16;
                 default:
-                    throw new System.Exception("Unhandled audio format");
+                    throw new InvalidOperationException("Unhandled audio format");
             }
         }
     }

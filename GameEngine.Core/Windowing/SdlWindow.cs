@@ -1,5 +1,4 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;

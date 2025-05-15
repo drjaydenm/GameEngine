@@ -1,4 +1,3 @@
-using GameEngine.Core;
 using GameEngine.Core.Graphics;
 
 namespace GameEngine.Game

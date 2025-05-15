@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-namespace GameEngine.Core.Threading
+﻿namespace GameEngine.Core.Threading
 {
     public interface IJobQueue
     {
