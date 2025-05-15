@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using NativeLibraryLoader;
 
@@ -12,7 +12,7 @@ namespace GameEngine.Core.Audio.OpenAL
             string name;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                name = "openal32.dll";
+                name = "OpenAL32.dll";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {

@@ -1,0 +1,23 @@
+<Project>
+
+  <!-- Shared project properties -->
+  <PropertyGroup>
+    <!-- .NET version properties -->
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Code formatting properties -->
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- XML docs output -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Package management -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
+    <!-- TODO once XML comments are added, remove this suppression -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+</Project>
