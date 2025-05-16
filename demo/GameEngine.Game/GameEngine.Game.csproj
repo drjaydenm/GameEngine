@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GameEngine.Core\GameEngine.Core.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="rmdir $(TargetDir)Content &amp; mklink /J $(TargetDir)Content $(ProjectDir)Content" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="rm -f $(TargetDir)Content &amp;&amp; ln -s $(ProjectDir)Content $(TargetDir)Content" />
+  </Target>
+
+</Project>
