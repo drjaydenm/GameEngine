@@ -30,26 +30,25 @@ namespace GameEngine.Core.Content.Processors
                 for (var level = 0; level < mipLevels; level++)
                 {
                     var image = images[layer];
-                    if (!image.TryGetSinglePixelSpan(out var pixelsSpan))
+                    if (!image.DangerousTryGetSinglePixelMemory(out var pixelsMemory))
                     {
-                        throw new Exception("Could not get pixel span for texture");
+                        throw new InvalidOperationException("Could not get pixel span for texture");
                     }
 
-                    fixed (void* pin = &MemoryMarshal.GetReference(pixelsSpan))
-                    {
-                        Engine.GraphicsDevice.UpdateTexture(
-                            tex,
-                            (IntPtr)pin,
-                            (uint)(pixelSizeInBytes * image.Width * image.Height),
-                            0,
-                            0,
-                            0,
-                            (uint)image.Width,
-                            (uint)image.Height,
-                            1,
-                            (uint)level,
-                            (uint)layer);
-                    }
+                    using var pixelsHandle = pixelsMemory.Pin();
+
+                    Engine.GraphicsDevice.UpdateTexture(
+                        tex,
+                        (IntPtr)pixelsHandle.Pointer,
+                        (uint)(pixelSizeInBytes * image.Width * image.Height),
+                        0,
+                        0,
+                        0,
+                        (uint)image.Width,
+                        (uint)image.Height,
+                        1,
+                        (uint)level,
+                        (uint)layer);
                 }
             }
 

@@ -23,6 +23,10 @@ namespace GameEngine.Core.Physics.BepuPhysics
             AngularDamping = angularDamping;
         }
 
+        public void Initialize(Simulation simulation)
+        {
+        }
+
         public void PrepareForIntegration(float dt)
         {
             //No reason to recalculate gravity * dt for every body; just cache it ahead of time.

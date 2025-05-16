@@ -41,7 +41,10 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
             bufferPool = new BufferPool();
             threadDispatcher = new DefaultThreadDispatcher(Environment.ProcessorCount);
-            simulation = Simulation.Create(bufferPool, new DefaultNarrowPhaseCallbacks(this), new DefaultPoseIntegratorCallbacks(gravity));
+            simulation = Simulation.Create(bufferPool,
+                new DefaultNarrowPhaseCallbacks(this),
+                new DefaultPoseIntegratorCallbacks(gravity),
+                new PositionLastTimestepper());
             registeredComponents = new Dictionary<PhysicsComponent, BepuPhysicsBody>();
             asyncShapeQueue = new ConcurrentQueue<AsyncShapeCreationResult>();
             pendingAsyncShapes = new HashSet<PhysicsComponent>();
@@ -76,7 +79,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
                     simulation.Bodies.Remove(body.BodyReference.Handle);
                 }
             }
-            
+
             if (pendingAsyncShapes.Contains(component))
             {
                 pendingAsyncShapes.Remove(component);
