@@ -6,9 +6,9 @@ namespace GameEngine.Core.Graphics
     public struct VertexPositionColor
     {
         public Vector3 Position;
-        public RgbaFloat Color;
+        public Color Color;
 
-        public VertexPositionColor(Vector3 position, RgbaFloat color)
+        public VertexPositionColor(Vector3 position, Color color)
         {
             Position = position;
             Color = color;

@@ -18,7 +18,7 @@ namespace GameEngine.Core.Graphics
         private readonly DeviceBuffer colorBuffer;
         private readonly ResourceSet transformSet;
 
-        private RgbaFloat lastColorUsed;
+        private Color lastColorUsed;
 
         public DebugGraphics(Engine engine)
         {
@@ -30,7 +30,7 @@ namespace GameEngine.Core.Graphics
             var shader = ShaderCompiler.CompileShader(engine, ShaderCode.DebugDrawVertexCode, ShaderCode.DebugDrawFragmentCode, null);
 
             transformBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Matrix4x4>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-            colorBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<RgbaFloat>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+            colorBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Color>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
             var transformLayout = factory.CreateResourceLayout(
                 new ResourceLayoutDescription(
                     new ResourceLayoutElementDescription("WVPBuffer", ResourceKind.UniformBuffer, ShaderStages.Vertex),
@@ -72,7 +72,7 @@ namespace GameEngine.Core.Graphics
             MissingTexture = new Texture(texture);
         }
 
-        public void DrawLine(Vector3 start, Vector3 end, RgbaFloat color, Matrix4x4 transform)
+        public void DrawLine(Vector3 start, Vector3 end, Color color, Matrix4x4 transform)
         {
             commandList.SetPipeline(pipeline);
             commandList.SetGraphicsResourceSet(0, transformSet);
@@ -90,7 +90,7 @@ namespace GameEngine.Core.Graphics
             commandList.Draw(vertexCount: 2);
         }
 
-        public void DrawArrow(Vector3 start, Vector3 end, RgbaFloat color, Matrix4x4 transform)
+        public void DrawArrow(Vector3 start, Vector3 end, Color color, Matrix4x4 transform)
         {
             var arrowDirection = Vector3.Normalize(end - start);
             var arrowDistance = Vector3.Distance(start, end);
@@ -125,7 +125,7 @@ namespace GameEngine.Core.Graphics
             commandList.Draw(vertexCount: 10);
         }
 
-        public void DrawCube(RgbaFloat color, Matrix4x4 transform)
+        public void DrawCube(Color color, Matrix4x4 transform)
         {
             commandList.SetPipeline(pipeline);
             commandList.SetGraphicsResourceSet(0, transformSet);
@@ -141,7 +141,7 @@ namespace GameEngine.Core.Graphics
             var leftVector = Vector3.UnitX * 0.5f;
             var topVector = Vector3.UnitY * 0.5f;
             var frontVector = Vector3.UnitZ * 0.5f;
-            var color = RgbaFloat.White;
+            var color = Color.White;
 
             var vertices = new VertexPositionColor[]
             {
@@ -177,7 +177,7 @@ namespace GameEngine.Core.Graphics
             engine.GraphicsDevice.UpdateBuffer(cubeVertexBuffer, 0, vertices);
         }
 
-        private void SetTransformColor(Matrix4x4 transform, RgbaFloat color)
+        private void SetTransformColor(Matrix4x4 transform, Color color)
         {
             commandList.UpdateBuffer(transformBuffer, 0, transform);
 

@@ -8,7 +8,6 @@ using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
 using GameEngine.Core.Windowing;
 using GameEngine.Core.World;
-using RgbaFloat = Veldrid.RgbaFloat;
 
 namespace GameEngine.Game
 {
@@ -271,7 +270,7 @@ namespace GameEngine.Game
 
             var font = "Content/Fonts/OpenSans-Regular.woff";
             var fontSize = 15;
-            var fontColor = RgbaFloat.White;
+            var fontColor = Color.White;
             var yAccumulated = 0;
             var lineSpacing = 5;
             Engine.TextRenderer.DrawText($"FPS: {Engine.PerformanceCounters.FramesPerSecond} / UPS: {Engine.PerformanceCounters.UpdatesPerSecond}", new Vector2(5, yAccumulated += lineSpacing), fontColor, font, fontSize);
@@ -285,10 +284,10 @@ namespace GameEngine.Game
             base.Draw();
 
             var camera = ActiveCamera;
-            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitX * 50, RgbaFloat.Red, camera.View * camera.Projection);
-            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitY * 50, RgbaFloat.Green, camera.View * camera.Projection);
-            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitZ * 50, RgbaFloat.Blue, camera.View * camera.Projection);
-            Engine.DebugGraphics.DrawArrow(-Renderer.LightDirection * 100 + camera.Position, -Renderer.LightDirection * 60 + camera.Position, RgbaFloat.Yellow, camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitX * 50, Color.Red, camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitY * 50, Color.Green, camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawLine(Vector3.Zero, Vector3.UnitZ * 50, Color.Blue, camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawArrow(-Renderer.LightDirection * 100 + camera.Position, -Renderer.LightDirection * 60 + camera.Position, Color.Yellow, camera.View * camera.Projection);
 
             if (shouldShowChunkDebug)
             {
@@ -297,7 +296,7 @@ namespace GameEngine.Game
                 {
                     // Make the cube slightly smaller so we can see all sides of it
                     var scale = cameraInChunk?.Coordinate == chunk.Chunk.Coordinate ? Chunk.CHUNK_X_SIZE * 0.99f : Chunk.CHUNK_X_SIZE;
-                    var color = cameraInChunk?.Coordinate == chunk.Chunk.Coordinate ? RgbaFloat.White : RgbaFloat.Pink;
+                    var color = cameraInChunk?.Coordinate == chunk.Chunk.Coordinate ? Color.White : Color.Pink;
 
                     var transform = Matrix4x4.CreateScale(scale) * Matrix4x4.CreateTranslation(chunk.Chunk.WorldPositionCentroid);
                     Engine.DebugGraphics.DrawCube(color, transform * camera.View * camera.Projection);
@@ -309,10 +308,10 @@ namespace GameEngine.Game
             {
                 var blockPosition = new Vector3(lookingAtBlockCoord.X, lookingAtBlockCoord.Y, lookingAtBlockCoord.Z) + lookingAtChunk.WorldPosition + new Vector3(0.5f);
                 var transform = Matrix4x4.CreateTranslation(blockPosition);
-                Engine.DebugGraphics.DrawCube(RgbaFloat.Orange, transform * camera.View * camera.Projection);
+                Engine.DebugGraphics.DrawCube(Color.Orange, transform * camera.View * camera.Projection);
             }
             var rayHitTransform = Matrix4x4.CreateScale(0.05f) * Matrix4x4.CreateTranslation(rayHitPosition);
-            Engine.DebugGraphics.DrawCube(RgbaFloat.Black, rayHitTransform * camera.View * camera.Projection);
+            Engine.DebugGraphics.DrawCube(Color.Black, rayHitTransform * camera.View * camera.Projection);
         }
 
         private void QueueNewChunksIfRequired(Chunk newChunk)

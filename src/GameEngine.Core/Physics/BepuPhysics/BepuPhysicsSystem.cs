@@ -2,7 +2,6 @@
 using BepuPhysics;
 using BepuPhysics.Collidables;
 using BepuUtilities.Memory;
-using Veldrid;
 using GameEngine.Core.Entities;
 using BepuMesh = BepuPhysics.Collidables.Mesh;
 using BepuUtilities;
@@ -217,18 +216,18 @@ namespace GameEngine.Core.Physics.BepuPhysics
                 if (kvp.Key is PhysicsBoxComponent boxComponent)
                 {
                     var transform = Matrix4x4.CreateScale(boxComponent.Size) * Matrix4x4.CreateFromQuaternion(orientation) * Matrix4x4.CreateTranslation(position);
-                    engine.DebugGraphics.DrawCube(RgbaFloat.Red, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
+                    engine.DebugGraphics.DrawCube(Color.Red, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
                 }
                 else if (kvp.Key is PhysicsCapsuleComponent capsuleComponent)
                 {
                     var transform = Matrix4x4.CreateScale(capsuleComponent.Radius, capsuleComponent.Length, capsuleComponent.Radius) * Matrix4x4.CreateFromQuaternion(orientation) * Matrix4x4.CreateTranslation(position);
-                    engine.DebugGraphics.DrawCube(RgbaFloat.Orange, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
+                    engine.DebugGraphics.DrawCube(Color.Orange, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
                 }
                 else if (kvp.Key is PhysicsMeshComponent meshComponent)
                 {
                     // TODO debug draw the actual mesh, for now just shows a 1x1x1 cube
                     var transform = Matrix4x4.CreateFromQuaternion(orientation) * Matrix4x4.CreateTranslation(position);
-                    engine.DebugGraphics.DrawCube(RgbaFloat.Blue, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
+                    engine.DebugGraphics.DrawCube(Color.Blue, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
                 }
                 else if (kvp.Key is PhysicsCompoundComponent compoundComponent)
                 {
@@ -236,11 +235,11 @@ namespace GameEngine.Core.Physics.BepuPhysics
                     /*foreach (var shape in compoundComponent.CompoundShapes)
                     {
                         var transform = Matrix4x4.CreateFromQuaternion(orientation) * Matrix4x4.CreateTranslation(position + shape.RelativeOffset);
-                        engine.DebugGraphics.DrawCube(RgbaFloat.Cyan, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
+                        engine.DebugGraphics.DrawCube(Color.Cyan, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
                     }*/
 
                     var transform = Matrix4x4.CreateFromQuaternion(orientation) * Matrix4x4.CreateTranslation(position);
-                    engine.DebugGraphics.DrawCube(RgbaFloat.Cyan, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
+                    engine.DebugGraphics.DrawCube(Color.Cyan, transform * scene.ActiveCamera.View * scene.ActiveCamera.Projection);
                 }
             }
         }

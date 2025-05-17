@@ -75,9 +75,6 @@ namespace GameEngine.Core
 
         public static bool operator ==(Coord2 val1, Coord2 val2)
         {
-            if ((object)val1 == null)
-                return (object)val2 == null;
-
             return val1.Equals(val2);
         }
 

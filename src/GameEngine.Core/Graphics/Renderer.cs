@@ -9,7 +9,7 @@ namespace GameEngine.Core.Graphics
         public Vector4 LightColor { get; set; } = new Vector4(0.5f, 0.5f, 0.5f, 1);
         public float LightIntensity { get; set; } = 2f;
         public Vector4 AmbientLight { get; set; } = new Vector4(0.4f, 0.4f, 0.4f, 1);
-        public Vector4 FogColor { get; set; } = RgbaFloat.CornflowerBlue.ToVector4();
+        public Vector4 FogColor { get; set; } = Color.CornflowerBlue.ToVector4();
         public float FogStartDistance = 200;
         public float FogEndDistance = 400;
         public Material SkyboxMaterial { get; set; }

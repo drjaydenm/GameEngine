@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 using SharpText.Core;
 using SharpText.Veldrid;
-using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {
@@ -25,10 +24,10 @@ namespace GameEngine.Core.Graphics
             engine.Window.Resized += (object sender, EventArgs e) => OnResize();
         }
 
-        public void DrawText(string text, Vector2 coords, RgbaFloat color, string fontPath, float sizeInPixels)
+        public void DrawText(string text, Vector2 coords, Color color, string fontPath, float sizeInPixels)
         {
             var renderer = GetTextRenderer(fontPath, sizeInPixels);
-            renderer.DrawText(text, coords, color.ToSharpTextColor());
+            renderer.DrawText(text, coords, new SharpText.Core.Color(color.R, color.G, color.B, color.A));
         }
 
         public void Draw()

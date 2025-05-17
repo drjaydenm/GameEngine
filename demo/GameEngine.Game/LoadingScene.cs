@@ -4,7 +4,6 @@ using GameEngine.Core.Camera;
 using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
 using GameEngine.Core.Physics.BepuPhysics;
-using Veldrid;
 
 namespace GameEngine.Game
 {
@@ -29,7 +28,7 @@ namespace GameEngine.Game
             }
 
             var font = "Content/Fonts/OpenSans-Regular.woff";
-            var fontColor = RgbaFloat.White;
+            var fontColor = Color.White;
             Engine.TextRenderer.DrawText($"FPS: {Engine.PerformanceCounters.FramesPerSecond} / UPS: {Engine.PerformanceCounters.UpdatesPerSecond}", new Vector2(5, 5), fontColor, font, 15);
 
             var loadingTextPos = (Engine.Window.Size / 2f) - new Vector2(150, 25);
