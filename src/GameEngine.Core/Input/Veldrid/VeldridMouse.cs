@@ -7,13 +7,13 @@ namespace GameEngine.Core.Input.Veldrid
     {
         public bool IsMouseLocked { get; set; }
 
-        public Point Position => new Point((int)currentSnapshot.MousePosition.X, (int)currentSnapshot.MousePosition.Y);
-        public Point PositionDelta
+        public Coord2 Position => new ((int)currentSnapshot.MousePosition.X, (int)currentSnapshot.MousePosition.Y);
+        public Coord2 PositionDelta
         {
             get
             {
                 var delta = currentMousePosition - previousMousePosition;
-                return new Point((int)delta.X, (int)delta.Y);
+                return new Coord2((int)delta.X, (int)delta.Y);
             }
         }
         public float ScrollDelta => currentSnapshot.WheelDelta;

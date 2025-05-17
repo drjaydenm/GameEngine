@@ -1,11 +1,9 @@
-﻿using Veldrid;
-
-namespace GameEngine.Core.Input.Null
+﻿namespace GameEngine.Core.Input.Null
 {
     public class NullMouse : IMouse
     {
-        public Point Position => new Point(0, 0);
-        public Point PositionDelta => new Point(0, 0);
+        public Coord2 Position => Coord2.Zero;
+        public Coord2 PositionDelta => Coord2.Zero;
         public float ScrollDelta => 0;
         public bool IsMouseLocked
         {

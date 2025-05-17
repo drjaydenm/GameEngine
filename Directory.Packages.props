@@ -2,12 +2,12 @@
   <ItemGroup>
     <PackageVersion Include="AssimpNet" Version="4.1.0" />
     <PackageVersion Include="BEPUphysics" Version="2.3.0" />
-    <PackageVersion Include="SharpText.Veldrid" Version="0.1.12" />
+    <PackageVersion Include="SharpText.Veldrid" Version="0.3.1" />
     <PackageVersion Include="Silk.NET.OpenAL" Version="2.22.0" />
     <PackageVersion Include="Silk.NET.OpenAL.Extensions.Enumeration" Version="2.22.0" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.8" />
-    <PackageVersion Include="Veldrid" Version="4.8.0" />
-    <PackageVersion Include="Veldrid.SPIRV" Version="1.0.13" />
-    <PackageVersion Include="Veldrid.StartupUtilities" Version="4.8.0" />
+    <PackageVersion Include="Veldrid" Version="4.9.0" />
+    <PackageVersion Include="Veldrid.SPIRV" Version="1.0.15" />
+    <PackageVersion Include="Veldrid.StartupUtilities" Version="4.9.0" />
   </ItemGroup>
 </Project>

@@ -4,7 +4,7 @@ using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {
-    public class BasicRenderable<T>: IRenderable, IDisposable where T : struct
+    public class BasicRenderable<T>: IRenderable, IDisposable where T : unmanaged
     {
         public Material Material { get; private set; }
         public VertexLayoutDescription LayoutDescription { get; private set; }

@@ -1,14 +1,14 @@
-﻿using System.Numerics;
-using Veldrid;
+﻿using System.Collections.Concurrent;
+using System.Numerics;
 using GameEngine.Core;
+using GameEngine.Core.Audio;
 using GameEngine.Core.Camera;
 using GameEngine.Core.Entities;
 using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
+using GameEngine.Core.Windowing;
 using GameEngine.Core.World;
-using System.Collections.Concurrent;
-using Texture = GameEngine.Core.Graphics.Texture;
-using GameEngine.Core.Audio;
+using RgbaFloat = Veldrid.RgbaFloat;
 
 namespace GameEngine.Game
 {

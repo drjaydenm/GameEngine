@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using GameEngine.Core.Content.Raw;
+﻿using GameEngine.Core.Content.Raw;
 using GameEngine.Core.Graphics;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

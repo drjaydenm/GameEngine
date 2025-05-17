@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using GameEngine.Core.Windowing;
+using GameEngine.Core.Windowing.Sdl;
 
 namespace GameEngine.Game
 {

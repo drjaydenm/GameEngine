@@ -1,6 +1,4 @@
-﻿using Veldrid;
-
-namespace GameEngine.Core.Input
+﻿namespace GameEngine.Core.Input
 {
     public interface IMouse
     {
@@ -14,8 +12,8 @@ namespace GameEngine.Core.Input
         bool WasButtonPressed(MouseButtons button);
         bool WasButtonReleased(MouseButtons button);
 
-        Point Position { get; }
-        Point PositionDelta { get; }
+        Coord2 Position { get; }
+        Coord2 PositionDelta { get; }
         float ScrollDelta { get; }
         bool IsMouseLocked { get; set; }
     }

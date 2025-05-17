@@ -1,15 +1,15 @@
 ﻿using System.Numerics;
+using System.Runtime.InteropServices;
+using GameEngine.Core.Audio;
+using GameEngine.Core.Audio.OpenAL;
+using GameEngine.Core.Content;
+using GameEngine.Core.Input;
+using GameEngine.Core.Input.Veldrid;
 using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
-using GameEngine.Core.Input;
-using System.Runtime.InteropServices;
-using GameEngine.Core.Input.Veldrid;
-using GameEngine.Core.Content;
-using GameEngine.Core.Audio;
-using GameEngine.Core.Audio.OpenAL;
 
-namespace GameEngine.Core.Windowing
+namespace GameEngine.Core.Windowing.Sdl
 {
     public class SdlWindow : IWindow
     {
@@ -23,8 +23,8 @@ namespace GameEngine.Core.Windowing
         }
         public WindowState WindowState
         {
-            get => window.WindowState;
-            set => window.WindowState = value;
+            get => ConvertFromSdlWindowState(window.WindowState);
+            set => window.WindowState = ConvertToSdlWindowState(value);
         }
         public Vector2 Position => new Vector2(window.X, window.Y);
         public Vector2 Size
@@ -41,7 +41,7 @@ namespace GameEngine.Core.Windowing
             get
             {
                 SDL_DisplayMode displayMode;
-                Sdl2Extensions.SDL_GetDesktopDisplayMode(0, &displayMode);
+                Sdl2Native.SDL_GetDesktopDisplayMode(0, &displayMode);
 
                 return new Vector2(displayMode.w, displayMode.h);
             }
@@ -148,7 +148,7 @@ namespace GameEngine.Core.Windowing
             };
         }
 
-        private unsafe Sdl2Window CreateWindow()
+        private Sdl2Window CreateWindow()
         {
             var flags = SDL_WindowFlags.OpenGL | SDL_WindowFlags.Resizable | SDL_WindowFlags.Shown;
 
@@ -162,6 +162,34 @@ namespace GameEngine.Core.Windowing
                 threadedProcessing: false);
 
             return window;
+        }
+
+        private static WindowState ConvertFromSdlWindowState(Veldrid.WindowState state)
+        {
+            return state switch
+            {
+                Veldrid.WindowState.Normal => WindowState.Normal,
+                Veldrid.WindowState.FullScreen => WindowState.FullScreen,
+                Veldrid.WindowState.Maximized => WindowState.Maximized,
+                Veldrid.WindowState.Minimized => WindowState.Minimized,
+                Veldrid.WindowState.BorderlessFullScreen => WindowState.BorderlessFullScreen,
+                Veldrid.WindowState.Hidden => WindowState.Hidden,
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unsupported window state")
+            };
+        }
+
+        private static Veldrid.WindowState ConvertToSdlWindowState(WindowState state)
+        {
+            return state switch
+            {
+                WindowState.Normal => Veldrid.WindowState.Normal,
+                WindowState.FullScreen => Veldrid.WindowState.FullScreen,
+                WindowState.Maximized => Veldrid.WindowState.Maximized,
+                WindowState.Minimized => Veldrid.WindowState.Minimized,
+                WindowState.BorderlessFullScreen => Veldrid.WindowState.BorderlessFullScreen,
+                WindowState.Hidden => Veldrid.WindowState.Hidden,
+                _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unsupported window state")
+            };
         }
     }
 }
