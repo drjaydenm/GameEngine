@@ -22,7 +22,22 @@ namespace GameEngine.Core.Graphics
             if (reflection != null)
             {
                 VertexElements = reflection.VertexElements;
-                ResourceLayouts = reflection.ResourceLayouts;
+
+                var layouts = new ResourceLayoutDescription[reflection.ResourceLayouts.Length];
+                for (var i = 0; i < reflection.ResourceLayouts.Length; i++)
+                {
+                    var elements = new ResourceLayoutElementDescription[reflection.ResourceLayouts[i].Elements.Length];
+                    for (var j = 0; j < reflection.ResourceLayouts[i].Elements.Length; j++)
+                    {
+                        var element = reflection.ResourceLayouts[i].Elements[j];
+                        elements[j] = new ResourceLayoutElementDescription(
+                            element.Name, (ResourceType)element.Kind, (ShaderStage)element.Stages);
+                    }
+
+                    layouts[i] = new ResourceLayoutDescription(elements);
+                }
+
+                ResourceLayouts = layouts;
             }
             else
             {

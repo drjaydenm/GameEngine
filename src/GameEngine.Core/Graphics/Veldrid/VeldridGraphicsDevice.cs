@@ -9,12 +9,14 @@ internal class VeldridGraphicsDevice : IGraphicsDevice
     public GraphicsBackend BackendType => _graphicsDevice.BackendType;
     public IGraphicsResourceFactory ResourceFactory { get; }
     public Framebuffer SwapchainFramebuffer => _graphicsDevice.SwapchainFramebuffer;
-    public Sampler LinearSampler => _graphicsDevice.LinearSampler;
-    public Sampler PointSampler => _graphicsDevice.PointSampler;
+    public ISampler LinearSampler => _linearSampler;
+    public ISampler PointSampler => _pointSampler;
 
     internal GraphicsDevice UnderlyingGraphicsDevice => _graphicsDevice;
 
     private readonly GraphicsDevice _graphicsDevice;
+    private readonly ISampler _linearSampler;
+    private readonly ISampler _pointSampler;
 
     public VeldridGraphicsDevice(Sdl2Window window, GraphicsBackend backend)
     {
@@ -29,6 +31,15 @@ internal class VeldridGraphicsDevice : IGraphicsDevice
         _graphicsDevice = VeldridStartup.CreateGraphicsDevice(window, options, backend);
 
         ResourceFactory = new VeldridGraphicsResourceFactory(_graphicsDevice);
+
+        _linearSampler = new VeldridSampler(_graphicsDevice.LinearSampler);
+        _pointSampler = new VeldridSampler(_graphicsDevice.PointSampler);
+    }
+
+    public void Dispose()
+    {
+        _graphicsDevice.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     public void ResizeMainWindow(uint width, uint height)
@@ -51,20 +62,15 @@ internal class VeldridGraphicsDevice : IGraphicsDevice
         _graphicsDevice.UpdateBuffer(((VeldridBuffer)buffer).UnderlyingBuffer, bufferOffsetInBytes, source);
     }
 
-    public void UpdateTexture(global::Veldrid.Texture texture, IntPtr source, uint sizeInBytes,
+    public void UpdateTexture(ITexture texture, IntPtr source, uint sizeInBytes,
         uint x, uint y, uint z, uint width, uint height, uint depth, uint mipLevel, uint arrayLayer)
     {
-        _graphicsDevice.UpdateTexture(texture, source, sizeInBytes, x, y, z, width, height, depth, mipLevel, arrayLayer);
+        _graphicsDevice.UpdateTexture(((VeldridTexture)texture).UnderlyingTexture,
+            source, sizeInBytes, x, y, z, width, height, depth, mipLevel, arrayLayer);
     }
 
     public void WaitForIdle()
     {
         _graphicsDevice.WaitForIdle();
-    }
-
-    public void Dispose()
-    {
-        _graphicsDevice.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

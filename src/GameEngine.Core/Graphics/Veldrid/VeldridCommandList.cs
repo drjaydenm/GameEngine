@@ -53,9 +53,9 @@ internal class VeldridCommandList(CommandList commandList) : ICommandList
             global::Veldrid.IndexFormat.UInt32 : global::Veldrid.IndexFormat.UInt16);
     }
 
-    public void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet)
+    public void SetGraphicsResourceSet(uint slot, IResourceSet resourceSet)
     {
-        commandList.SetGraphicsResourceSet(slot, resourceSet);
+        commandList.SetGraphicsResourceSet(slot, ((VeldridResourceSet)resourceSet).UnderlyingResourceSet);
     }
 
     public void Draw(uint vertexCount, uint instanceCount, uint vertexStart, uint instanceStart)

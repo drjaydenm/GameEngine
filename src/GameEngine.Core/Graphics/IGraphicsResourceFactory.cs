@@ -7,8 +7,8 @@ public interface IGraphicsResourceFactory
     IBuffer CreateBuffer(BufferDescription bufferDescription);
     ICommandList CreateCommandList();
     Pipeline CreateGraphicsPipeline(GraphicsPipelineDescription description);
-    ResourceLayout CreateResourceLayout(ResourceLayoutDescription description);
-    ResourceSet CreateResourceSet(ResourceSetDescription description);
+    IResourceLayout CreateResourceLayout(ResourceLayoutDescription description);
+    IResourceSet CreateResourceSet(ResourceSetDescription description);
     global::Veldrid.Shader CreateShader(ShaderDescription description);
-    global::Veldrid.Texture CreateTexture(TextureDescription description);
+    ITexture CreateTexture(TextureDescription description);
 }

@@ -26,7 +26,7 @@ namespace GameEngine.Game
         {
             this.entity = entity;
 
-            var texture = engine.ContentManager.Load<Texture>("Textures", "Dirt");
+            var texture = engine.ContentManager.Load<ITexture>("Textures", "Dirt");
             var shader = engine.ContentManager.Load<Shader>("Shaders", "Voxel");
             material = new Material(engine, shader);
             material.SetTexture("Texture", texture);

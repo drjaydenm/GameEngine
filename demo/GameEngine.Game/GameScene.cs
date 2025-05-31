@@ -35,7 +35,7 @@ namespace GameEngine.Game
         private bool playerSpawned;
         private bool debugCamera = true;
         private Entity[] movingPlatforms;
-        private Texture texture;
+        private ITexture texture;
 
         private const int CHUNK_GENERATION_RADIUS = 10;
         private const int CHUNK_GENERATE_PER_FRAME = 20;
@@ -53,7 +53,7 @@ namespace GameEngine.Game
 
             Renderer.LightDirection = Vector3.Normalize(new Vector3(1, -1, 1));
 
-            texture = Engine.ContentManager.Load<Texture>("Textures", "Voxels");
+            texture = Engine.ContentManager.Load<ITexture>("Textures", "Voxels");
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
             var material = new Material(Engine, shader);
             material.SetTexture("Texture", texture);

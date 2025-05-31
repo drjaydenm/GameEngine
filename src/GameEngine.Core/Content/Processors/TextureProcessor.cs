@@ -5,7 +5,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace GameEngine.Core.Content.Processors
 {
-    public abstract class TextureProcessor<TRaw> : IContentProcessor<TRaw, Texture> where TRaw : IContentRaw
+    public abstract class TextureProcessor<TRaw> : IContentProcessor<TRaw, ITexture> where TRaw : IContentRaw
     {
         protected Engine Engine { get; }
 
@@ -14,7 +14,7 @@ namespace GameEngine.Core.Content.Processors
             Engine = engine;
         }
 
-        protected unsafe Texture CreateTexture(Image<Rgba32>[] images)
+        protected unsafe ITexture CreateTexture(Image<Rgba32>[] images)
         {
             var factory = Engine.GraphicsDevice.ResourceFactory;
             var format = Veldrid.PixelFormat.R8_G8_B8_A8_UNorm;
@@ -51,10 +51,10 @@ namespace GameEngine.Core.Content.Processors
                 }
             }
 
-            return new Texture(tex);
+            return tex;
         }
 
-        public abstract Texture Process(TRaw contentRaw);
+        public abstract ITexture Process(TRaw contentRaw);
         public abstract IContent Process(IContentRaw contentRaw);
     }
 
@@ -64,7 +64,7 @@ namespace GameEngine.Core.Content.Processors
         {
         }
 
-        public override Texture Process(Texture2DRaw contentRaw)
+        public override ITexture Process(Texture2DRaw contentRaw)
         {
             return CreateTexture(new[] { contentRaw.Image });
         }
@@ -81,7 +81,7 @@ namespace GameEngine.Core.Content.Processors
         {
         }
 
-        public override Texture Process(TextureArrayRaw contentRaw)
+        public override ITexture Process(TextureArrayRaw contentRaw)
         {
             return CreateTexture(contentRaw.Images);
         }

@@ -2,7 +2,7 @@
 
 namespace GameEngine.Core.Graphics.Veldrid;
 
-public class VeldridBuffer(DeviceBuffer buffer) : IBuffer
+internal class VeldridBuffer(DeviceBuffer buffer) : IBuffer
 {
     public uint SizeInBytes => buffer.SizeInBytes;
 
@@ -10,7 +10,7 @@ public class VeldridBuffer(DeviceBuffer buffer) : IBuffer
 
     public void Dispose()
     {
-        buffer?.Dispose();
+        buffer.Dispose();
         GC.SuppressFinalize(this);
     }
 }

@@ -7,7 +7,7 @@ namespace GameEngine.Core.Graphics
 {
     public class DebugGraphics
     {
-        public Texture MissingTexture { get; }
+        public ITexture MissingTexture { get; }
 
         private readonly Engine engine;
         private readonly ICommandList commandList;
@@ -17,7 +17,7 @@ namespace GameEngine.Core.Graphics
         private readonly IBuffer cubeVertexBuffer;
         private readonly IBuffer transformBuffer;
         private readonly IBuffer colorBuffer;
-        private readonly ResourceSet transformSet;
+        private readonly IResourceSet transformSet;
 
         private Color lastColorUsed;
 
@@ -30,18 +30,17 @@ namespace GameEngine.Core.Graphics
 
             var shader = ShaderCompiler.CompileShader(engine, ShaderCode.DebugDrawVertexCode, ShaderCode.DebugDrawFragmentCode, null);
 
-            transformBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Matrix4x4>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
-            colorBuffer = factory.CreateBuffer(new BufferDescription((uint)Unsafe.SizeOf<Color>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+            transformBuffer = factory.CreateBuffer(new BufferDescription(
+                (uint)Unsafe.SizeOf<Matrix4x4>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
+            colorBuffer = factory.CreateBuffer(new BufferDescription(
+                (uint)Unsafe.SizeOf<Color>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
             var transformLayout = factory.CreateResourceLayout(
                 new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("WVPBuffer", ResourceKind.UniformBuffer, ShaderStages.Vertex),
-                    new ResourceLayoutElementDescription("ColorBuffer", ResourceKind.UniformBuffer, ShaderStages.Vertex)));
+                    new ResourceLayoutElementDescription("WVPBuffer", ResourceType.UniformBuffer, ShaderStage.Vertex),
+                    new ResourceLayoutElementDescription("ColorBuffer", ResourceType.UniformBuffer, ShaderStage.Vertex)));
 
-            transformSet = factory.CreateResourceSet(new ResourceSetDescription(
-                transformLayout,
-                // HACK fix once all graphics resources are abstracted
-                ((VeldridBuffer)transformBuffer).UnderlyingBuffer,
-                ((VeldridBuffer)colorBuffer).UnderlyingBuffer));
+            transformSet = factory.CreateResourceSet(new ResourceSetDescription(transformLayout,
+                [transformBuffer, colorBuffer]));
 
             var pipelineDescription = new GraphicsPipelineDescription();
             pipelineDescription.BlendState = BlendStateDescription.SingleOverrideBlend;
@@ -56,9 +55,12 @@ namespace GameEngine.Core.Graphics
                 depthClipEnabled: true,
                 scissorTestEnabled: false);
             pipelineDescription.PrimitiveTopology = PrimitiveTopology.LineList;
-            pipelineDescription.ResourceLayouts = new ResourceLayout[] { transformLayout };
+
+            // HACK remove casting once pipelines are abstracted
+            pipelineDescription.ResourceLayouts = [((VeldridResourceLayout)transformLayout).UnderlyingResourceLayout];
+
             pipelineDescription.ShaderSet = new ShaderSetDescription(
-                vertexLayouts: new VertexLayoutDescription[] { VertexPositionColor.VertexLayoutDescription },
+                vertexLayouts: [VertexPositionColor.VertexLayoutDescription],
                 shaders: shader.Shaders);
             pipelineDescription.Outputs = engine.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
 
@@ -70,8 +72,7 @@ namespace GameEngine.Core.Graphics
 
             SetupCubeVertexBuffer();
 
-            var texture = factory.CreateTexture(new TextureDescription(2, 2, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled, global::Veldrid.TextureType.Texture2D));
-            MissingTexture = new Texture(texture);
+            MissingTexture = factory.CreateTexture(new TextureDescription(2, 2, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled, global::Veldrid.TextureType.Texture2D));
         }
 
         public void DrawLine(Vector3 start, Vector3 end, Color color, Matrix4x4 transform)

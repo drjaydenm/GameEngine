@@ -19,7 +19,7 @@ public interface ICommandList : IDisposable
     // Resource binding
     void SetVertexBuffer(uint slot, IBuffer vertexBuffer);
     void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format);
-    void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet);
+    void SetGraphicsResourceSet(uint slot, IResourceSet resourceSet);
 
     // Drawing commands
     void Draw(uint vertexCount, uint instanceCount, uint vertexStart, uint instanceStart);
