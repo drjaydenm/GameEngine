@@ -7,9 +7,9 @@ namespace GameEngine.Core.Graphics
         public int Width => (int)NativeTexture.Width;
         public int Height => (int)NativeTexture.Width;
 
-        internal Veldrid.Texture NativeTexture { get; }
+        internal global::Veldrid.Texture NativeTexture { get; }
 
-        internal Texture(Veldrid.Texture texture)
+        internal Texture(global::Veldrid.Texture texture)
         {
             NativeTexture = texture;
         }

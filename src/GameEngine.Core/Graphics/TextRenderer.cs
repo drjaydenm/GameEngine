@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using GameEngine.Core.Graphics.Veldrid;
 using SharpText.Core;
 using SharpText.Veldrid;
 
@@ -55,7 +56,7 @@ namespace GameEngine.Core.Graphics
             }
 
             var font = new Font(fontPath, sizeInPixels);
-            var textRenderer = new VeldridTextRenderer(engine.GraphicsDevice, engine.CommandList, font);
+            var textRenderer = new VeldridTextRenderer(((VeldridGraphicsDevice)engine.GraphicsDevice).UnderlyingGraphicsDevice, engine.CommandList, font);
             textRenderers.Add(new TextRendererInfo
             {
                 TextRenderer = textRenderer,

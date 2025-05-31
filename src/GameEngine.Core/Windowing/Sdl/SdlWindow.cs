@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using GameEngine.Core.Audio;
 using GameEngine.Core.Audio.OpenAL;
 using GameEngine.Core.Content;
+using GameEngine.Core.Graphics;
+using GameEngine.Core.Graphics.Veldrid;
 using GameEngine.Core.Input;
 using GameEngine.Core.Input.Veldrid;
 using Veldrid;
@@ -107,17 +109,9 @@ namespace GameEngine.Core.Windowing.Sdl
         {
         }
 
-        public GraphicsDevice CreateGraphicsDevice()
+        public IGraphicsDevice CreateGraphicsDevice()
         {
-            var options = new GraphicsDeviceOptions(
-                debug: false,
-                swapchainDepthFormat: PixelFormat.R16_UNorm,
-                syncToVerticalBlank: false,
-                resourceBindingModel: ResourceBindingModel.Improved,
-                preferDepthRangeZeroToOne: true,
-                preferStandardClipSpaceYDirection: true
-                );
-            return VeldridStartup.CreateGraphicsDevice(window, options, backend);
+            return new VeldridGraphicsDevice(window, backend);
         }
 
         public IInputManager CreateInputManager()

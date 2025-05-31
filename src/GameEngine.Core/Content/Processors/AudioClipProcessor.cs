@@ -9,7 +9,7 @@ namespace GameEngine.Core.Content.Processors
 
         public AudioClipProcessor(Engine engine)
         {
-            this._engine = engine;
+            _engine = engine;
         }
 
         public AudioClip Process(AudioClipRaw contentRaw)

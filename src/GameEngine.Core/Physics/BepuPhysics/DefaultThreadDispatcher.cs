@@ -45,7 +45,7 @@ namespace GameEngine.Core.Physics.BepuPhysics
 
         void DispatchThread(int workerIndex)
         {
-            if (this.workerBody == null)
+            if (workerBody == null)
                 throw new Exception("workerBody is null");
 
             workerBody(workerIndex);

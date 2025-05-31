@@ -23,7 +23,7 @@ namespace GameEngine.Core.Graphics
 
             var factory = engine.GraphicsDevice.ResourceFactory;
 
-            var backend = factory.BackendType;
+            var backend = engine.GraphicsDevice.BackendType;
             if (backend == GraphicsBackend.Vulkan)
             {
                 vertexShaderDescription.ShaderBytes = EnsureSpirv(vertexShaderDescription);
@@ -31,13 +31,13 @@ namespace GameEngine.Core.Graphics
 
                 return new Shader(new[]
                 {
-                    factory.CreateShader(ref vertexShaderDescription),
-                    factory.CreateShader(ref fragmentShaderDescription)
+                    factory.CreateShader(vertexShaderDescription),
+                    factory.CreateShader(fragmentShaderDescription)
                 }, null, config);
             }
 
             var options = new CrossCompileOptions();
-            var target = GetCompilationTarget(factory.BackendType);
+            var target = GetCompilationTarget(backend);
             var compilationResult = SpirvCompilation.CompileVertexFragment(
                 vertexShaderDescription.ShaderBytes,
                 fragmentShaderDescription.ShaderBytes,

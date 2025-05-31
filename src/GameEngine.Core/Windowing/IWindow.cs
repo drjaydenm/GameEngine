@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
-using Veldrid;
 using GameEngine.Core.Input;
 using GameEngine.Core.Content;
 using GameEngine.Core.Audio;
+using GameEngine.Core.Graphics;
 
 namespace GameEngine.Core.Windowing
 {
@@ -20,7 +20,7 @@ namespace GameEngine.Core.Windowing
         bool Running { get; }
         bool IsDriven { get; }
 
-        GraphicsDevice CreateGraphicsDevice();
+        IGraphicsDevice CreateGraphicsDevice();
         IInputManager CreateInputManager();
         IContentLoader CreateContentLoader();
         IAudioSystem CreateAudioSystem();

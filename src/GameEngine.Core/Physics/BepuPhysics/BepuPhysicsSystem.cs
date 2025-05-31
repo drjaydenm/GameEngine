@@ -1,12 +1,12 @@
-﻿using System.Numerics;
+﻿using System.Collections.Concurrent;
+using System.Numerics;
 using BepuPhysics;
 using BepuPhysics.Collidables;
+using BepuUtilities;
 using BepuUtilities.Memory;
 using GameEngine.Core.Entities;
-using BepuMesh = BepuPhysics.Collidables.Mesh;
-using BepuUtilities;
 using GameEngine.Core.World;
-using System.Collections.Concurrent;
+using BepuMesh = BepuPhysics.Collidables.Mesh;
 
 namespace GameEngine.Core.Physics.BepuPhysics
 {

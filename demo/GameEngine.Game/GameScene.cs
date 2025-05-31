@@ -57,6 +57,7 @@ namespace GameEngine.Game
             var shader = Engine.ContentManager.Load<Core.Graphics.Shader>("Shaders", "Voxel");
             var material = new Material(Engine, shader);
             material.SetTexture("Texture", texture);
+            material.SetSampler("TextureSampler", Engine.GraphicsDevice.PointSampler);
 
             world = new BlockWorld(Engine, this, "World", material);
             AddEntity(world);

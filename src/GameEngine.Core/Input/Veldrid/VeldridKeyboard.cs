@@ -171,7 +171,7 @@ namespace GameEngine.Core.Input.Veldrid
                 Keys.Quotes => Key.Quote,
                 Keys.Backslash => Key.BackSlash,
                 Keys.Slash => Key.Slash,
-                _ => throw new System.NotImplementedException("Unrecognized key was requested")
+                _ => throw new NotImplementedException("Unrecognized key was requested")
             };
         }
     }

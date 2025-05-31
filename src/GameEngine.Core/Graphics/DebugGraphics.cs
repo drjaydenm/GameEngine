@@ -68,7 +68,7 @@ namespace GameEngine.Core.Graphics
 
             SetupCubeVertexBuffer();
 
-            var texture = factory.CreateTexture(new TextureDescription(2, 2, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled, Veldrid.TextureType.Texture2D));
+            var texture = factory.CreateTexture(new TextureDescription(2, 2, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled, global::Veldrid.TextureType.Texture2D));
             MissingTexture = new Texture(texture);
         }
 

@@ -9,12 +9,12 @@ namespace GameEngine.Core.Graphics
     /// </summary>
     public class Shader : IContent
     {
-        internal Veldrid.Shader[] Shaders { get; }
+        internal global::Veldrid.Shader[] Shaders { get; }
         internal VertexElementDescription[] VertexElements { get; }
         internal ResourceLayoutDescription[] ResourceLayouts { get; }
         internal ShaderConfig Config { get; }
 
-        internal Shader(Veldrid.Shader[] shaders, SpirvReflection reflection, ShaderConfig config)
+        internal Shader(global::Veldrid.Shader[] shaders, SpirvReflection reflection, ShaderConfig config)
         {
             Shaders = shaders;
             Config = config;

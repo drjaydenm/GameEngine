@@ -1,10 +1,10 @@
-﻿using Veldrid;
-using GameEngine.Core.Graphics;
+﻿using GameEngine.Core.Graphics;
 using GameEngine.Core.Input;
 using GameEngine.Core.Windowing;
 using GameEngine.Core.Threading;
 using GameEngine.Core.Content;
 using GameEngine.Core.Audio;
+using Veldrid;
 
 namespace GameEngine.Core
 {
@@ -16,7 +16,7 @@ namespace GameEngine.Core
         public TimeSpan GameTimeMaxElapsed => TimeSpan.FromTicks(TimeSpan.TicksPerSecond / 10);
         public PerformanceCounters PerformanceCounters { get; }
         public IWindow Window { get; private set; }
-        public GraphicsDevice GraphicsDevice { get; private set; }
+        public IGraphicsDevice GraphicsDevice { get; private set; }
         public IInputManager InputManager { get; private set; }
         public DebugGraphics DebugGraphics { get; private set; }
         public TextRenderer TextRenderer { get; private set; }

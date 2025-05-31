@@ -76,6 +76,25 @@ namespace GameEngine.Core.Graphics
             CreateResourceSet(param.Set);
         }
 
+        public void SetSampler(string name, Sampler value)
+        {
+            if (!shader.Config.Parameters.TryGetValue(name, out var param))
+                throw new Exception("Cannot find parameter in shader: " + name);
+
+            if (param.Type != ShaderConfigParameterType.Sampler)
+                throw new Exception("The specified parameter is not a sampler type: " + name);
+
+            if ((Sampler)parameterValues[name] == value)
+                return;
+
+            parameterValues[name] = value;
+
+            var resourceSet = resourceSets[param.Set];
+            resourceSet.Dispose();
+
+            CreateResourceSet(param.Set);
+        }
+
         public void SetVector(string name, Vector2 value)
         {
             if (shader.Config.Parameters[name].Type != ShaderConfigParameterType.Float2)

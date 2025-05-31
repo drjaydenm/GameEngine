@@ -97,7 +97,7 @@ namespace GameEngine.Core.Input.Veldrid
                 MouseButtons.Left => MouseButton.Left,
                 MouseButtons.Right => MouseButton.Right,
                 MouseButtons.Middle => MouseButton.Middle,
-                _ => throw new System.NotImplementedException("Unrecognized mouse button was requested")
+                _ => throw new NotImplementedException("Unrecognized mouse button was requested")
             };
         }
     }
