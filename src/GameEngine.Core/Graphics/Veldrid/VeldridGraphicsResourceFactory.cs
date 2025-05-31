@@ -4,9 +4,17 @@ namespace GameEngine.Core.Graphics.Veldrid;
 
 internal class VeldridGraphicsResourceFactory(GraphicsDevice graphicsDevice) : IGraphicsResourceFactory
 {
-    public DeviceBuffer CreateBuffer(BufferDescription bufferDescription)
+    public IBuffer CreateBuffer(BufferDescription bufferDescription)
     {
-        return graphicsDevice.ResourceFactory.CreateBuffer(bufferDescription);
+        var desc = new global::Veldrid.BufferDescription
+        {
+            SizeInBytes = bufferDescription.SizeInBytes,
+            Usage = (global::Veldrid.BufferUsage)bufferDescription.Usage,
+            StructureByteStride = bufferDescription.StructureByteStride,
+            RawBuffer = bufferDescription.IsRawBuffer
+        };
+
+        return new VeldridBuffer(graphicsDevice.ResourceFactory.CreateBuffer(desc));
     }
 
     public ICommandList CreateCommandList()

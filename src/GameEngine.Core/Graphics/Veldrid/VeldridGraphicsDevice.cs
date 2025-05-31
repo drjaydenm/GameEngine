@@ -46,9 +46,9 @@ internal class VeldridGraphicsDevice : IGraphicsDevice
         _graphicsDevice.SwapBuffers();
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
+    public void UpdateBuffer<T>(IBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged
     {
-        _graphicsDevice.UpdateBuffer(buffer, bufferOffsetInBytes, source);
+        _graphicsDevice.UpdateBuffer(((VeldridBuffer)buffer).UnderlyingBuffer, bufferOffsetInBytes, source);
     }
 
     public void UpdateTexture(global::Veldrid.Texture texture, IntPtr source, uint sizeInBytes,

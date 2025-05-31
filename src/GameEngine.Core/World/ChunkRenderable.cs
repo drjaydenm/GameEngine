@@ -1,5 +1,4 @@
 using System.Numerics;
-using Veldrid;
 using GameEngine.Core.Graphics;
 using GameEngine.Core.Entities;
 
@@ -8,9 +7,9 @@ namespace GameEngine.Core.World
     public class ChunkRenderable : IRenderable, IDisposable
     {
         public Material Material { get; private set; }
-        public VertexLayoutDescription LayoutDescription => VertexPositionNormalTexCoordMaterial.VertexLayoutDescription;
-        public DeviceBuffer VertexBuffer { get; private set; }
-        public DeviceBuffer IndexBuffer { get; private set; }
+        public Veldrid.VertexLayoutDescription LayoutDescription => VertexPositionNormalTexCoordMaterial.VertexLayoutDescription;
+        public IBuffer VertexBuffer { get; private set; }
+        public IBuffer IndexBuffer { get; private set; }
         public PrimitiveType PrimitiveType => PrimitiveType.TriangleList;
         public Vector3 PositionOffset { get; private set; }
 

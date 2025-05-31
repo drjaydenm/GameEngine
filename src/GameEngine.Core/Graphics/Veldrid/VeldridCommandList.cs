@@ -42,14 +42,15 @@ internal class VeldridCommandList(CommandList commandList) : ICommandList
         commandList.SetFramebuffer(framebuffer);
     }
 
-    public void SetVertexBuffer(uint slot, DeviceBuffer vertexBuffer)
+    public void SetVertexBuffer(uint slot, IBuffer vertexBuffer)
     {
-        commandList.SetVertexBuffer(slot, vertexBuffer);
+        commandList.SetVertexBuffer(slot, ((VeldridBuffer)vertexBuffer).UnderlyingBuffer);
     }
 
-    public void SetIndexBuffer(DeviceBuffer indexBuffer, IndexFormat format)
+    public void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format)
     {
-        commandList.SetIndexBuffer(indexBuffer, format);
+        commandList.SetIndexBuffer(((VeldridBuffer)indexBuffer).UnderlyingBuffer, format == IndexFormat.UInt32 ?
+            global::Veldrid.IndexFormat.UInt32 : global::Veldrid.IndexFormat.UInt16);
     }
 
     public void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet)
@@ -67,18 +68,18 @@ internal class VeldridCommandList(CommandList commandList) : ICommandList
         commandList.DrawIndexed(indexCount, instanceCount, indexStart, vertexOffset, instanceStart);
     }
 
-    public void UpdateBuffer(DeviceBuffer buffer, uint bufferOffsetInBytes, IntPtr source, uint sizeInBytes)
+    public void UpdateBuffer(IBuffer buffer, uint bufferOffsetInBytes, IntPtr source, uint sizeInBytes)
     {
-        commandList.UpdateBuffer(buffer, bufferOffsetInBytes, source, sizeInBytes);
+        commandList.UpdateBuffer(((VeldridBuffer)buffer).UnderlyingBuffer, bufferOffsetInBytes, source, sizeInBytes);
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] data) where T : unmanaged
+    public void UpdateBuffer<T>(IBuffer buffer, uint bufferOffsetInBytes, T[] data) where T : unmanaged
     {
-        commandList.UpdateBuffer(buffer, bufferOffsetInBytes, data);
+        commandList.UpdateBuffer(((VeldridBuffer)buffer).UnderlyingBuffer, bufferOffsetInBytes, data);
     }
 
-    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T data) where T : unmanaged
+    public void UpdateBuffer<T>(IBuffer buffer, uint bufferOffsetInBytes, T data) where T : unmanaged
     {
-        commandList.UpdateBuffer(buffer, bufferOffsetInBytes, data);
+        commandList.UpdateBuffer(((VeldridBuffer)buffer).UnderlyingBuffer, bufferOffsetInBytes, data);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using GameEngine.Core.Graphics.Veldrid;
 using Veldrid;
 
 namespace GameEngine.Core.Graphics
@@ -11,11 +12,11 @@ namespace GameEngine.Core.Graphics
         private readonly Engine engine;
         private readonly ICommandList commandList;
         private readonly Pipeline pipeline;
-        private readonly DeviceBuffer lineVertexBuffer;
-        private readonly DeviceBuffer arrowVertexBuffer;
-        private readonly DeviceBuffer cubeVertexBuffer;
-        private readonly DeviceBuffer transformBuffer;
-        private readonly DeviceBuffer colorBuffer;
+        private readonly IBuffer lineVertexBuffer;
+        private readonly IBuffer arrowVertexBuffer;
+        private readonly IBuffer cubeVertexBuffer;
+        private readonly IBuffer transformBuffer;
+        private readonly IBuffer colorBuffer;
         private readonly ResourceSet transformSet;
 
         private Color lastColorUsed;
@@ -38,8 +39,9 @@ namespace GameEngine.Core.Graphics
 
             transformSet = factory.CreateResourceSet(new ResourceSetDescription(
                 transformLayout,
-                transformBuffer,
-                colorBuffer));
+                // HACK fix once all graphics resources are abstracted
+                ((VeldridBuffer)transformBuffer).UnderlyingBuffer,
+                ((VeldridBuffer)colorBuffer).UnderlyingBuffer));
 
             var pipelineDescription = new GraphicsPipelineDescription();
             pipelineDescription.BlendState = BlendStateDescription.SingleOverrideBlend;

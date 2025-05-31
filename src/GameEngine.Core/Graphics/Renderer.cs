@@ -17,8 +17,8 @@ namespace GameEngine.Core.Graphics
         private readonly Engine engine;
         private readonly Scene scene;
         private readonly ICommandList commandList;
-        private DeviceBuffer skyboxVertices;
-        private DeviceBuffer skyboxIndices;
+        private IBuffer skyboxVertices;
+        private IBuffer skyboxIndices;
 
         public Renderer(Engine engine, Scene scene)
         {

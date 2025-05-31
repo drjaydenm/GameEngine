@@ -4,7 +4,7 @@ namespace GameEngine.Core.Graphics;
 
 public interface IGraphicsResourceFactory
 {
-    DeviceBuffer CreateBuffer(BufferDescription bufferDescription);
+    IBuffer CreateBuffer(BufferDescription bufferDescription);
     ICommandList CreateCommandList();
     Pipeline CreateGraphicsPipeline(GraphicsPipelineDescription description);
     ResourceLayout CreateResourceLayout(ResourceLayoutDescription description);

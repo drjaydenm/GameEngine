@@ -8,8 +8,8 @@ namespace GameEngine.Core.Graphics
     {
         Material Material { get; }
         VertexLayoutDescription LayoutDescription { get; }
-        DeviceBuffer VertexBuffer { get; }
-        DeviceBuffer IndexBuffer { get; }
+        IBuffer VertexBuffer { get; }
+        IBuffer IndexBuffer { get; }
         PrimitiveType PrimitiveType { get; }
         Vector3 PositionOffset { get; }
 

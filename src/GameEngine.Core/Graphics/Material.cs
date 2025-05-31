@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using GameEngine.Core.Graphics.Veldrid;
 using Veldrid;
 
 namespace GameEngine.Core.Graphics
@@ -9,7 +10,7 @@ namespace GameEngine.Core.Graphics
         private readonly Engine engine;
         private readonly Shader shader;
 
-        private Dictionary<(int, int), DeviceBuffer> buffers;
+        private Dictionary<(int, int), IBuffer> buffers;
         private Dictionary<int, ResourceLayout> resourceLayouts;
         private Dictionary<int, ResourceSet> resourceSets;
         private Dictionary<string, object> parameterValues;
@@ -22,7 +23,7 @@ namespace GameEngine.Core.Graphics
             this.engine = engine;
             this.shader = shader;
 
-            buffers = new Dictionary<(int, int), DeviceBuffer>();
+            buffers = new Dictionary<(int, int), IBuffer>();
             resourceLayouts = new Dictionary<int, ResourceLayout>();
             resourceSets = new Dictionary<int, ResourceSet>();
             parameterValues = new Dictionary<string, object>();
@@ -305,6 +306,7 @@ namespace GameEngine.Core.Graphics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateResourceSet(int setIndex)
         {
+            // HACK change this to use IBindableResource once all resource types are abstracted
             var resources = new Dictionary<int, BindableResource>();
 
             foreach (var kvp2 in shader.Config.Parameters)
@@ -313,7 +315,8 @@ namespace GameEngine.Core.Graphics
                 {
                     if (IsValueType(kvp2.Value.Type))
                     {
-                        resources.Add(kvp2.Value.Binding, buffers[(setIndex, kvp2.Value.Binding)]);
+                        // HACK change this to use IBindableResource once all resource types are abstracted
+                        resources.Add(kvp2.Value.Binding, ((VeldridBuffer)buffers[(setIndex, kvp2.Value.Binding)]).UnderlyingBuffer);
                     }
                     else
                     {

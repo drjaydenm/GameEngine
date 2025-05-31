@@ -17,8 +17,8 @@ public interface ICommandList : IDisposable
     void SetFramebuffer(Framebuffer framebuffer);
 
     // Resource binding
-    void SetVertexBuffer(uint slot, DeviceBuffer vertexBuffer);
-    void SetIndexBuffer(DeviceBuffer indexBuffer, IndexFormat format);
+    void SetVertexBuffer(uint slot, IBuffer vertexBuffer);
+    void SetIndexBuffer(IBuffer indexBuffer, IndexFormat format);
     void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet);
 
     // Drawing commands
@@ -26,7 +26,7 @@ public interface ICommandList : IDisposable
     void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart);
 
     // Buffer management
-    void UpdateBuffer(DeviceBuffer buffer, uint bufferOffsetInBytes, IntPtr source, uint sizeInBytes);
-    void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] data) where T : unmanaged;
-    void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T data) where T : unmanaged;
+    void UpdateBuffer(IBuffer buffer, uint bufferOffsetInBytes, IntPtr source, uint sizeInBytes);
+    void UpdateBuffer<T>(IBuffer buffer, uint bufferOffsetInBytes, T[] data) where T : unmanaged;
+    void UpdateBuffer<T>(IBuffer buffer, uint bufferOffsetInBytes, T data) where T : unmanaged;
 }
