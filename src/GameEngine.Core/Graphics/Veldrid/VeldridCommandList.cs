@@ -1,0 +1,84 @@
+﻿using Veldrid;
+
+namespace GameEngine.Core.Graphics.Veldrid;
+
+internal class VeldridCommandList(CommandList commandList) : ICommandList
+{
+    internal CommandList UnderlyingCommandList => commandList;
+
+    public void Dispose()
+    {
+        commandList.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    public void Begin()
+    {
+        commandList.Begin();
+    }
+
+    public void End()
+    {
+        commandList.End();
+    }
+
+    public void SetPipeline(Pipeline pipeline)
+    {
+        commandList.SetPipeline(pipeline);
+    }
+
+    public void ClearColorTarget(uint index, Color color)
+    {
+        commandList.ClearColorTarget(index, new RgbaFloat(color.R, color.G, color.B, color.A));
+    }
+
+    public void ClearDepthStencil(float depth)
+    {
+        commandList.ClearDepthStencil(depth);
+    }
+
+    public void SetFramebuffer(Framebuffer framebuffer)
+    {
+        commandList.SetFramebuffer(framebuffer);
+    }
+
+    public void SetVertexBuffer(uint slot, DeviceBuffer vertexBuffer)
+    {
+        commandList.SetVertexBuffer(slot, vertexBuffer);
+    }
+
+    public void SetIndexBuffer(DeviceBuffer indexBuffer, IndexFormat format)
+    {
+        commandList.SetIndexBuffer(indexBuffer, format);
+    }
+
+    public void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet)
+    {
+        commandList.SetGraphicsResourceSet(slot, resourceSet);
+    }
+
+    public void Draw(uint vertexCount, uint instanceCount, uint vertexStart, uint instanceStart)
+    {
+        commandList.Draw(vertexCount, instanceCount, vertexStart, instanceStart);
+    }
+
+    public void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart)
+    {
+        commandList.DrawIndexed(indexCount, instanceCount, indexStart, vertexOffset, instanceStart);
+    }
+
+    public void UpdateBuffer(DeviceBuffer buffer, uint bufferOffsetInBytes, IntPtr source, uint sizeInBytes)
+    {
+        commandList.UpdateBuffer(buffer, bufferOffsetInBytes, source, sizeInBytes);
+    }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] data) where T : unmanaged
+    {
+        commandList.UpdateBuffer(buffer, bufferOffsetInBytes, data);
+    }
+
+    public void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T data) where T : unmanaged
+    {
+        commandList.UpdateBuffer(buffer, bufferOffsetInBytes, data);
+    }
+}

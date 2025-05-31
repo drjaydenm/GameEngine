@@ -50,7 +50,7 @@ namespace GameEngine.Core.Graphics
             IndexBuffer?.Dispose();
         }
 
-        public void UpdateBuffers(CommandList commandList)
+        public void UpdateBuffers(ICommandList commandList)
         {
             if (!isDirty)
                 return;

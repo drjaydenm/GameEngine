@@ -9,7 +9,6 @@ using GameEngine.Core.Input;
 using GameEngine.Core.Input.Veldrid;
 using Veldrid;
 using Veldrid.Sdl2;
-using Veldrid.StartupUtilities;
 
 namespace GameEngine.Core.Windowing.Sdl
 {

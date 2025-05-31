@@ -2,7 +2,7 @@
 
 namespace GameEngine.Core.Graphics;
 
-public interface IGraphicsDevice
+public interface IGraphicsDevice : IDisposable
 {
     GraphicsBackend BackendType { get; }
     IGraphicsResourceFactory ResourceFactory { get; }
@@ -11,7 +11,7 @@ public interface IGraphicsDevice
     Sampler PointSampler { get; }
 
     void ResizeMainWindow(uint width, uint height);
-    void SubmitCommands(CommandList commandList);
+    void SubmitCommands(ICommandList commandList);
     void SwapBuffers();
     void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] source) where T : unmanaged;
     void UpdateTexture(global::Veldrid.Texture texture,

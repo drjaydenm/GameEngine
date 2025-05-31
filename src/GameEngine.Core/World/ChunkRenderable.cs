@@ -61,7 +61,7 @@ namespace GameEngine.Core.World
             IndexBuffer?.Dispose();
         }
 
-        public unsafe void UpdateBuffers(CommandList commandList)
+        public unsafe void UpdateBuffers(ICommandList commandList)
         {
             if (!isDirty)
                 return;
@@ -82,7 +82,7 @@ namespace GameEngine.Core.World
                 new BufferDescription(indexBytes, BufferUsage.IndexBuffer));
 
             fixed (VertexPositionNormalTexCoordMaterial* pVertices = vertices)
-            fixed(uint* pIndices = indices)
+            fixed (uint* pIndices = indices)
             {
                 commandList.UpdateBuffer(VertexBuffer, 0, new IntPtr(pVertices), vertexBytes);
                 commandList.UpdateBuffer(IndexBuffer, 0, new IntPtr(pIndices), indexBytes);

@@ -4,7 +4,7 @@ using Veldrid.StartupUtilities;
 
 namespace GameEngine.Core.Graphics.Veldrid;
 
-public class VeldridGraphicsDevice : IGraphicsDevice
+internal class VeldridGraphicsDevice : IGraphicsDevice
 {
     public GraphicsBackend BackendType => _graphicsDevice.BackendType;
     public IGraphicsResourceFactory ResourceFactory { get; }
@@ -36,9 +36,9 @@ public class VeldridGraphicsDevice : IGraphicsDevice
         _graphicsDevice.ResizeMainWindow(width, height);
     }
 
-    public void SubmitCommands(CommandList commandList)
+    public void SubmitCommands(ICommandList commandList)
     {
-        _graphicsDevice.SubmitCommands(commandList);
+        _graphicsDevice.SubmitCommands(((VeldridCommandList)commandList).UnderlyingCommandList);
     }
 
     public void SwapBuffers()
@@ -60,5 +60,11 @@ public class VeldridGraphicsDevice : IGraphicsDevice
     public void WaitForIdle()
     {
         _graphicsDevice.WaitForIdle();
+    }
+
+    public void Dispose()
+    {
+        _graphicsDevice.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

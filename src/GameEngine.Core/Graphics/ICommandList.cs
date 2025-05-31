@@ -1,0 +1,32 @@
+﻿using Veldrid;
+
+namespace GameEngine.Core.Graphics;
+
+public interface ICommandList : IDisposable
+{
+    // Recording control
+    void Begin();
+    void End();
+
+    // Pipeline state
+    void SetPipeline(Pipeline pipeline);
+
+    // Framebuffer
+    void ClearColorTarget(uint index, Color color);
+    void ClearDepthStencil(float depth);
+    void SetFramebuffer(Framebuffer framebuffer);
+
+    // Resource binding
+    void SetVertexBuffer(uint slot, DeviceBuffer vertexBuffer);
+    void SetIndexBuffer(DeviceBuffer indexBuffer, IndexFormat format);
+    void SetGraphicsResourceSet(uint slot, ResourceSet resourceSet);
+
+    // Drawing commands
+    void Draw(uint vertexCount, uint instanceCount, uint vertexStart, uint instanceStart);
+    void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart);
+
+    // Buffer management
+    void UpdateBuffer(DeviceBuffer buffer, uint bufferOffsetInBytes, IntPtr source, uint sizeInBytes);
+    void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T[] data) where T : unmanaged;
+    void UpdateBuffer<T>(DeviceBuffer buffer, uint bufferOffsetInBytes, T data) where T : unmanaged;
+}

@@ -16,7 +16,7 @@ namespace GameEngine.Core.Graphics
 
         private readonly Engine engine;
         private readonly Scene scene;
-        private readonly CommandList commandList;
+        private readonly ICommandList commandList;
         private DeviceBuffer skyboxVertices;
         private DeviceBuffer skyboxIndices;
 

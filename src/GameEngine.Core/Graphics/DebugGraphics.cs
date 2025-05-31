@@ -9,7 +9,7 @@ namespace GameEngine.Core.Graphics
         public Texture MissingTexture { get; }
 
         private readonly Engine engine;
-        private readonly CommandList commandList;
+        private readonly ICommandList commandList;
         private readonly Pipeline pipeline;
         private readonly DeviceBuffer lineVertexBuffer;
         private readonly DeviceBuffer arrowVertexBuffer;
@@ -87,7 +87,7 @@ namespace GameEngine.Core.Graphics
             commandList.UpdateBuffer(lineVertexBuffer, 0, vertices);
 
             commandList.SetVertexBuffer(0, lineVertexBuffer);
-            commandList.Draw(vertexCount: 2);
+            commandList.Draw(vertexCount: 2, instanceCount: 1, vertexStart: 0, instanceStart: 0);
         }
 
         public void DrawArrow(Vector3 start, Vector3 end, Color color, Matrix4x4 transform)
@@ -122,7 +122,7 @@ namespace GameEngine.Core.Graphics
             commandList.UpdateBuffer(arrowVertexBuffer, 0, vertices);
 
             commandList.SetVertexBuffer(0, arrowVertexBuffer);
-            commandList.Draw(vertexCount: 10);
+            commandList.Draw(vertexCount: 10, instanceCount: 1, vertexStart: 0, instanceStart: 0);
         }
 
         public void DrawCube(Color color, Matrix4x4 transform)
@@ -133,7 +133,7 @@ namespace GameEngine.Core.Graphics
             SetTransformColor(transform, color);
 
             commandList.SetVertexBuffer(0, cubeVertexBuffer);
-            commandList.Draw(vertexCount: 24);
+            commandList.Draw(vertexCount: 24, instanceCount: 1, vertexStart: 0, instanceStart: 0);
         }
 
         private void SetupCubeVertexBuffer()

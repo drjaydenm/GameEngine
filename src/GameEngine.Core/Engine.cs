@@ -4,7 +4,6 @@ using GameEngine.Core.Windowing;
 using GameEngine.Core.Threading;
 using GameEngine.Core.Content;
 using GameEngine.Core.Audio;
-using Veldrid;
 
 namespace GameEngine.Core
 {
@@ -24,7 +23,7 @@ namespace GameEngine.Core
         public IContentManager ContentManager { get; private set; }
         public IAudioSystem AudioSystem { get; private set; }
 
-        internal CommandList CommandList { get; private set; }
+        internal ICommandList CommandList { get; private set; }
 
         private bool isShuttingDown;
         private List<Scene> scenes;
@@ -113,7 +112,7 @@ namespace GameEngine.Core
             CommandList.Begin();
             CommandList.SetFramebuffer(GraphicsDevice.SwapchainFramebuffer);
 
-            CommandList.ClearColorTarget(0, RgbaFloat.CornflowerBlue);
+            CommandList.ClearColorTarget(0, Color.CornflowerBlue);
             CommandList.ClearDepthStencil(1f);
 
             foreach (var scene in scenes)

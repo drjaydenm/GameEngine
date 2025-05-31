@@ -2,16 +2,16 @@
 
 namespace GameEngine.Core.Graphics.Veldrid;
 
-public class VeldridGraphicsResourceFactory(GraphicsDevice graphicsDevice) : IGraphicsResourceFactory
+internal class VeldridGraphicsResourceFactory(GraphicsDevice graphicsDevice) : IGraphicsResourceFactory
 {
     public DeviceBuffer CreateBuffer(BufferDescription bufferDescription)
     {
         return graphicsDevice.ResourceFactory.CreateBuffer(bufferDescription);
     }
 
-    public CommandList CreateCommandList()
+    public ICommandList CreateCommandList()
     {
-        return graphicsDevice.ResourceFactory.CreateCommandList();
+        return new VeldridCommandList(graphicsDevice.ResourceFactory.CreateCommandList());
     }
 
     public Pipeline CreateGraphicsPipeline(GraphicsPipelineDescription description)

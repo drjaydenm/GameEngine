@@ -119,7 +119,7 @@ namespace GameEngine.Core.Graphics
             SetVectorImpl(name, value);
         }
 
-        internal void Bind(CommandList commandList, PrimitiveType primitiveType, VertexLayoutDescription layoutDescription, FaceCullMode cullMode)
+        internal void Bind(ICommandList commandList, PrimitiveType primitiveType, VertexLayoutDescription layoutDescription, FaceCullMode cullMode)
         {
             if (mustSetup)
                 Setup(primitiveType, layoutDescription, cullMode);

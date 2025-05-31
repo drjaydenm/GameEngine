@@ -13,6 +13,6 @@ namespace GameEngine.Core.Graphics
         PrimitiveType PrimitiveType { get; }
         Vector3 PositionOffset { get; }
 
-        void UpdateBuffers(CommandList commandList);
+        void UpdateBuffers(ICommandList commandList);
     }
 }
