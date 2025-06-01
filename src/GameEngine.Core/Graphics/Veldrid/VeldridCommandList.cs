@@ -22,9 +22,9 @@ internal class VeldridCommandList(CommandList commandList) : ICommandList
         commandList.End();
     }
 
-    public void SetPipeline(Pipeline pipeline)
+    public void SetPipeline(IPipeline pipeline)
     {
-        commandList.SetPipeline(pipeline);
+        commandList.SetPipeline(((VeldridPipeline)pipeline).UnderlyingPipeline);
     }
 
     public void ClearColorTarget(uint index, Color color)
@@ -37,9 +37,9 @@ internal class VeldridCommandList(CommandList commandList) : ICommandList
         commandList.ClearDepthStencil(depth);
     }
 
-    public void SetFramebuffer(Framebuffer framebuffer)
+    public void SetFramebuffer(IFramebuffer framebuffer)
     {
-        commandList.SetFramebuffer(framebuffer);
+        commandList.SetFramebuffer(((VeldridFramebuffer)framebuffer).UnderlyingFramebuffer);
     }
 
     public void SetVertexBuffer(uint slot, IBuffer vertexBuffer)

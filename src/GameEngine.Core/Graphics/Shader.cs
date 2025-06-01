@@ -1,5 +1,5 @@
 ﻿using GameEngine.Core.Content;
-using Veldrid;
+using GameEngine.Core.Graphics.Veldrid;
 using Veldrid.SPIRV;
 
 namespace GameEngine.Core.Graphics
@@ -21,22 +21,29 @@ namespace GameEngine.Core.Graphics
 
             if (reflection != null)
             {
-                VertexElements = reflection.VertexElements;
+                var elements = new VertexElementDescription[reflection.VertexElements.Length];
+                for (var i = 0; i < reflection.VertexElements.Length; i++)
+                {
+                    var element = reflection.VertexElements[i];
+                    elements[i] = new VertexElementDescription(element.Name,
+                        VeldridUtils.ConvertVertexFormatFromVeldrid(element.Format), element.Offset);
+                }
 
                 var layouts = new ResourceLayoutDescription[reflection.ResourceLayouts.Length];
                 for (var i = 0; i < reflection.ResourceLayouts.Length; i++)
                 {
-                    var elements = new ResourceLayoutElementDescription[reflection.ResourceLayouts[i].Elements.Length];
+                    var resourceElements = new ResourceLayoutElementDescription[reflection.ResourceLayouts[i].Elements.Length];
                     for (var j = 0; j < reflection.ResourceLayouts[i].Elements.Length; j++)
                     {
                         var element = reflection.ResourceLayouts[i].Elements[j];
-                        elements[j] = new ResourceLayoutElementDescription(
+                        resourceElements[j] = new ResourceLayoutElementDescription(
                             element.Name, (ResourceType)element.Kind, (ShaderStage)element.Stages);
                     }
 
-                    layouts[i] = new ResourceLayoutDescription(elements);
+                    layouts[i] = new ResourceLayoutDescription(resourceElements);
                 }
 
+                VertexElements = elements;
                 ResourceLayouts = layouts;
             }
             else

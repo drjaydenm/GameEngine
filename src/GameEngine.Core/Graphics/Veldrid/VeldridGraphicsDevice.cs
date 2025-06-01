@@ -6,9 +6,9 @@ namespace GameEngine.Core.Graphics.Veldrid;
 
 internal class VeldridGraphicsDevice : IGraphicsDevice
 {
-    public GraphicsBackend BackendType => _graphicsDevice.BackendType;
+    public GraphicsBackend BackendType => VeldridUtils.ConvertGraphicsBackendFromVeldrid(_graphicsDevice.BackendType);
     public IGraphicsResourceFactory ResourceFactory { get; }
-    public Framebuffer SwapchainFramebuffer => _graphicsDevice.SwapchainFramebuffer;
+    public IFramebuffer SwapchainFramebuffer => _swapchainFramebuffer;
     public ISampler LinearSampler => _linearSampler;
     public ISampler PointSampler => _pointSampler;
 
@@ -17,23 +17,26 @@ internal class VeldridGraphicsDevice : IGraphicsDevice
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ISampler _linearSampler;
     private readonly ISampler _pointSampler;
+    private readonly IFramebuffer _swapchainFramebuffer;
 
     public VeldridGraphicsDevice(Sdl2Window window, GraphicsBackend backend)
     {
         var options = new GraphicsDeviceOptions(
             debug: false,
-            swapchainDepthFormat: PixelFormat.R16_UNorm,
+            swapchainDepthFormat: global::Veldrid.PixelFormat.R16_UNorm,
             syncToVerticalBlank: false,
             resourceBindingModel: ResourceBindingModel.Improved,
             preferDepthRangeZeroToOne: true,
             preferStandardClipSpaceYDirection: true
         );
-        _graphicsDevice = VeldridStartup.CreateGraphicsDevice(window, options, backend);
+        _graphicsDevice = VeldridStartup.CreateGraphicsDevice(window, options,
+            VeldridUtils.ConvertGraphicsBackendToVeldrid(backend));
 
         ResourceFactory = new VeldridGraphicsResourceFactory(_graphicsDevice);
 
         _linearSampler = new VeldridSampler(_graphicsDevice.LinearSampler);
         _pointSampler = new VeldridSampler(_graphicsDevice.PointSampler);
+        _swapchainFramebuffer = new VeldridFramebuffer(_graphicsDevice.SwapchainFramebuffer);
     }
 
     public void Dispose()

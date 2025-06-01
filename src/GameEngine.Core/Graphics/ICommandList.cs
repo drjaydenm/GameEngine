@@ -1,6 +1,4 @@
-﻿using Veldrid;
-
-namespace GameEngine.Core.Graphics;
+﻿namespace GameEngine.Core.Graphics;
 
 public interface ICommandList : IDisposable
 {
@@ -9,12 +7,12 @@ public interface ICommandList : IDisposable
     void End();
 
     // Pipeline state
-    void SetPipeline(Pipeline pipeline);
+    void SetPipeline(IPipeline pipeline);
 
     // Framebuffer
     void ClearColorTarget(uint index, Color color);
     void ClearDepthStencil(float depth);
-    void SetFramebuffer(Framebuffer framebuffer);
+    void SetFramebuffer(IFramebuffer framebuffer);
 
     // Resource binding
     void SetVertexBuffer(uint slot, IBuffer vertexBuffer);

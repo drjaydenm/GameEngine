@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Veldrid;
 using GameEngine.Core.Entities;
 
 namespace GameEngine.Core.Graphics

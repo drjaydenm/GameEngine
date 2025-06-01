@@ -1,7 +1,5 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
-using GameEngine.Core.Graphics.Veldrid;
-using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {
@@ -16,7 +14,7 @@ namespace GameEngine.Core.Graphics
         private Dictionary<string, object> parameterValues;
         private Queue<string> dirtyParameters;
         private bool mustSetup = true;
-        private Pipeline pipeline;
+        private IPipeline pipeline;
 
         public Material(Engine engine, Shader shader)
         {
@@ -160,50 +158,36 @@ namespace GameEngine.Core.Graphics
         {
             var factory = engine.GraphicsDevice.ResourceFactory;
 
-            var pipelineDescription = new GraphicsPipelineDescription();
-            pipelineDescription.BlendState = BlendStateDescription.SingleOverrideBlend;
-            pipelineDescription.DepthStencilState = new DepthStencilStateDescription(
-                depthTestEnabled: true,
-                depthWriteEnabled: true,
-                comparisonKind: ComparisonKind.LessEqual);
-            pipelineDescription.RasterizerState = new RasterizerStateDescription(
-                cullMode: cullMode,
-                fillMode: PolygonFillMode.Solid,
-                frontFace: FrontFace.Clockwise,
-                depthClipEnabled: true,
-                scissorTestEnabled: false);
-            pipelineDescription.PrimitiveTopology = PrimitiveTypeToTopology(primitiveType);
-
-            // HACK remove casting once pipelines are abstracted
-            pipelineDescription.ResourceLayouts = resourceLayouts.Values
-                .Select(rl => ((VeldridResourceLayout)rl).UnderlyingResourceLayout).ToArray();
-
-            pipelineDescription.ShaderSet = new ShaderSetDescription(
-                vertexLayouts: [layoutDescription],
-                shaders: shader.Shaders);
-            pipelineDescription.Outputs = engine.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
+            var pipelineDescription = new GraphicsPipelineDescription
+            {
+                BlendState = BlendStateDescription.SingleOverrideBlend,
+                DepthStencilState = new DepthStencilStateDescription
+                {
+                    DepthTestEnabled = true,
+                    DepthWriteEnabled = true,
+                    ComparisonType = ComparisonType.LessEqual
+                },
+                RasterizerState = new RasterizerStateDescription
+                {
+                    CullMode = cullMode,
+                    FillMode = PolygonFillMode.Solid,
+                    FrontFace = FrontFace.Clockwise,
+                    DepthClipEnabled = true,
+                    ScissorTestEnabled = false
+                },
+                PrimitiveType = primitiveType,
+                ShaderSet = new ShaderSetDescription
+                {
+                    VertexLayouts = [layoutDescription],
+                    Shader = shader
+                },
+                ResourceLayouts = resourceLayouts.Values.ToArray(),
+                Output = engine.GraphicsDevice.SwapchainFramebuffer.OutputDescription
+            };
 
             pipeline = factory.CreateGraphicsPipeline(pipelineDescription);
 
             mustSetup = false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private PrimitiveTopology PrimitiveTypeToTopology(PrimitiveType type)
-        {
-            switch (type)
-            {
-                case PrimitiveType.TriangleList:
-                    return PrimitiveTopology.TriangleList;
-                case PrimitiveType.TriangleStrip:
-                    return PrimitiveTopology.TriangleStrip;
-                case PrimitiveType.LineList:
-                    return PrimitiveTopology.LineList;
-                case PrimitiveType.LineStrip:
-                    return PrimitiveTopology.LineStrip;
-                default:
-                    throw new Exception("Unknown primitive type");
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

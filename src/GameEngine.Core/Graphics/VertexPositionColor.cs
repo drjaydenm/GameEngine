@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {
@@ -14,9 +13,15 @@ namespace GameEngine.Core.Graphics
             Color = color;
         }
 
-        public static readonly VertexLayoutDescription VertexLayoutDescription = new VertexLayoutDescription(
-            new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
-            new VertexElementDescription("Color", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float4));
+        public static readonly VertexLayoutDescription VertexLayoutDescription = new()
+        {
+            Stride = SizeInBytes,
+            Elements =
+            [
+                new VertexElementDescription("Position", VertexElementFormat.Float3, 0),
+                new VertexElementDescription("Color", VertexElementFormat.Float4, 12)
+            ]
+        };
 
         public const uint SizeInBytes = 28;
     }

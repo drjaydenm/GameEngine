@@ -5,6 +5,7 @@
         TriangleList,
         TriangleStrip,
         LineList,
-        LineStrip
+        LineStrip,
+        PointList
     }
 }

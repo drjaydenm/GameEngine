@@ -7,7 +7,7 @@ namespace GameEngine.Core.World
     public class ChunkRenderable : IRenderable, IDisposable
     {
         public Material Material { get; private set; }
-        public Veldrid.VertexLayoutDescription LayoutDescription => VertexPositionNormalTexCoordMaterial.VertexLayoutDescription;
+        public VertexLayoutDescription LayoutDescription => VertexPositionNormalTexCoordMaterial.VertexLayoutDescription;
         public IBuffer VertexBuffer { get; private set; }
         public IBuffer IndexBuffer { get; private set; }
         public PrimitiveType PrimitiveType => PrimitiveType.TriangleList;

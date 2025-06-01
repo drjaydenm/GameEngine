@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {
@@ -18,11 +17,17 @@ namespace GameEngine.Core.Graphics
             MaterialId = materialId;
         }
 
-        public static readonly VertexLayoutDescription VertexLayoutDescription = new VertexLayoutDescription(
-            new VertexElementDescription("Position", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
-            new VertexElementDescription("Normal", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
-            new VertexElementDescription("TexCoord", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
-            new VertexElementDescription("MaterialId", VertexElementSemantic.TextureCoordinate, VertexElementFormat.UInt1));
+        public static readonly VertexLayoutDescription VertexLayoutDescription = new()
+        {
+            Stride = SizeInBytes,
+            Elements =
+            [
+                new VertexElementDescription("Position", VertexElementFormat.Float3, 0),
+                new VertexElementDescription("Normal", VertexElementFormat.Float3, 12),
+                new VertexElementDescription("TexCoord", VertexElementFormat.Float2, 24),
+                new VertexElementDescription("MaterialId", VertexElementFormat.UInt1, 32)
+            ]
+        };
 
         public const uint SizeInBytes = 36;
     }

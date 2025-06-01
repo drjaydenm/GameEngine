@@ -22,9 +22,26 @@ internal class VeldridGraphicsResourceFactory(GraphicsDevice graphicsDevice) : I
         return new VeldridCommandList(graphicsDevice.ResourceFactory.CreateCommandList());
     }
 
-    public Pipeline CreateGraphicsPipeline(GraphicsPipelineDescription description)
+    public IPipeline CreateGraphicsPipeline(GraphicsPipelineDescription description)
     {
-        return graphicsDevice.ResourceFactory.CreateGraphicsPipeline(description);
+        var resourceLayouts = new ResourceLayout[description.ResourceLayouts.Length];
+        for (var i = 0; i < resourceLayouts.Length; i++)
+        {
+            resourceLayouts[i] = ((VeldridResourceLayout)description.ResourceLayouts[i]).UnderlyingResourceLayout;
+        }
+
+        var desc = new global::Veldrid.GraphicsPipelineDescription
+        {
+            BlendState = VeldridUtils.ConvertBlendStateToVeldrid(description.BlendState),
+            DepthStencilState = VeldridUtils.ConvertDepthStencilStateToVeldrid(description.DepthStencilState),
+            RasterizerState = VeldridUtils.ConvertRasterizerStateToVeldrid(description.RasterizerState),
+            PrimitiveTopology = VeldridUtils.ConvertPrimitiveTypeToVeldrid(description.PrimitiveType),
+            ShaderSet = VeldridUtils.ConvertShaderSetToVeldrid(description.ShaderSet),
+            ResourceLayouts = resourceLayouts,
+            Outputs = VeldridUtils.ConvertOutputToVeldrid(description.Output),
+            ResourceBindingModel = ResourceBindingModel.Improved
+        };
+        return new VeldridPipeline(graphicsDevice.ResourceFactory.CreateGraphicsPipeline(desc));
     }
 
     public IResourceLayout CreateResourceLayout(ResourceLayoutDescription description)

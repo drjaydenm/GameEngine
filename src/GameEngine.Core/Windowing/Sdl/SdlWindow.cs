@@ -7,7 +7,6 @@ using GameEngine.Core.Graphics;
 using GameEngine.Core.Graphics.Veldrid;
 using GameEngine.Core.Input;
 using GameEngine.Core.Input.Veldrid;
-using Veldrid;
 using Veldrid.Sdl2;
 
 namespace GameEngine.Core.Windowing.Sdl
@@ -51,7 +50,7 @@ namespace GameEngine.Core.Windowing.Sdl
         public bool Running => window.Exists;
         public bool IsDriven => false;
 
-        internal InputSnapshot InputSnapshot { get; private set; }
+        internal Veldrid.InputSnapshot InputSnapshot { get; private set; }
         internal Vector2 MousePosition { get; private set; }
 
         private Sdl2Window window;

@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using GameEngine.Core.Entities;
-using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {

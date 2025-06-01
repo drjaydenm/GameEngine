@@ -1,12 +1,10 @@
-﻿using Veldrid;
-
-namespace GameEngine.Core.Graphics;
+﻿namespace GameEngine.Core.Graphics;
 
 public interface IGraphicsDevice : IDisposable
 {
     GraphicsBackend BackendType { get; }
     IGraphicsResourceFactory ResourceFactory { get; }
-    Framebuffer SwapchainFramebuffer { get; }
+    IFramebuffer SwapchainFramebuffer { get; }
     ISampler LinearSampler { get; }
     ISampler PointSampler { get; }
 

@@ -1,7 +1,5 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
-using GameEngine.Core.Graphics.Veldrid;
-using Veldrid;
 
 namespace GameEngine.Core.Graphics
 {
@@ -11,7 +9,7 @@ namespace GameEngine.Core.Graphics
 
         private readonly Engine engine;
         private readonly ICommandList commandList;
-        private readonly Pipeline pipeline;
+        private readonly IPipeline pipeline;
         private readonly IBuffer lineVertexBuffer;
         private readonly IBuffer arrowVertexBuffer;
         private readonly IBuffer cubeVertexBuffer;
@@ -42,27 +40,32 @@ namespace GameEngine.Core.Graphics
             transformSet = factory.CreateResourceSet(new ResourceSetDescription(transformLayout,
                 [transformBuffer, colorBuffer]));
 
-            var pipelineDescription = new GraphicsPipelineDescription();
-            pipelineDescription.BlendState = BlendStateDescription.SingleOverrideBlend;
-            pipelineDescription.DepthStencilState = new DepthStencilStateDescription(
-                depthTestEnabled: true,
-                depthWriteEnabled: true,
-                comparisonKind: ComparisonKind.LessEqual);
-            pipelineDescription.RasterizerState = new RasterizerStateDescription(
-                cullMode: FaceCullMode.None,
-                fillMode: PolygonFillMode.Wireframe,
-                frontFace: FrontFace.Clockwise,
-                depthClipEnabled: true,
-                scissorTestEnabled: false);
-            pipelineDescription.PrimitiveTopology = PrimitiveTopology.LineList;
-
-            // HACK remove casting once pipelines are abstracted
-            pipelineDescription.ResourceLayouts = [((VeldridResourceLayout)transformLayout).UnderlyingResourceLayout];
-
-            pipelineDescription.ShaderSet = new ShaderSetDescription(
-                vertexLayouts: [VertexPositionColor.VertexLayoutDescription],
-                shaders: shader.Shaders);
-            pipelineDescription.Outputs = engine.GraphicsDevice.SwapchainFramebuffer.OutputDescription;
+            var pipelineDescription = new GraphicsPipelineDescription
+            {
+                BlendState = BlendStateDescription.SingleOverrideBlend,
+                DepthStencilState = new DepthStencilStateDescription
+                {
+                    DepthTestEnabled = true,
+                    DepthWriteEnabled = true,
+                    ComparisonType = ComparisonType.LessEqual
+                },
+                RasterizerState = new RasterizerStateDescription
+                {
+                    CullMode = FaceCullMode.None,
+                    FillMode = PolygonFillMode.Wireframe,
+                    FrontFace = FrontFace.Clockwise,
+                    DepthClipEnabled = true,
+                    ScissorTestEnabled = false
+                },
+                PrimitiveType = PrimitiveType.LineList,
+                ShaderSet = new ShaderSetDescription
+                {
+                    VertexLayouts = [VertexPositionColor.VertexLayoutDescription],
+                    Shader = shader
+                },
+                ResourceLayouts = [transformLayout],
+                Output = engine.GraphicsDevice.SwapchainFramebuffer.OutputDescription
+            };
 
             pipeline = factory.CreateGraphicsPipeline(pipelineDescription);
 
@@ -72,7 +75,7 @@ namespace GameEngine.Core.Graphics
 
             SetupCubeVertexBuffer();
 
-            MissingTexture = factory.CreateTexture(new TextureDescription(2, 2, 1, 1, 1, PixelFormat.R8_G8_B8_A8_UNorm, TextureUsage.Sampled, global::Veldrid.TextureType.Texture2D));
+            MissingTexture = factory.CreateTexture(new global::Veldrid.TextureDescription(2, 2, 1, 1, 1, global::Veldrid.PixelFormat.R8_G8_B8_A8_UNorm, global::Veldrid.TextureUsage.Sampled, global::Veldrid.TextureType.Texture2D));
         }
 
         public void DrawLine(Vector3 start, Vector3 end, Color color, Matrix4x4 transform)
