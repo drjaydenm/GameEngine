@@ -12,16 +12,16 @@ public enum BufferUsage
     /// </summary>
     IndexBuffer = 1 << 1,
     /// <summary>
-    /// Used for a uniform buffer via a <see cref="global::Veldrid.ResourceSet"/>.
+    /// Used for a uniform buffer via a <see cref="IResourceSet"/>.
     /// </summary>
     UniformBuffer = 1 << 2,
     /// <summary>
-    /// Used for a structured read-only buffer via a <see cref="global::Veldrid.ResourceSet"/>.
+    /// Used for a structured read-only buffer via a <see cref="IResourceSet"/>.
     /// Can only be combined with <see cref="Dynamic"/>.
     /// </summary>
     StructuredBufferReadOnly = 1 << 3,
     /// <summary>
-    /// Used for a structured read-write buffer via a <see cref="global::Veldrid.ResourceSet"/>.
+    /// Used for a structured read-write buffer via a <see cref="IResourceSet"/>.
     /// Can not be combined with any other flag.
     /// </summary>
     StructuredBufferReadWrite = 1 << 4,

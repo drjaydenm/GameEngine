@@ -26,7 +26,7 @@ namespace GameEngine.Core.Graphics
 
             var factory = engine.GraphicsDevice.ResourceFactory;
 
-            var shader = ShaderCompiler.CompileShader(engine, ShaderCode.DebugDrawVertexCode, ShaderCode.DebugDrawFragmentCode, null);
+            var shader = engine.GraphicsDevice.ShaderCompiler.CompileShader(ShaderCode.DebugDrawVertexCode, ShaderCode.DebugDrawFragmentCode, null);
 
             transformBuffer = factory.CreateBuffer(new BufferDescription(
                 (uint)Unsafe.SizeOf<Matrix4x4>(), BufferUsage.UniformBuffer | BufferUsage.Dynamic));
@@ -47,7 +47,7 @@ namespace GameEngine.Core.Graphics
                 {
                     DepthTestEnabled = true,
                     DepthWriteEnabled = true,
-                    ComparisonType = ComparisonType.LessEqual
+                    DepthComparisonType = ComparisonType.LessEqual
                 },
                 RasterizerState = new RasterizerStateDescription
                 {
@@ -75,7 +75,18 @@ namespace GameEngine.Core.Graphics
 
             SetupCubeVertexBuffer();
 
-            MissingTexture = factory.CreateTexture(new global::Veldrid.TextureDescription(2, 2, 1, 1, 1, global::Veldrid.PixelFormat.R8_G8_B8_A8_UNorm, global::Veldrid.TextureUsage.Sampled, global::Veldrid.TextureType.Texture2D));
+            MissingTexture = factory.CreateTexture(new TextureDescription
+            {
+                Width = 2,
+                Height = 2,
+                Depth = 1,
+                MipLevels = 1,
+                ArrayLayers = 1,
+                Format = PixelFormat.R8_G8_B8_A8_UNorm,
+                Usage = TextureUsage.Sampled,
+                Type = TextureType.Texture2D,
+                SampleCount = TextureSampleCount.Count1
+            });
         }
 
         public void DrawLine(Vector3 start, Vector3 end, Color color, Matrix4x4 transform)

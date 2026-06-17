@@ -16,6 +16,14 @@ public readonly struct BlendStateDescription : IEquatable<BlendStateDescription>
     public BlendAttachmentDescription[] AttachmentStates { get; init; }
     public bool AlphaToCoverageEnabled { get; init; }
 
+    public BlendStateDescription(Color blendFactor, BlendAttachmentDescription attachmentState,
+        bool alphaToCoverageEnabled)
+    {
+        BlendFactor = blendFactor;
+        AttachmentStates = [attachmentState];
+        AlphaToCoverageEnabled = alphaToCoverageEnabled;
+    }
+
     public BlendStateDescription(Color blendFactor, BlendAttachmentDescription[] attachmentStates,
         bool alphaToCoverageEnabled)
     {

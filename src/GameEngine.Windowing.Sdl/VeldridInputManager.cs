@@ -1,19 +1,20 @@
-﻿using GameEngine.Core.Windowing.Sdl;
+﻿using GameEngine.Core.Input;
+using GameEngine.Core.Windowing;
 
-namespace GameEngine.Core.Input.Veldrid
+namespace GameEngine.Windowing.Sdl
 {
     public class VeldridInputManager : IInputManager
     {
         public IMouse Mouse => mouse;
         public IKeyboard Keyboard => keyboard;
 
-        private readonly SdlWindow sdlWindow;
+        private readonly SdlWindow window;
         private readonly VeldridMouse mouse;
         private readonly VeldridKeyboard keyboard;
 
-        public VeldridInputManager(SdlWindow sdlWindow)
+        public VeldridInputManager(SdlWindow window)
         {
-            this.sdlWindow = sdlWindow;
+            this.window = window;
 
             mouse = new VeldridMouse();
             keyboard = new VeldridKeyboard();
@@ -21,8 +22,8 @@ namespace GameEngine.Core.Input.Veldrid
 
         public void Update()
         {
-            mouse.Update(sdlWindow.InputSnapshot, sdlWindow.MousePosition);
-            keyboard.Update(sdlWindow.InputSnapshot);
+            mouse.Update(window.InputSnapshot, window.MousePosition);
+            keyboard.Update(window.InputSnapshot);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 public readonly struct ResourceLayoutDescription : IEquatable<ResourceLayoutDescription>
 {
-    public ResourceLayoutElementDescription[] Elements { get; }
+    public ResourceLayoutElementDescription[] Elements { get; init; }
 
     public ResourceLayoutDescription(params ResourceLayoutElementDescription[] elements)
     {

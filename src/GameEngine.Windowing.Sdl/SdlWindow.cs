@@ -1,15 +1,16 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
+using GameEngine.Core;
 using GameEngine.Core.Audio;
 using GameEngine.Core.Audio.OpenAL;
 using GameEngine.Core.Content;
 using GameEngine.Core.Graphics;
-using GameEngine.Core.Graphics.Veldrid;
 using GameEngine.Core.Input;
-using GameEngine.Core.Input.Veldrid;
+using GameEngine.Core.Windowing;
+using GameEngine.Graphics.Veldrid;
 using Veldrid.Sdl2;
 
-namespace GameEngine.Core.Windowing.Sdl
+namespace GameEngine.Windowing.Sdl
 {
     public class SdlWindow : IWindow
     {
@@ -142,7 +143,9 @@ namespace GameEngine.Core.Windowing.Sdl
 
         private Sdl2Window CreateWindow()
         {
-            var flags = SDL_WindowFlags.OpenGL | SDL_WindowFlags.Resizable | SDL_WindowFlags.Shown;
+            var flags = SDL_WindowFlags.OpenGL | SDL_WindowFlags.Resizable | SDL_WindowFlags.Shown | SDL_WindowFlags.AllowHighDpi;
+
+            Sdl2Native.SDL_SetHint("SDL_HINT_WINDOWS_DPI_AWARENESS", "permonitorv2");
 
             var window = new Sdl2Window(
                 title: "Window",

@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\GameEngine.Core\GameEngine.Core.csproj" />
+    <ProjectReference Include="..\..\src\GameEngine.Windowing.Sdl\GameEngine.Windowing.Sdl.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

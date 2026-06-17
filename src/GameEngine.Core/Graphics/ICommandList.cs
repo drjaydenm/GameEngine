@@ -20,6 +20,7 @@ public interface ICommandList : IDisposable
     void SetGraphicsResourceSet(uint slot, IResourceSet resourceSet);
 
     // Drawing commands
+    void Draw(uint vertexCount);
     void Draw(uint vertexCount, uint instanceCount, uint vertexStart, uint instanceStart);
     void DrawIndexed(uint indexCount, uint instanceCount, uint indexStart, int vertexOffset, uint instanceStart);
 

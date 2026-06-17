@@ -165,7 +165,7 @@ namespace GameEngine.Core.Graphics
                 {
                     DepthTestEnabled = true,
                     DepthWriteEnabled = true,
-                    ComparisonType = ComparisonType.LessEqual
+                    DepthComparisonType = ComparisonType.LessEqual
                 },
                 RasterizerState = new RasterizerStateDescription
                 {

@@ -1,6 +1,7 @@
-﻿using Veldrid;
+﻿using GameEngine.Core.Input;
+using Veldrid;
 
-namespace GameEngine.Core.Input.Veldrid
+namespace GameEngine.Windowing.Sdl
 {
     public class VeldridKeyboard : IKeyboard
     {

@@ -1,10 +1,15 @@
-﻿using Veldrid;
+﻿using GameEngine.Core.Graphics;
+using Veldrid;
+using OutputAttachmentDescription = GameEngine.Core.Graphics.OutputAttachmentDescription;
+using OutputDescription = GameEngine.Core.Graphics.OutputDescription;
 
-namespace GameEngine.Core.Graphics.Veldrid;
+namespace GameEngine.Graphics.Veldrid;
 
 public class VeldridFramebuffer : IFramebuffer
 {
     public OutputDescription OutputDescription { get; }
+    public uint Width { get; }
+    public uint Height { get; }
 
     internal Framebuffer UnderlyingFramebuffer => _framebuffer;
 
@@ -28,8 +33,11 @@ public class VeldridFramebuffer : IFramebuffer
                     _framebuffer.OutputDescription.DepthAttachment.Value.Format))
                 : null,
             ColorAttachments = colorAttachments,
-            SampleCount = VeldridUtils.ConvertSampleCountFromVeldrid(_framebuffer.OutputDescription.SampleCount)
+            SampleCount = VeldridUtils.ConvertTextureSampleCountFromVeldrid(_framebuffer.OutputDescription.SampleCount)
         };
+
+        Width = framebuffer.Width;
+        Height = framebuffer.Height;
     }
 
     public void Dispose()

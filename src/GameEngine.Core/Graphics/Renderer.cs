@@ -105,7 +105,7 @@ namespace GameEngine.Core.Graphics
                 { "BottomColor", new ShaderConfigParameter(1, 0, 48, ShaderConfigParameterType.Float4, ShaderConfigParameterStage.Fragment) },
                 { "SunDirection", new ShaderConfigParameter(1, 0, 64, ShaderConfigParameterType.Float3, ShaderConfigParameterStage.Fragment) }
             });
-            var shader = ShaderCompiler.CompileShader(engine, ShaderCode.SkyboxVertexCode, ShaderCode.SkyboxFragmentCode, shaderConfig);
+            var shader = engine.GraphicsDevice.ShaderCompiler.CompileShader(ShaderCode.SkyboxVertexCode, ShaderCode.SkyboxFragmentCode, shaderConfig);
             SkyboxMaterial = new Material(engine, shader);
 
             SkyboxMaterial.SetVector("SkyColor", new Vector4(0.26f, 0.45f, 0.66f, 1));

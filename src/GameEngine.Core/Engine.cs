@@ -4,6 +4,7 @@ using GameEngine.Core.Windowing;
 using GameEngine.Core.Threading;
 using GameEngine.Core.Content;
 using GameEngine.Core.Audio;
+using GameEngine.Core.Rendering;
 
 namespace GameEngine.Core
 {

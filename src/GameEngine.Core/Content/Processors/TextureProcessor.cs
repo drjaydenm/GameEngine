@@ -16,13 +16,21 @@ namespace GameEngine.Core.Content.Processors
 
         protected unsafe ITexture CreateTexture(Image<Rgba32>[] images)
         {
-            var factory = Engine.GraphicsDevice.ResourceFactory;
-            var format = Veldrid.PixelFormat.R8_G8_B8_A8_UNorm;
             var mipLevels = 1;
             var pixelSizeInBytes = sizeof(byte) * 4;
 
-            var tex = factory.CreateTexture(Veldrid.TextureDescription.Texture2D(
-                (uint)images[0].Width, (uint)images[0].Height, (uint)mipLevels, (uint)images.Length, format, Veldrid.TextureUsage.Sampled));
+            var tex = Engine.GraphicsDevice.ResourceFactory.CreateTexture(new TextureDescription
+            {
+                Width = (uint)images[0].Width,
+                Height = (uint)images[0].Height,
+                Depth = 1,
+                MipLevels = (uint)mipLevels,
+                ArrayLayers = (uint)images.Length,
+                Format = PixelFormat.R8_G8_B8_A8_UNorm,
+                Usage = TextureUsage.Sampled,
+                Type = TextureType.Texture2D,
+                SampleCount = TextureSampleCount.Count1
+            });
 
             for (var layer = 0; layer < images.Length; layer++)
             {

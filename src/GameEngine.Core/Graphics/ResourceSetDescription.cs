@@ -2,8 +2,8 @@
 
 public readonly struct ResourceSetDescription : IEquatable<ResourceSetDescription>
 {
-    public IResourceLayout Layout { get; }
-    public IBindableResource[] Resources { get; }
+    public IResourceLayout Layout { get; init; }
+    public IBindableResource[] Resources { get; init; }
 
     public ResourceSetDescription(IResourceLayout layout, IBindableResource[] resources)
     {

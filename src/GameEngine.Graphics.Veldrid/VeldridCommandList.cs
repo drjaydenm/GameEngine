@@ -1,10 +1,11 @@
-﻿using Veldrid;
+﻿using GameEngine.Core;
+using GameEngine.Core.Graphics;
 
-namespace GameEngine.Core.Graphics.Veldrid;
+namespace GameEngine.Graphics.Veldrid;
 
-internal class VeldridCommandList(CommandList commandList) : ICommandList
+internal class VeldridCommandList(global::Veldrid.CommandList commandList) : ICommandList
 {
-    internal CommandList UnderlyingCommandList => commandList;
+    internal global::Veldrid.CommandList UnderlyingCommandList => commandList;
 
     public void Dispose()
     {
@@ -29,7 +30,7 @@ internal class VeldridCommandList(CommandList commandList) : ICommandList
 
     public void ClearColorTarget(uint index, Color color)
     {
-        commandList.ClearColorTarget(index, new RgbaFloat(color.R, color.G, color.B, color.A));
+        commandList.ClearColorTarget(index, new global::Veldrid.RgbaFloat(color.R, color.G, color.B, color.A));
     }
 
     public void ClearDepthStencil(float depth)
@@ -56,6 +57,11 @@ internal class VeldridCommandList(CommandList commandList) : ICommandList
     public void SetGraphicsResourceSet(uint slot, IResourceSet resourceSet)
     {
         commandList.SetGraphicsResourceSet(slot, ((VeldridResourceSet)resourceSet).UnderlyingResourceSet);
+    }
+
+    public void Draw(uint vertexCount)
+    {
+        commandList.Draw(vertexCount);
     }
 
     public void Draw(uint vertexCount, uint instanceCount, uint vertexStart, uint instanceStart)

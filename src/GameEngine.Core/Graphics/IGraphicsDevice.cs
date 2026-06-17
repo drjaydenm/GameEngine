@@ -4,6 +4,7 @@ public interface IGraphicsDevice : IDisposable
 {
     GraphicsBackend BackendType { get; }
     IGraphicsResourceFactory ResourceFactory { get; }
+    IShaderCompiler ShaderCompiler { get; }
     IFramebuffer SwapchainFramebuffer { get; }
     ISampler LinearSampler { get; }
     ISampler PointSampler { get; }

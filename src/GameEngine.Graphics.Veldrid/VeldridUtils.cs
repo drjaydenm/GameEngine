@@ -1,6 +1,29 @@
-﻿using Veldrid;
+﻿using GameEngine.Core;
+using GameEngine.Core.Graphics;
+using Veldrid;
+using BlendFactor = GameEngine.Core.Graphics.BlendFactor;
+using BlendFunction = GameEngine.Core.Graphics.BlendFunction;
+using BlendStateDescription = GameEngine.Core.Graphics.BlendStateDescription;
+using DepthStencilStateDescription = GameEngine.Core.Graphics.DepthStencilStateDescription;
+using FaceCullMode = GameEngine.Core.Graphics.FaceCullMode;
+using FrontFace = GameEngine.Core.Graphics.FrontFace;
+using GraphicsBackend = GameEngine.Core.Graphics.GraphicsBackend;
+using OutputAttachmentDescription = GameEngine.Core.Graphics.OutputAttachmentDescription;
+using OutputDescription = GameEngine.Core.Graphics.OutputDescription;
+using PixelFormat = GameEngine.Core.Graphics.PixelFormat;
+using PolygonFillMode = GameEngine.Core.Graphics.PolygonFillMode;
+using RasterizerStateDescription = GameEngine.Core.Graphics.RasterizerStateDescription;
+using ShaderConstantType = GameEngine.Core.Graphics.ShaderConstantType;
+using ShaderSetDescription = GameEngine.Core.Graphics.ShaderSetDescription;
+using StencilOperation = GameEngine.Core.Graphics.StencilOperation;
+using TextureSampleCount = GameEngine.Core.Graphics.TextureSampleCount;
+using TextureType = GameEngine.Core.Graphics.TextureType;
+using TextureUsage = GameEngine.Core.Graphics.TextureUsage;
+using VertexElementDescription = GameEngine.Core.Graphics.VertexElementDescription;
+using VertexElementFormat = GameEngine.Core.Graphics.VertexElementFormat;
+using VertexLayoutDescription = GameEngine.Core.Graphics.VertexLayoutDescription;
 
-namespace GameEngine.Core.Graphics.Veldrid;
+namespace GameEngine.Graphics.Veldrid;
 
 internal static class VeldridUtils
 {
@@ -26,7 +49,7 @@ internal static class VeldridUtils
         };
     }
 
-    internal static TextureSampleCount ConvertSampleCountFromVeldrid(global::Veldrid.TextureSampleCount sampleCount)
+    internal static TextureSampleCount ConvertTextureSampleCountFromVeldrid(global::Veldrid.TextureSampleCount sampleCount)
     {
         return sampleCount switch
         {
@@ -40,7 +63,7 @@ internal static class VeldridUtils
         };
     }
 
-    internal static global::Veldrid.TextureSampleCount ConvertSampleCountToVeldrid(TextureSampleCount sampleCount)
+    internal static global::Veldrid.TextureSampleCount ConvertTextureSampleCountToVeldrid(TextureSampleCount sampleCount)
     {
         return sampleCount switch
         {
@@ -51,6 +74,17 @@ internal static class VeldridUtils
             TextureSampleCount.Count16 => global::Veldrid.TextureSampleCount.Count16,
             TextureSampleCount.Count32 => global::Veldrid.TextureSampleCount.Count32,
             _ => throw new ArgumentOutOfRangeException(nameof(sampleCount), sampleCount, "Unsupported sample count")
+        };
+    }
+
+    internal static global::Veldrid.TextureType ConvertTextureTypeToVeldrid(TextureType textureType)
+    {
+        return textureType switch
+        {
+            TextureType.Texture1D => global::Veldrid.TextureType.Texture1D,
+            TextureType.Texture2D => global::Veldrid.TextureType.Texture2D,
+            TextureType.Texture3D => global::Veldrid.TextureType.Texture3D,
+            _ => throw new ArgumentOutOfRangeException(nameof(textureType), textureType, "Unsupported texture type")
         };
     }
 
@@ -142,7 +176,7 @@ internal static class VeldridUtils
         {
             DepthTestEnabled = description.DepthTestEnabled,
             DepthWriteEnabled = description.DepthWriteEnabled,
-            DepthComparison = ConvertComparisonKindToVeldrid(description.ComparisonType),
+            DepthComparison = ConvertComparisonKindToVeldrid(description.DepthComparisonType),
             StencilTestEnabled = description.StencilTestEnabled,
             StencilFront = new global::Veldrid.StencilBehaviorDescription
             {
@@ -254,7 +288,7 @@ internal static class VeldridUtils
         var shaders = new global::Veldrid.Shader[shaderSetDescription.Shader.Shaders.Length];
         for (var i = 0; i < shaderSetDescription.Shader.Shaders.Length; i++)
         {
-            shaders[i] = shaderSetDescription.Shader.Shaders[i];
+            shaders[i] = ((VeldridShader)shaderSetDescription.Shader.Shaders[i]).UnderlyingShader;
         }
 
         var specializations = new SpecializationConstant[shaderSetDescription.Specializations?.Length ?? 0];
@@ -337,7 +371,7 @@ internal static class VeldridUtils
             DepthAttachment = outputDescription.DepthAttachment.HasValue
                 ? ConvertOutputAttachmentToVeldrid(outputDescription.DepthAttachment.Value) : null,
             ColorAttachments = colorAttachments,
-            SampleCount = ConvertSampleCountToVeldrid(outputDescription.SampleCount)
+            SampleCount = ConvertTextureSampleCountToVeldrid(outputDescription.SampleCount)
         };
     }
 
@@ -347,22 +381,6 @@ internal static class VeldridUtils
         return new global::Veldrid.OutputAttachmentDescription
         {
             Format = ConvertPixelFormatToVeldrid(outputAttachmentDescription.Format)
-        };
-    }
-
-    internal static VertexElementFormat ConvertVertexFormatFromVeldrid(global::Veldrid.VertexElementFormat format)
-    {
-        return format switch
-        {
-            global::Veldrid.VertexElementFormat.Float1 => VertexElementFormat.Float1,
-            global::Veldrid.VertexElementFormat.Float2 => VertexElementFormat.Float2,
-            global::Veldrid.VertexElementFormat.Float3 => VertexElementFormat.Float3,
-            global::Veldrid.VertexElementFormat.Float4 => VertexElementFormat.Float4,
-            global::Veldrid.VertexElementFormat.UInt1 => VertexElementFormat.UInt1,
-            global::Veldrid.VertexElementFormat.UInt2 => VertexElementFormat.UInt2,
-            global::Veldrid.VertexElementFormat.UInt3 => VertexElementFormat.UInt3,
-            global::Veldrid.VertexElementFormat.UInt4 => VertexElementFormat.UInt4,
-            _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unsupported vertex format")
         };
     }
 

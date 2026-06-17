@@ -2,9 +2,9 @@
 
 public readonly struct ResourceLayoutElementDescription : IEquatable<ResourceLayoutElementDescription>
 {
-    public string Name { get; }
-    public ResourceType Type { get; }
-    public ShaderStage Stages { get; }
+    public string Name { get; init; }
+    public ResourceType Type { get; init; }
+    public ShaderStage Stages { get; init; }
 
     public ResourceLayoutElementDescription(string name, ResourceType type, ShaderStage stages)
     {

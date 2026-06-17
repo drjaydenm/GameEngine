@@ -1,13 +1,17 @@
-﻿using Veldrid;
+﻿using GameEngine.Core.Graphics;
+using GameEngine.Graphics.ShaderCompiler;
+using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
+using GraphicsBackend = GameEngine.Core.Graphics.GraphicsBackend;
 
-namespace GameEngine.Core.Graphics.Veldrid;
+namespace GameEngine.Graphics.Veldrid;
 
 internal class VeldridGraphicsDevice : IGraphicsDevice
 {
     public GraphicsBackend BackendType => VeldridUtils.ConvertGraphicsBackendFromVeldrid(_graphicsDevice.BackendType);
     public IGraphicsResourceFactory ResourceFactory { get; }
+    public IShaderCompiler ShaderCompiler { get; }
     public IFramebuffer SwapchainFramebuffer => _swapchainFramebuffer;
     public ISampler LinearSampler => _linearSampler;
     public ISampler PointSampler => _pointSampler;
@@ -33,6 +37,7 @@ internal class VeldridGraphicsDevice : IGraphicsDevice
             VeldridUtils.ConvertGraphicsBackendToVeldrid(backend));
 
         ResourceFactory = new VeldridGraphicsResourceFactory(_graphicsDevice);
+        ShaderCompiler = new VeldridSpirvShaderCompiler(this);
 
         _linearSampler = new VeldridSampler(_graphicsDevice.LinearSampler);
         _pointSampler = new VeldridSampler(_graphicsDevice.PointSampler);

@@ -5,15 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpText.Veldrid"/>
+    <PackageReference Include="AssimpNet" />
+    <PackageReference Include="BEPUphysics" />
+    <PackageReference Include="SharpText.Core" />
     <PackageReference Include="Silk.NET.OpenAL" />
     <PackageReference Include="Silk.NET.OpenAL.Extensions.Enumeration" />
-    <PackageReference Include="Veldrid"/>
-    <PackageReference Include="Veldrid.SPIRV"/>
-    <PackageReference Include="Veldrid.StartupUtilities"/>
-    <PackageReference Include="BEPUphysics"/>
-    <PackageReference Include="SixLabors.ImageSharp"/>
-    <PackageReference Include="AssimpNet"/>
+    <PackageReference Include="SixLabors.ImageSharp" />
   </ItemGroup>
 
 </Project>

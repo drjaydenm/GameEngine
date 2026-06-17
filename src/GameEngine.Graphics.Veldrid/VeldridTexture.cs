@@ -1,6 +1,7 @@
-﻿using Veldrid;
+﻿using GameEngine.Core.Graphics;
+using Veldrid;
 
-namespace GameEngine.Core.Graphics.Veldrid;
+namespace GameEngine.Graphics.Veldrid;
 
 internal class VeldridTexture(Texture texture) : ITexture
 {

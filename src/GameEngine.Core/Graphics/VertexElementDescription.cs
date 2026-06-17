@@ -2,9 +2,9 @@
 
 public readonly struct VertexElementDescription : IEquatable<VertexElementDescription>
 {
-    public string Name { get; }
-    public VertexElementFormat Format { get; }
-    public uint Offset { get; }
+    public string Name { get; init; }
+    public VertexElementFormat Format { get; init; }
+    public uint Offset { get; init; }
 
     public VertexElementDescription(string name, VertexElementFormat format, uint offset)
     {

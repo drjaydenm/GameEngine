@@ -1,9 +1,7 @@
 ﻿using System.Numerics;
-using GameEngine.Core.Graphics.Veldrid;
 using SharpText.Core;
-using SharpText.Veldrid;
 
-namespace GameEngine.Core.Graphics
+namespace GameEngine.Core.Rendering
 {
     public struct TextRendererInfo
     {
@@ -14,13 +12,13 @@ namespace GameEngine.Core.Graphics
 
     public class TextRenderer
     {
-        private readonly Engine engine;
-        private List<TextRendererInfo> textRenderers;
+        private readonly Engine _engine;
+        private List<TextRendererInfo> _textRenderers;
 
         public TextRenderer(Engine engine)
         {
-            this.engine = engine;
-            textRenderers = new List<TextRendererInfo>();
+            this._engine = engine;
+            _textRenderers = new List<TextRendererInfo>();
 
             engine.Window.Resized += (object sender, EventArgs e) => OnResize();
         }
@@ -33,36 +31,32 @@ namespace GameEngine.Core.Graphics
 
         public void Draw()
         {
-            for (var i = 0; i < textRenderers.Count; i++)
+            for (var i = 0; i < _textRenderers.Count; i++)
             {
-                textRenderers[i].TextRenderer.Draw();
+                _textRenderers[i].TextRenderer.Draw();
             }
         }
 
         public void Update()
         {
-            for (var i = 0; i < textRenderers.Count; i++)
+            for (var i = 0; i < _textRenderers.Count; i++)
             {
-                textRenderers[i].TextRenderer.Update();
+                _textRenderers[i].TextRenderer.Update();
             }
         }
 
         private ITextRenderer GetTextRenderer(string fontPath, float sizeInPixels)
         {
-            for (var i = 0; i < textRenderers.Count; i++)
+            for (var i = 0; i < _textRenderers.Count; i++)
             {
-                if (textRenderers[i].FontPath == fontPath && textRenderers[i].FontSize == sizeInPixels)
-                    return textRenderers[i].TextRenderer;
+                if (_textRenderers[i].FontPath == fontPath && _textRenderers[i].FontSize == sizeInPixels)
+                    return _textRenderers[i].TextRenderer;
             }
 
             var font = new Font(fontPath, sizeInPixels);
-            var textRenderer = new VeldridTextRenderer(
-                ((VeldridGraphicsDevice)engine.GraphicsDevice).UnderlyingGraphicsDevice,
-                ((VeldridCommandList)engine.CommandList).UnderlyingCommandList,
-                font
-            );
+            var textRenderer = new SharpTextRenderer(_engine.GraphicsDevice, _engine.CommandList, font);
 
-            textRenderers.Add(new TextRendererInfo
+            _textRenderers.Add(new TextRendererInfo
             {
                 TextRenderer = textRenderer,
                 FontPath = fontPath,
@@ -74,9 +68,9 @@ namespace GameEngine.Core.Graphics
 
         private void OnResize()
         {
-            for (var i = 0; i < textRenderers.Count; i++)
+            for (var i = 0; i < _textRenderers.Count; i++)
             {
-                textRenderers[i].TextRenderer.ResizeToSwapchain();
+                _textRenderers[i].TextRenderer.ResizeToSwapchain();
             }
         }
     }
